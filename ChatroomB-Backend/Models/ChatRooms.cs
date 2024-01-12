@@ -5,23 +5,23 @@ namespace ChatroomB_Backend.Models
     public class ChatRooms
     {
         [Key]
-        public int chatRoomId { get; set; }
+        public int ChatRoomId { get; set; }
 
         [Required]
-        public string roomName { get; set; } = null!;
+        public string RoomName { get; set; } = null!;
 
         [Required]
-        public DateTime createdDate { get; set; }
+        public DateTime CreatedDate { get; set; }
 
         [Required]
-        public bool roomType { get; set; }
+        public bool RoomType { get; set; }
 
-        public string? roomProfilePic { get; set; }
-
-        [Required]
-        public int initiatedBy { get; set; }
+        public string? RoomProfilePic { get; set; }
 
         [Required]
-        public bool? isDelete { get; set; }
+        public int InitiatedBy { get; set; }
+
+        [Required]
+        public bool? IsDelete { get; set; }
     }
 }

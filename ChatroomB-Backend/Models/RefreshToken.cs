@@ -10,14 +10,15 @@ namespace ChatroomB_Backend.Models
 
         public Users? Users { get; set; }
         [ForeignKey("Users")]
-        public int userId { get; set; }
+        public int? UserId { get; set; }
 
         [Required]
+        [Column(TypeName = "varchar(256)")]
         public string TokenHash { get; set; } = null!;
 
         [Required]
-        public DateTime expiredDateTime { get; set; }
+        public DateTime? ExpiredDateTime { get; set; }
 
-        public bool isDelete { get; set; }
+        public bool IsDelete { get; set; }
     }
 }

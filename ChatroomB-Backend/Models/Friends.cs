@@ -6,16 +6,16 @@ namespace ChatroomB_Backend.Models
     public class Friends
     {
         [Key]
-        public int? requestId { get; set; }
+        public int? RequestId { get; set; }
 
         public Users? Sender { get; set; }
-        [ForeignKey("Sender")]
-        public int senderId { get; set; }
+        [ForeignKey("Users")]
+        public int? SenderId { get; set; }
 
         public Users? Receiver { get; set; }
-        [ForeignKey("Receiver")]
-        public int ReceiverId { get; set; }
+        [ForeignKey("Users")]
+        public int? ReceiverId { get; set; }
 
-        public int status { get; set; }
+        public int Status { get; set; }
     }
 }

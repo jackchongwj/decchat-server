@@ -14,6 +14,11 @@ namespace ChatroomB_Backend.Data
         {
         }
 
-        public DbSet<ChatroomB_Backend.Models.Users> Users { get; set; } = default!;
+        public DbSet<Users> Users { get; set; } = default!;
+        public DbSet<Friends> Friends { get; set; } = default!;
+        public DbSet<RefreshToken> RefreshToken { get; set; } = default!;
+        public DbSet<ChatRooms> ChatRooms { get; set; } = default!;
+        public DbSet<UserChatRooms> UserChatRooms { get; set; } = default!;
+        public DbSet<Messages> Messages { get; set; } = default!;
     }
 }

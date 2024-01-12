@@ -6,16 +6,16 @@ namespace ChatroomB_Backend.Models
     public class UserChatRooms
     {
         [Key]
-        public int userChatRoomId { get; set; }
+        public int? UserChatRoomId { get; set; }
 
         public Users? Users { get; set; }
         [ForeignKey("Users")]
-        public int userId { get; set; }
+        public int? UserId { get; set; }
 
         public ChatRooms? ChatRooms { get; set; }
         [ForeignKey("ChatRooms")]
-        public int chatRoomId { get; set; }
+        public int? ChatRoomId { get; set; }
 
-        public bool isDelete { get; set; }
+        public bool IsDelete { get; set; }
     }
 }
