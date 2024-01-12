@@ -5,7 +5,7 @@ namespace ChatroomB_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TokenResponse : ControllerBase
+    public class TokenResponsesController : ControllerBase
     {
     }
 }
