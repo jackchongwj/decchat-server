@@ -2,25 +2,27 @@
 using ChatroomB_Backend.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Dapper;
+using System.Data;
+using System.Collections.Generic;
 
 namespace ChatroomB_Backend.Repository
 {
     public class UsersRepo : IUserRepo
     {
-        private readonly ChatroomB_BackendContext _context;
 
-        public UsersRepo(ChatroomB_BackendContext context)
+        private readonly IDbConnection _dbConnection;
+
+        public UsersRepo(IDbConnection db)
         {
-            _context = context;
+            _dbConnection = db;
         }
 
         public async Task<IEnumerable<Users>> GetByName(string profileName)
         {
-            SqlParameter param = new SqlParameter("@profileName", profileName);
+            string sql = "exec GetUserByProfileName @profileName";
 
-            List<Users> result = await Task.Run(() => _context.Users
-                .FromSqlRaw(@"exec GetUserByProfileName @profileName", param)
-                .ToListAsync());
+            IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, new {profileName});
 
             return result;
         }
