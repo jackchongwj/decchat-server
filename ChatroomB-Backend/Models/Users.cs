@@ -25,6 +25,6 @@ namespace ChatroomB_Backend.Models
         [Column(TypeName = "varchar(256)")]
         public string? ProfilePicture { get; set; }
 
-        public bool IsDelete { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

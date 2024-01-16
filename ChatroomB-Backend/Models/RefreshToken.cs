@@ -19,6 +19,6 @@ namespace ChatroomB_Backend.Models
         [Required]
         public DateTime? ExpiredDateTime { get; set; }
 
-        public bool IsDelete { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

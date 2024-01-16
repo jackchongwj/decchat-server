@@ -22,6 +22,6 @@ namespace ChatroomB_Backend.Models
         public int InitiatedBy { get; set; }
 
         [Required]
-        public bool? IsDelete { get; set; }
+        public bool? IsDeleted { get; set; }
     }
 }
