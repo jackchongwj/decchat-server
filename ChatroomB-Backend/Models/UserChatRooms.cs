@@ -16,6 +16,6 @@ namespace ChatroomB_Backend.Models
         [ForeignKey("ChatRooms")]
         public int? ChatRoomId { get; set; }
 
-        public bool IsDelete { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
