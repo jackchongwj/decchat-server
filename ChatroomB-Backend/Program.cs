@@ -33,11 +33,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+///use cors
+app.UseCors("AngularApp");
+
 app.UseAuthorization();
 
 app.MapControllers();
-
-///use cors
-app.UseCors("AngularApp");
 
 app.Run();
