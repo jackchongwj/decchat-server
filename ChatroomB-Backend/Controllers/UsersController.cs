@@ -93,15 +93,13 @@ namespace ChatroomB_Backend.Controllers
         //    return CreatedAtAction("GetUsers", new { id = users.UserId }, users);
         //}
 
-        //// DELETE: api/Users/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteUsers(int? id)
+        // POST: api/Users
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        //[HttpPost]
+        //public async Task<ActionResult<Users>> PostUsers(Users users)
         //{
-        //    var users = await _context.Users.FindAsync(id);
-        //    if (users == null)
-        //    {
-        //        return NotFound();
-        //    }
+        //    _context.Users.Add(users);
+        //    await _context.SaveChangesAsync();
 
         //    _context.Users.Remove(users);
         //    await _context.SaveChangesAsync();
@@ -113,7 +111,5 @@ namespace ChatroomB_Backend.Controllers
         //{
         //    return _context.Users.Any(e => e.UserId == id);
         //}
-
-
     }
 }
