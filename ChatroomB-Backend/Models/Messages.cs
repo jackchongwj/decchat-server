@@ -6,7 +6,7 @@ namespace ChatroomB_Backend.Models
     public class Messages
     {
         [Key]
-        public int? MessengeId { get; set; }
+        public int? MessageId { get; set; }
 
         [Required]
         [Column(TypeName = "nvarchar(200)")]
@@ -24,6 +24,6 @@ namespace ChatroomB_Backend.Models
         [Required]
         public int MessageType { get; set; }
 
-        public bool IsDelete { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
