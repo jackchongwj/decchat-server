@@ -16,5 +16,11 @@ namespace ChatroomB_Backend.Service
         {
             return (await _repo.AddFriends(friends));
         }
+
+        public async Task<IEnumerable<Users>> GetFriendList(int userId)
+        {
+            return await _repo.GetFriendList(userId);
+        }
+
     }
 }

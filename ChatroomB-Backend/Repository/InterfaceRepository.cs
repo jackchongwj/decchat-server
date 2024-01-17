@@ -11,5 +11,6 @@ namespace ChatroomB_Backend.Repository
     public interface IFriendRepo
     {
         Task<int> AddFriends(Friends friends);                                                                                 // add new friend 
+        Task<IEnumerable<Users>> GetFriendList(int userId); //return friendllist
     }
 }

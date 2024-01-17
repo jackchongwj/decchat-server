@@ -10,6 +10,7 @@ namespace ChatroomB_Backend.Service
 
     public interface IFriendService 
     {
-        Task<int> AddFriends(Friends friends);                                                                                 // add new friend 
+        Task<int> AddFriends(Friends friends);  // add new friend 
+        Task<IEnumerable<Users>> GetFriendList(int userId); //return friendlist
     }
 }
