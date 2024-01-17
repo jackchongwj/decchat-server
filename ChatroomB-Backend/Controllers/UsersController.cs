@@ -95,11 +95,11 @@ namespace ChatroomB_Backend.Controllers
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Users>> PostUsers(Users users)
-        {
-            _context.Users.Add(users);
-            await _context.SaveChangesAsync();
+        //[HttpPost]
+        //public async Task<ActionResult<Users>> PostUsers(Users users)
+        //{
+        //    _context.Users.Add(users);
+        //    await _context.SaveChangesAsync();
 
         //    _context.Users.Remove(users);
         //    await _context.SaveChangesAsync();
@@ -111,7 +111,5 @@ namespace ChatroomB_Backend.Controllers
         //{
         //    return _context.Users.Any(e => e.UserId == id);
         //}
-
-
     }
 }
