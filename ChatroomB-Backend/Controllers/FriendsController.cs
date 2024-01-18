@@ -180,7 +180,7 @@ namespace ChatroomB_Backend.Controllers
         //POST: Friends/Create
         [HttpPost("AddFriend")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SenderId,ReceiverId")] Friends friends)
+        public async Task<IActionResult> Create([FromBody] Friends friends)
         {
             if (ModelState.IsValid)
             {
