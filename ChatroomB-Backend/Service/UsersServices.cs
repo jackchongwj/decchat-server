@@ -13,9 +13,14 @@ namespace ChatroomB_Backend.Service
             _repo = reponsitory;
         }
 
-        public async Task<IEnumerable<Users>> GetByName(string profileName)
+        public async Task<IEnumerable<Users>> GetByName(string profileName, int userId)
         {
-            return (await _repo.GetByName(profileName));
+            return (await _repo.GetByName(profileName, userId));
+        }
+
+        public async Task<IEnumerable<Users>> GetFriendRequest(int userId)
+        {
+            return (await _repo.GetFriendRequest(userId));
         }
     }
 }

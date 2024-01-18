@@ -23,9 +23,10 @@ namespace ChatroomB_Backend.Repository
             };
             string sql = "exec AddFriend @SenderId, @ReceiverId";
 
-            var result = await _dbConnection.ExecuteAsync(sql, param);
+            int result = await _dbConnection.ExecuteAsync(sql, param);
 
             return result;
         }
+
     }
 }

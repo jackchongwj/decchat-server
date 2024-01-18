@@ -23,11 +23,20 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpGet("Search")]
-        public async Task<IActionResult> SearchByProfileName(string profileName)
+        public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
         {
-            IEnumerable<Users> GetUserByName = await _UserService.GetByName(profileName);
+            IEnumerable<Users> GetUserByName = await _UserService.GetByName(profileName, userId);
 
             return Ok(GetUserByName);
+        }
+
+
+        [HttpGet("FriendRequest")]
+        public async Task<IActionResult> GetFriendRequest(int userId)
+        {
+            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
+
+            return Ok(GetFriendRequest);
         }
 
         //// GET: api/Users
