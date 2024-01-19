@@ -3,11 +3,11 @@ using ChatroomB_Backend.Repository;
 
 namespace ChatroomB_Backend.Service
 {
-    public class FriendsServices : IFriendService
+    public class FriendsService : IFriendService
     {
         private readonly IFriendRepo _repo;
 
-        public FriendsServices(IFriendRepo _repository) 
+        public FriendsService(IFriendRepo _repository) 
         {
             _repo = _repository;
         }

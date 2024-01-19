@@ -12,4 +12,10 @@ namespace ChatroomB_Backend.Service
     {
         Task<int> AddFriends(Friends friends);                                                                                 // add new friend 
     }
+
+    public interface IAuthService
+    {
+        void SetPassword(Users user, string password);
+        bool VerifyPassword(Users user, string password);
+    }
 }
