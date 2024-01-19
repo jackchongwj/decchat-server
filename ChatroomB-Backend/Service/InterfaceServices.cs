@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.Models;
+﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using NuGet.Protocol.Core.Types;
 
 namespace ChatroomB_Backend.Service
@@ -11,7 +12,14 @@ namespace ChatroomB_Backend.Service
 
     public interface IFriendService 
     {
-        Task<int> AddFriends(Friends friends);                                                                                 // add new friend 
+        Task<int> AddFriends(Friends friends);                                                                                 // add new friend
+        Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request                                                                      // 
 
     }
+
+    public interface IChatRoomService
+    {
+        Task<int> AddChatRoom(FriendRequest request);                                             // add new ChatRoom and user chat room with private user
+    }
+
 }
