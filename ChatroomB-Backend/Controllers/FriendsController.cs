@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ChatroomB_Backend.Data;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -171,10 +172,12 @@ namespace ChatroomB_Backend.Controllers
         //    }
 
         private readonly IFriendService _FriendService ;
+        private readonly IChatRoomService _ChatRoomService;
 
-        public FriendsController(IFriendService service)
+        public FriendsController(IFriendService Fservice, IChatRoomService CService)
         {
-            _FriendService = service;
+            _FriendService = Fservice;
+            _ChatRoomService = CService;
         }
 
         //POST: Friends/Create
@@ -187,6 +190,22 @@ namespace ChatroomB_Backend.Controllers
                 await _FriendService.AddFriends(friends);
             }
             return Ok(friends);
+        }
+
+        [HttpPost("UpdateFriendRequest")]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateFriendRequest(FriendRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+               int result =  await _FriendService.UpdateFriendRequest(request);
+
+                if (request.Status == 1)
+                {
+                    await _ChatRoomService.AddChatRoom(request);
+                }
+            }
+            return Ok();
         }
 
     }
