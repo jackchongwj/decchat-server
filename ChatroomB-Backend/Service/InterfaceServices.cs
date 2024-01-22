@@ -8,6 +8,10 @@ namespace ChatroomB_Backend.Service
     {
         Task<IEnumerable<Users>> GetByName(string profileName, int userId);                                                   //Get user by user profile name and filter friend request
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                               //Get All Friend request
+        Task<Users> GetUserById(int userId);
+        Task<int> UpdateUser(Users user);
+        Task<int> DeleteUser(int userId);
+        Task<int> ChangePassword(int userId, string newPassword);
     }
 
     public interface IFriendService 
