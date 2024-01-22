@@ -22,5 +22,26 @@ namespace ChatroomB_Backend.Service
         {
             return (await _repo.GetFriendRequest(userId));
         }
+
+        public async Task<Users> GetUserById(int userId)
+        {
+            return await _repo.GetUserById(userId);
+        }
+
+        public async Task<int> UpdateUser(Users user)
+        {
+            return await _repo.UpdateUserProfile(user);
+        }
+
+        public async Task<int> DeleteUser(int userId)
+        {
+            return await _repo.DeleteUserProfile(userId);
+        }
+
+        public async Task<int> ChangePassword(int userId, string newPassword)
+        {
+            // Ensure newPassword is hashed appropriately before sending it to the repository
+            return await _repo.ChangePassword(userId, newPassword);
+        }
     }
 }
