@@ -39,6 +39,51 @@ namespace ChatroomB_Backend.Controllers
             return Ok(GetFriendRequest);
         }
 
+        [HttpGet("UserDetails")]
+        public async Task<ActionResult<Users>> GetUserById(int id)
+        {
+            var user = await _UserService.GetUserById(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+
+        [HttpPut("UserUpdate")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] Users user)
+        {
+            if (id != user.UserId)
+            {
+                return BadRequest();
+            }
+
+            int updatedUser = await _UserService.UpdateUser(user);
+            if (updatedUser == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
+
+        [HttpDelete("UserDeletion")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            int result = await _UserService.DeleteUser(id);
+            if (result == 0) { return BadRequest(); }
+            else { return Ok(); }
+
+        }
+
+        [HttpPost("UserDetails/PasswordChange")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] string newPassword)
+        {
+            await _UserService.ChangePassword(id, newPassword);
+            return Ok();
+        }
+
         //// GET: api/Users
         //[HttpGet]
         //public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
