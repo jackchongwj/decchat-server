@@ -12,4 +12,9 @@ namespace ChatroomB_Backend.Service
     {
         Task<int> AddFriends(Friends friends);                                                                                 // add new friend 
     }
+
+    public interface IMessageService
+    {
+        Task<int> AddMessages(Messages message);                                                                                 // add new friend 
+    }
 }
