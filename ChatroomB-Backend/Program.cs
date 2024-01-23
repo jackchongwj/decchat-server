@@ -36,6 +36,9 @@ builder.Services.AddScoped<ApplicationServices>();
 builder.Services.AddScoped<BlobServices>();
 builder.Services.AddScoped<IBlobRepo, BlobsRepo>();
 
+builder.Services.AddScoped<IChatRoomService, ChatRoomServices>();
+builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
