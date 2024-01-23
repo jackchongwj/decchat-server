@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
-using Microsoft.EntityFrameworkCore;
+using ChatroomB_Backend.Utils;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -11,81 +11,116 @@ namespace ChatroomB_Backend.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly ITokenService _tokenService;
         private readonly IAuthService _authService;
-        private readonly UserManager<Users> _userManager;
-        private readonly SignInManager<Users> _signInManager;
+        private readonly IAuthUtils _authUtils;
+        private readonly IUserService _userService;
+        private readonly ITokenUtils _tokenUtils;
+        private readonly ITokenService _tokenService;
 
         public AuthController
             (
-            IConfiguration configuration,
-            ITokenService tokenService,
             IAuthService authService,
-            UserManager<Users> userManager,
-            SignInManager<Users> signInManager
+            IAuthUtils authUtils,
+            IUserService userService,
+            ITokenUtils tokenUtils,
+            ITokenService tokenService
             )
         {
-            _configuration = configuration;
-            _tokenService = tokenService;
             _authService = authService;
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _authUtils = authUtils;
+            _userService = userService;
+            _tokenUtils = tokenUtils;
+            _tokenService = tokenService;
         }
 
-        //[HttpPost("IsUsernameUnique")]
-        //public IActionResult IsUsernameUnique([FromBody] string username)
-        //{
-        //   bool isUnique = !dbContext.Users.Any(u => u.Username == username);
+        [HttpPost("IsUsernameUnique/{username}")]
+        public async Task<IActionResult> IsUsernameUnique(string username)
+        {
+            var isUnique = await _userService.IsUsernameUnique(username);
 
-        //    return Json(isUnique);
-        //}
+            if (!isUnique)
+            {
+                return BadRequest(new { IsUnique = false, Message = "Username already exists." });  
+            }
+
+            return Ok();
+        }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] string username, string password)
         {
-            // Validate the model
-
-            var user = new Users { UserName = username };
-
-            _authService.SetPassword(user, password);
-
-            var result = await _userManager.CreateAsync(user);
-
-            if (result.Succeeded)
+            if (!ModelState.IsValid)
             {
-                // Generate and return the JWT token
-                var token = _tokenService.GenerateAccessToken(username);
-                return Ok(new { Token = token });
+                return BadRequest(new { Message = "Invalid request data" });
             }
 
-            return BadRequest(new { Errors = result.Errors });
+            try
+            {
+                // Generate salt and hashed password
+                string salt = _authUtils.GenerateSalt();
+
+                string hashedPassword = _authUtils.HashPassword(password, salt);
+
+                // Create a Users object
+                Users user = new Users
+                {
+                    UserName = username,
+                    HashedPassword = hashedPassword,
+                    Salt = salt,
+                };
+
+                // Call the AddUser method in AuthService
+                IActionResult result = await _authService.AddUser(user);
+
+                return result;
+            }
+            catch
+            {
+                return StatusCode(500, new { Message = "Internal Server Error" });
+            }
         }
 
-        //[HttpPost("login")]
-        //public async Task<IActionResult> Login([FromBody] LoginViewModel model)
-        //{
-        //    // Validate the model
-
-        //    var user = await _userManager.FindByNameAsync(model.Username);
-        //    if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
-        //    {
-        //        // Generate and return the JWT token
-        //        var token = _tokenService.GenerateToken(user);
-        //        return Ok(new { Token = token });
-        //    }
-
-        //    return Unauthorized(new { Error = "Invalid username or password" });
-        //}
-
-        // Other actions, like logout, refresh token, etc.
-
-        [HttpGet("test")]
-        [Authorize]
-        public IActionResult Test()
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] string username, string password)
         {
-            return Ok("Authorized access!");
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Invalid request data" });
+            }
+
+            try
+            {
+                string salt = await _authService.GetSalt(username);
+
+                string hashedPassword = _authUtils.HashPassword(password, salt);
+
+                bool isAuthenticated = await _authService.VerifyPassword(username, hashedPassword);
+
+                if (isAuthenticated)
+                {
+                    int userId = await _userService.GetUserId(username);
+
+                    var accessToken = _tokenUtils.GenerateAccessToken(username);
+
+                    var refreshToken = _tokenUtils.GenerateRefreshToken();
+
+                    await _tokenService.StoreRefreshToken(new RefreshToken
+                    {
+                        UserId = userId,
+                        Token = refreshToken,
+                        ExpiredDateTime = DateTime.UtcNow.AddDays(7)
+                    });
+
+                    return Ok(new { Message = "Login successful!", UserId = userId, AccessToken = accessToken, RefreshToken = refreshToken });
+                }
+
+                return Unauthorized(new { Message = "Invalid username or password" });
+            }
+            
+            catch
+            {
+                return StatusCode(500, new { Message = "Internal Server Error" });
+            }
         }
     }
-
 }

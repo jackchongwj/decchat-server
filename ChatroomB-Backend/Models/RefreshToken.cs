@@ -14,7 +14,7 @@ namespace ChatroomB_Backend.Models
 
         [Required]
         [Column(TypeName = "varchar(256)")]
-        public string TokenHash { get; set; } = null!;
+        public string Token { get; set; } = null!;
 
         [Required]
         public DateTime? ExpiredDateTime { get; set; }

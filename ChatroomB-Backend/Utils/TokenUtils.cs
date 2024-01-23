@@ -1,35 +1,26 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Configuration;
+﻿using ChatroomB_Backend.Service;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
-using System;
 using System.Security.Cryptography;
+using System.Text;
 
-namespace ChatroomB_Backend.Service
+namespace ChatroomB_Backend.Utils
 {
-    public interface ITokenService
-    {
-        string GenerateAccessToken(string username);
-        string GenerateRefreshToken();
-        ClaimsPrincipal ValidateToken(string token);
-    }
-
-    public class TokenService : ITokenService
+    public class TokenUtils : ITokenUtils
     {
         private readonly string _secretKey;
         private readonly string _issuer;
         private readonly string _audience;
         private readonly int _expiryInMinutes;
 
-        public TokenService(IConfiguration config)
+        public TokenUtils(IConfiguration config)
         {
             _secretKey = config["JwtSettings:SecretKey"];
             _issuer = config["JwtSettings:Issuer"];
             _audience = config["JwtSettings:Audience"];
             _expiryInMinutes = Convert.ToInt32(config["JwtSettings:ExpirationMinutes"]);
         }
-
         public string GenerateAccessToken(string username)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
@@ -56,7 +47,7 @@ namespace ChatroomB_Backend.Service
             }
         }
 
-        public ClaimsPrincipal ValidateToken(string token)
+        public ClaimsPrincipal ValidateAccessToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_secretKey);

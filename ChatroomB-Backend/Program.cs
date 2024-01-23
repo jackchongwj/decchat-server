@@ -18,18 +18,23 @@ builder.Services.AddTransient<IDbConnection>((sp) =>
 // Add services to the container.
 builder.Services.AddControllers();
 
-//builde service and repository
-builder.Services.AddScoped<IUserService, UsersService>();
-builder.Services.AddScoped<IUserRepo, UsersRepo>();
+// service and repository
+builder.Services.AddScoped<IUserService, UsersServices>();
+builder.Services.AddScoped<IFriendService, FriendsServices>();
+builder.Services.AddScoped<IAuthService, AuthServices>();
+builder.Services.AddScoped<ITokenService, TokenServices>();
 
-builder.Services.AddScoped<IFriendService, FriendsService>();
+
+builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
+builder.Services.AddScoped<IAuthRepo, AuthRepo>();
+builder.Services.AddScoped<ITokenRepo, TokenRepo>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//add policy
+// add policy
 builder.Services.AddCors(options => {
     options.AddPolicy("AngularApp",
             builder => builder.WithOrigins("http://localhost:4200")
@@ -49,7 +54,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-///use cors
 app.UseCors("AngularApp");
 
 app.UseAuthorization();

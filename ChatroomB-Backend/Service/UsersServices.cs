@@ -4,11 +4,11 @@ using NuGet.Protocol.Core.Types;
 
 namespace ChatroomB_Backend.Service
 {
-    public class UsersService : IUserService
+    public class UsersServices : IUserService
     {
         private readonly IUserRepo _repo;
 
-        public UsersService(IUserRepo reponsitory)
+        public UsersServices(IUserRepo reponsitory)
         {
             _repo = reponsitory;
         }
@@ -16,6 +16,16 @@ namespace ChatroomB_Backend.Service
         public async Task<IEnumerable<Users>> GetByName(string profileName)
         {
             return (await _repo.GetByName(profileName));
+        }
+
+        public async Task<bool> IsUsernameUnique(string username)
+        {
+            return await _repo.IsUsernameUnique(username);
+        }
+
+        public async Task<int> GetUserId(string username)
+        {
+            return await _repo.GetUserId(username);
         }
     }
 }
