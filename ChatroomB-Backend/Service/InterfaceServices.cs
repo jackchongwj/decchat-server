@@ -22,4 +22,9 @@ namespace ChatroomB_Backend.Service
         Task<int> AddChatRoom(FriendRequest request);                                             // add new ChatRoom and user chat room with private user
     }
 
+
+    public interface IMessageService
+    {
+        Task<int> AddMessages(Messages message);                                                                                 // add new friend 
+    }
 }
