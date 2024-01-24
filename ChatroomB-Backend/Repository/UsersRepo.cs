@@ -36,5 +36,51 @@ namespace ChatroomB_Backend.Repository
 
             return result;
         }
+
+        public async Task<Users> GetUserById(int userId)
+        {
+            string sql = "exec GetUserById @UserId";
+            Users users = await _dbConnection.QueryFirstAsync<Users>(sql, new { UserId = userId });
+            return users;
+        }
+
+        public async Task<int> UpdateUserProfile(Users userProfile)
+        {
+            string sql = "exec UpdateUserProfile @UserId, @NewProfileName, @NewProfilePicture";
+            int result = await _dbConnection.ExecuteAsync(sql, new
+            {
+                UserId = userProfile.UserId,
+                NewProfileName = userProfile.ProfileName,
+                NewProfilePicture = userProfile.ProfilePicture
+            });
+            return result;
+        }
+
+        public async Task<int> DeleteUserProfile(int userId)
+        {
+            string sql = "exec DeleteUserProfile @UserId";
+            int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId });
+            return result;
+        }
+
+        public async Task<int> ChangePassword(int userId, string newPassword)
+        {
+            string sql = "exec ChangePassword @UserId, @NewPassword";
+            int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId, NewPassword = newPassword });
+            return result;
+        }
+        public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
+        {
+            var parameter = new DynamicParameters();
+            parameter.Add("@UserId", userId);
+
+            string sql = "EXEC GetChatListByUserId @UserId";
+
+           var chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
+
+            return chatList.AsList();
+        }
+
+
     }
 }

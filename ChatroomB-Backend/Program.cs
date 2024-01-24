@@ -8,6 +8,7 @@ using System.Configuration;
 using System.Data;
 using ChatroomB_Backend.SignalR;
 
+using ChatroomB_Backend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +16,11 @@ builder.Services.AddDbContext<ChatroomB_BackendContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ChatroomB_BackendContext") ?? throw new InvalidOperationException("Connection string 'ChatroomB_BackendContext' not found.")));
 
 builder.Services.AddTransient<IDbConnection>((sp) =>
-            new SqlConnection(builder.Configuration.GetConnectionString("ChatroomB_BackendContext")));
+           new SqlConnection(builder.Configuration.GetConnectionString("ChatroomB_BackendContext")));
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 //add service to the signalR
 builder.Services.AddSignalR();
@@ -29,6 +31,15 @@ builder.Services.AddScoped<IUserRepo, UsersRepo>();
 
 builder.Services.AddScoped<IFriendService, FriendsServices>();
 builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
+
+builder.Services.AddScoped<IMessageService, MessagesServices>();
+builder.Services.AddScoped<IMessageRepo, MessagesRepo>();
+
+// RabbitMQ-Related Services
+builder.Services.AddSingleton<RabbitMQServices>();
+builder.Services.AddScoped<ApplicationServices>();
+builder.Services.AddScoped<BlobServices>();
+builder.Services.AddScoped<IBlobRepo, BlobsRepo>();
 
 builder.Services.AddScoped<IChatRoomService, ChatRoomServices>();
 builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
@@ -71,4 +82,8 @@ app.UseEndpoints(endpoints =>
 
 app.MapControllers();
 
+app.MapHub<ChatHub>("/chatHub");
+
 app.Run();
+
+

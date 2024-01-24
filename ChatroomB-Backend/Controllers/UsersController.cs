@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.SignalR;
 using ChatroomB_Backend.SignalR;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using ChatroomB_Backend.DTO;
+using System.Linq;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -38,6 +39,12 @@ namespace ChatroomB_Backend.Controllers
             return Ok(GetUserByName);
         }
 
+        [HttpGet("GetChatListByUserId")]
+        public async Task<IActionResult> GetChatListByUserId(int userId)
+        {
+            var friendList = await _UserService.GetChatListByUserId(userId);
+            return Ok(friendList); //HTTP 200 OK indicates that the request was successful, and the server is returning the requested data.
+        }
 
         [HttpGet("FriendRequest")]
         public async Task<IActionResult> GetFriendRequest(int userId)
@@ -45,6 +52,51 @@ namespace ChatroomB_Backend.Controllers
             IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
 
             return Ok(GetFriendRequest);
+        }
+
+        [HttpGet("UserDetails")]
+        public async Task<ActionResult<Users>> GetUserById(int id)
+        {
+            var user = await _UserService.GetUserById(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+
+        [HttpPut("UserUpdate")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] Users user)
+        {
+            if (id != user.UserId)
+            {
+                return BadRequest();
+            }
+
+            int updatedUser = await _UserService.UpdateUser(user);
+            if (updatedUser == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
+
+        [HttpDelete("UserDeletion")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            int result = await _UserService.DeleteUser(id);
+            if (result == 0) { return BadRequest(); }
+            else { return Ok(); }
+
+        }
+
+        [HttpPost("UserDetails/PasswordChange")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] string newPassword)
+        {
+            await _UserService.ChangePassword(id, newPassword);
+            return Ok();
         }
 
         //// GET: api/Users
@@ -110,15 +162,13 @@ namespace ChatroomB_Backend.Controllers
         //    return CreatedAtAction("GetUsers", new { id = users.UserId }, users);
         //}
 
-        //// DELETE: api/Users/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteUsers(int? id)
+        // POST: api/Users
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        //[HttpPost]
+        //public async Task<ActionResult<Users>> PostUsers(Users users)
         //{
-        //    var users = await _context.Users.FindAsync(id);
-        //    if (users == null)
-        //    {
-        //        return NotFound();
-        //    }
+        //    _context.Users.Add(users);
+        //    await _context.SaveChangesAsync();
 
         //    _context.Users.Remove(users);
         //    await _context.SaveChangesAsync();
@@ -130,7 +180,5 @@ namespace ChatroomB_Backend.Controllers
         //{
         //    return _context.Users.Any(e => e.UserId == id);
         //}
-
-
     }
 }
