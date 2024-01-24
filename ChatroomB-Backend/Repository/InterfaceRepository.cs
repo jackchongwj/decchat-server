@@ -7,13 +7,12 @@ namespace ChatroomB_Backend.Repository
 {
     public interface IUserRepo
     {
-        Task<IEnumerable<Users>> GetByName(string profileName, int userId);                                                    //Get user by user profile name and filter friend request
+        Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId);                                                    //Get user by user profile name and filter friend request
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                 // Get All Friend request
         Task<Users> GetUserById(int userId);
         Task<int> UpdateUserProfile(Users userProfile);
         Task<int> DeleteUserProfile(int userId);
         Task<int> ChangePassword(int userId, string newPassword);
-        Task<IEnumerable<Users>> GetByName(string profileName);                                                         //Get user by user profile name
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
     }   
 

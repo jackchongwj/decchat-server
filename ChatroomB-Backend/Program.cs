@@ -6,6 +6,7 @@ using ChatroomB_Backend.Repository;
 using Microsoft.Data.SqlClient;
 using System.Configuration;
 using System.Data;
+
 using ChatroomB_Backend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,10 @@ builder.Services.AddTransient<IDbConnection>((sp) =>
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
-//build service and repository
+//add service to the signalR
+builder.Services.AddSignalR();
+
+//builde service and repository
 builder.Services.AddScoped<IUserService, UsersService>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
 
@@ -66,7 +70,14 @@ app.UseHttpsRedirection();
 ///use cors
 app.UseCors("AngularApp");
 
+app.UseRouting();
+
 app.UseAuthorization();
+
+//app.UseEndpoints(endpoints =>
+//{
+//    endpoints.MapHub<ChatHub>("/chatHub");
+//});
 
 app.MapControllers();
 

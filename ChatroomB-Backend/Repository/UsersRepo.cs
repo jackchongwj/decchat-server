@@ -19,11 +19,11 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<IEnumerable<Users>> GetByName(string profileName, int userId)
+        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
         {
             string sql = "exec GetUserByProfileName @profileName, @userId";
 
-            IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, new {profileName, userId });
+            IEnumerable<UserSearch> result = await _dbConnection.QueryAsync<UserSearch>(sql, new {profileName, userId });
 
             return result;
         }

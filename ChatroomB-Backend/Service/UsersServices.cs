@@ -1,6 +1,7 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
+using Microsoft.AspNetCore.SignalR;
 using NuGet.Protocol.Core.Types;
 
 namespace ChatroomB_Backend.Service
@@ -14,7 +15,7 @@ namespace ChatroomB_Backend.Service
             _repo = reponsitory;
         }
 
-        public async Task<IEnumerable<Users>> GetByName(string profileName, int userId)
+        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
         {
             return (await _repo.GetByName(profileName, userId));
         }
