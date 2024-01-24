@@ -18,7 +18,7 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<IActionResult> StoreRefreshToken(RefreshToken token)
+        public async Task<ActionResult> StoreRefreshToken(RefreshToken token)
         {
             try
             {
@@ -36,6 +36,22 @@ namespace ChatroomB_Backend.Repository
             catch 
             {
                 return new BadRequestObjectResult(new { Error = "Failed to store refresh token" });
+            }
+        }
+
+        public async Task<ActionResult> RemoveRefreshToken(RefreshToken token)
+        {
+            try
+            {
+                string sql = "exec RemoveRefreshToken @Token";
+
+                await _dbConnection.ExecuteAsync(sql, new { token.Token });
+
+                return new OkObjectResult(new { Message = "Refresh token removed successfully" });
+            }
+            catch
+            {
+                return new BadRequestObjectResult(new { Error = "Failed to remove refresh token" });
             }
         }
     }

@@ -100,6 +100,14 @@ namespace ChatroomB_Backend.Controllers
 
             try
             {
+                // Check if username exists
+                bool doesNotExist = await _userService.IsUsernameUnique(request.Username);
+
+                if (doesNotExist)
+                {
+                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
+                }
+
                 // Get salt from user object in database
                 string salt = await _authService.GetSalt(request.Username);
 
@@ -133,7 +141,7 @@ namespace ChatroomB_Backend.Controllers
                 });
 
                 // Set the access token in the Authorization header
-                HttpContext.Response.Headers.Add("Authorization", $"Bearer {accessToken}");
+                HttpContext.Response.Headers.Append("Authorization", $"Bearer {accessToken}");
 
                 // Set the refresh token in a cookie
                 HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
@@ -143,10 +151,50 @@ namespace ChatroomB_Backend.Controllers
                     Path = "/"
                 });
 
+                // Set the user Id in a cookie
+                HttpContext.Response.Cookies.Append("userId", userId.ToString(), new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    Path = "/"
+                });
+
                 // Return user Id, access token, and refresh token
-                return new OkObjectResult(new { Message = "Login successful!", UserId = userId });
+                return new OkObjectResult(new { Message = "Login successful!"});
             }
             
+            catch
+            {
+                return StatusCode(500, new { Error = "Internal Server Error" });
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> Logout()
+        {
+            try
+            {
+                // Delete access token from client (header)
+                Response.Headers.Remove("Authorization");
+
+                // Retrieve the refresh token from the request
+                string refreshToken = Request.Cookies["refresh_token"];
+
+                // Delete refresh token from client (cookie)
+                Response.Cookies.Delete("refresh_token");
+
+                // Create a refresh token object
+                var token = new RefreshToken
+                {
+                    Token = refreshToken
+                };
+
+                // Delete refresh token from database
+                await _tokenService.RemoveRefreshToken(token);
+
+                return Ok(new { Message = "Logout successful" });
+            }
             catch
             {
                 return StatusCode(500, new { Error = "Internal Server Error" });

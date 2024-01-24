@@ -13,9 +13,14 @@ namespace ChatroomB_Backend.Service
             _repo = repo;
         }
 
-        public async Task<IActionResult> StoreRefreshToken(RefreshToken refreshToken)
+        public async Task<ActionResult> StoreRefreshToken(RefreshToken token)
         {
-            return await _repo.StoreRefreshToken(refreshToken);
+            return await _repo.StoreRefreshToken(token);
+        }
+
+        public async Task<ActionResult> RemoveRefreshToken(RefreshToken token)
+        {
+            return await _repo.RemoveRefreshToken(token);
         }
     }
 }

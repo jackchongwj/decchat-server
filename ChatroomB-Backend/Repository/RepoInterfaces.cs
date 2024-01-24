@@ -26,6 +26,7 @@ namespace ChatroomB_Backend.Repository
 
     public interface ITokenRepo
     {
-        Task<IActionResult> StoreRefreshToken(RefreshToken token);
+        Task<ActionResult> StoreRefreshToken(RefreshToken token);
+        Task<ActionResult> RemoveRefreshToken(RefreshToken token);
     }
 }
