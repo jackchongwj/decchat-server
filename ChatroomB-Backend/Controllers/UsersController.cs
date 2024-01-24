@@ -9,7 +9,6 @@ using ChatroomB_Backend.Data;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using Microsoft.AspNetCore.SignalR;
-using ChatroomB_Backend.SignalR;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using ChatroomB_Backend.DTO;
 using System.Linq;
@@ -21,12 +20,10 @@ namespace ChatroomB_Backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _UserService;
-        private readonly IHubContext<ChatHub> _hubContext;
 
-        public UsersController(IUserService service, IHubContext<ChatHub> hubContext)
+        public UsersController(IUserService service)
         {
             _UserService = service;
-            _hubContext = hubContext;
         }
 
         [HttpGet("Search")]

@@ -6,7 +6,6 @@ using ChatroomB_Backend.Repository;
 using Microsoft.Data.SqlClient;
 using System.Configuration;
 using System.Data;
-using ChatroomB_Backend.SignalR;
 
 using ChatroomB_Backend.Hubs;
 
@@ -75,10 +74,10 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapHub<ChatHub>("/chatHub");
-});
+//app.UseEndpoints(endpoints =>
+//{
+//    endpoints.MapHub<ChatHub>("/chatHub");
+//});
 
 app.MapControllers();
 
