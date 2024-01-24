@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ChatroomB_Backend.Data;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using System.Linq;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -30,6 +31,12 @@ namespace ChatroomB_Backend.Controllers
             return Ok(GetUserByName);
         }
 
+        [HttpGet("GetChatListByUserId")]
+        public async Task<IActionResult> GetChatListByUserId(int userId)
+        {
+            var friendList = await _UserService.GetChatListByUserId(userId);
+            return Ok(friendList); //HTTP 200 OK indicates that the request was successful, and the server is returning the requested data.
+        }
 
         [HttpGet("FriendRequest")]
         public async Task<IActionResult> GetFriendRequest(int userId)

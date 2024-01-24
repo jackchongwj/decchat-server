@@ -1,6 +1,7 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using NuGet.Protocol.Core.Types;
+using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Service
 {
@@ -12,6 +13,8 @@ namespace ChatroomB_Backend.Service
         Task<int> UpdateUser(Users user);
         Task<int> DeleteUser(int userId);
         Task<int> ChangePassword(int userId, string newPassword);
+        Task<IEnumerable<Users>> GetByName(string profileName);                                                         //Get user by user profile name
+        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
     }
 
     public interface IFriendService 
