@@ -34,14 +34,6 @@ namespace ChatroomB_Backend.Controllers
             }
             return Ok(friends);
         }
-
-
-        [HttpGet("GetFriendList/{userId}")]
-        public async Task<IActionResult> GetFriendList(int userId)
-        {
-            var friendList = await _FriendService.GetFriendList(userId);
-            return Ok(friendList); //HTTP 200 OK indicates that the request was successful, and the server is returning the requested data.
-        }
     }
 }
 

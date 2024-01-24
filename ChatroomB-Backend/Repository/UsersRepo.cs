@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Dapper;
 using System.Data;
 using System.Collections.Generic;
+using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Repository
 {
@@ -26,5 +27,18 @@ namespace ChatroomB_Backend.Repository
 
             return result;
         }
+        public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
+        {
+            var parameter = new DynamicParameters();
+            parameter.Add("@UserId", userId);
+
+            string sql = "EXEC GetChatListByUserId @UserId";
+
+           var chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
+
+            return chatList.AsList();
+        }
+
+
     }
 }

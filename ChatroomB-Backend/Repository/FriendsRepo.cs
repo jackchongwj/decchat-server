@@ -29,18 +29,5 @@ namespace ChatroomB_Backend.Repository
 
             return result;
         }
-
-        public async Task<IEnumerable<Users>> GetFriendList(int userId)
-        {
-            var parameter = new DynamicParameters();
-            parameter.Add("@UserId", userId);
-
-            string sql = "EXEC GetFriendList @UserId";
-
-            var chatList = await _dbConnection.QueryAsync<Users>(sql, parameter);
-
-            return chatList.AsList();
-        }
-
     }
 }
