@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ChatroomB_Backend.Utils
 {
-    public class AuthUtils
+    public class AuthUtils : IAuthUtils
     {
         public string GenerateSalt()
         {

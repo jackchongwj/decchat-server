@@ -20,8 +20,8 @@ namespace ChatroomB_Backend.Service
     public interface IAuthService
     {
         Task<string> GetSalt(string username);
-        Task<IActionResult> AddUser(Users user);
         Task<bool> VerifyPassword(string username, string hashedPassword);
+        Task<ActionResult> AddUser(Users user);
     }
 
     public interface ITokenService

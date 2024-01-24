@@ -21,8 +21,15 @@ namespace ChatroomB_Backend.Utils
             _audience = config["JwtSettings:Audience"];
             _expiryInMinutes = Convert.ToInt32(config["JwtSettings:ExpirationMinutes"]);
         }
+
         public string GenerateAccessToken(string username)
         {
+            if (Encoding.UTF8.GetBytes(_secretKey).Length < 32)
+            {
+                throw new InvalidOperationException("Secret key must be at least 32 bytes long for HmacSha256.");
+            }
+
+            var expiryDateTime = DateTime.Now.AddMinutes(_expiryInMinutes);
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -30,7 +37,7 @@ namespace ChatroomB_Backend.Utils
                 issuer: _issuer,
                 audience: _audience,
                 claims: new[] { new Claim(ClaimTypes.Name, username) },
-                expires: DateTime.Now.AddMinutes(_expiryInMinutes),
+                expires: expiryDateTime,
                 signingCredentials: creds
             );
 

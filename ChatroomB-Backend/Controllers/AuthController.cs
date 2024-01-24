@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.Utils;
+using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -33,93 +34,122 @@ namespace ChatroomB_Backend.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpPost("IsUsernameUnique/{username}")]
-        public async Task<IActionResult> IsUsernameUnique(string username)
+        [HttpGet("IsUsernameUnique/{username}")]
+        public async Task<ActionResult> IsUsernameUnique(string username)
         {
             var isUnique = await _userService.IsUsernameUnique(username);
 
             if (!isUnique)
             {
-                return BadRequest(new { IsUnique = false, Message = "Username already exists." });  
+                return new BadRequestObjectResult(new { IsUnique = false, Message = "Username already exists." });  
             }
 
             return Ok();
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] string username, string password)
+        public async Task<ActionResult> Register([FromBody] AuthRequest request)
         {
+            // Check if request data valid
             if (!ModelState.IsValid)
             {
-                return BadRequest(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Message = "Invalid request data" });
             }
 
+            // Check if username exists
+            var isUnique = await _userService.IsUsernameUnique(request.Username);
+
+            if (!isUnique)
+            {
+                return new BadRequestObjectResult(new { Message = "Username already exists." });
+            }
+
+            // Generate salt, hash password, and store user object
             try
             {
                 // Generate salt and hashed password
                 string salt = _authUtils.GenerateSalt();
+                string hashedPassword = _authUtils.HashPassword(request.Password, salt);
 
-                string hashedPassword = _authUtils.HashPassword(password, salt);
-
-                // Create a Users object
+                // Create a user object
                 Users user = new Users
                 {
-                    UserName = username,
+                    UserName = request.Username,
                     HashedPassword = hashedPassword,
                     Salt = salt,
                 };
 
-                // Call the AddUser method in AuthService
-                IActionResult result = await _authService.AddUser(user);
+                // Store the user object
+                ActionResult result = await _authService.AddUser(user);
 
                 return result;
             }
             catch
             {
-                return StatusCode(500, new { Message = "Internal Server Error" });
+                return StatusCode(500, new { Error = "Internal Server Error" });
             }
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] string username, string password)
+        public async Task<ActionResult> Login([FromBody] AuthRequest request)
         {
             if(!ModelState.IsValid)
             {
-                return BadRequest(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Message = "Invalid request data" });
             }
 
             try
             {
-                string salt = await _authService.GetSalt(username);
+                // Get salt from user object in database
+                string salt = await _authService.GetSalt(request.Username);
 
-                string hashedPassword = _authUtils.HashPassword(password, salt);
+                // Hash the input password with salt
+                string hashedPassword = _authUtils.HashPassword(request.Password, salt);
 
-                bool isAuthenticated = await _authService.VerifyPassword(username, hashedPassword);
+                // Authenticate user
+                bool isAuthenticated = await _authService.VerifyPassword(request.Username, hashedPassword);
 
-                if (isAuthenticated)
+                if (!isAuthenticated)
                 {
-                    int userId = await _userService.GetUserId(username);
-
-                    var accessToken = _tokenUtils.GenerateAccessToken(username);
-
-                    var refreshToken = _tokenUtils.GenerateRefreshToken();
-
-                    await _tokenService.StoreRefreshToken(new RefreshToken
-                    {
-                        UserId = userId,
-                        Token = refreshToken,
-                        ExpiredDateTime = DateTime.UtcNow.AddDays(7)
-                    });
-
-                    return Ok(new { Message = "Login successful!", UserId = userId, AccessToken = accessToken, RefreshToken = refreshToken });
+                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
+                    
                 }
 
-                return Unauthorized(new { Message = "Invalid username or password" });
+                // Get user Id
+                int userId = await _userService.GetUserId(request.Username);
+
+                // Generate access token
+                string accessToken = _tokenUtils.GenerateAccessToken(request.Username);
+
+                // Generate refresh token
+                string refreshToken = _tokenUtils.GenerateRefreshToken();
+
+                // Store refresh token in database
+                await _tokenService.StoreRefreshToken(new RefreshToken
+                {
+                    UserId = userId,
+                    Token = refreshToken,
+                    ExpiredDateTime = DateTime.UtcNow.AddDays(7)
+                });
+
+                // Set the access token in the Authorization header
+                HttpContext.Response.Headers.Add("Authorization", $"Bearer {accessToken}");
+
+                // Set the refresh token in a cookie
+                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    Path = "/"
+                });
+
+                // Return user Id, access token, and refresh token
+                return new OkObjectResult(new { Message = "Login successful!", UserId = userId });
             }
             
             catch
             {
-                return StatusCode(500, new { Message = "Internal Server Error" });
+                return StatusCode(500, new { Error = "Internal Server Error" });
             }
         }
     }

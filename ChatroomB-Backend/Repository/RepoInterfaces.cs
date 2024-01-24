@@ -20,8 +20,8 @@ namespace ChatroomB_Backend.Repository
     public interface IAuthRepo
     {
         Task<string> GetSalt(string username);
-        Task<IActionResult> AddUser(Users user);
         Task<bool> VerifyPassword(string username, string hashedPassword);
+        Task<ActionResult> AddUser(Users user);
     }
 
     public interface ITokenRepo
