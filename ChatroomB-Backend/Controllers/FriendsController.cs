@@ -9,6 +9,8 @@ using ChatroomB_Backend.Data;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -173,11 +175,13 @@ namespace ChatroomB_Backend.Controllers
 
         private readonly IFriendService _FriendService ;
         private readonly IChatRoomService _ChatRoomService;
+        private readonly IHubContext<ChatHub> _hub;
 
-        public FriendsController(IFriendService Fservice, IChatRoomService CService)
+        public FriendsController(IFriendService Fservice, IChatRoomService CService, IHubContext<ChatHub> _hubContext)
         {
             _FriendService = Fservice;
             _ChatRoomService = CService;
+            _hub = _hubContext;
         }
 
         //POST: Friends/Create
@@ -188,7 +192,11 @@ namespace ChatroomB_Backend.Controllers
             if (ModelState.IsValid)
             {
                 await _FriendService.AddFriends(friends);
+
+                //update friend status
+                await _hub.Clients.User(friends.ReceiverId.ToString()).SendAsync("ReceiveFriendRequestNotification");
             }
+
             return Ok(friends);
         }
 
