@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.Models;
+﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 
 namespace ChatroomB_Backend.Service
@@ -15,6 +16,11 @@ namespace ChatroomB_Backend.Service
         public async Task<int> AddFriends(Friends friends)
         {
             return (await _repo.AddFriends(friends));
+        }
+
+        public async Task<int> UpdateFriendRequest(FriendRequest request)
+        {
+            return (await _repo.UpdateFriendRequest(request));
         }
     }
 }

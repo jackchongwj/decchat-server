@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ChatroomB_Backend.Data;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -15,30 +16,7 @@ namespace ChatroomB_Backend.Controllers
     [ApiController]
     public class FriendsController : Controller
     {
-
-        private readonly IFriendService _FriendService;
-
-        public FriendsController(IFriendService service)
-        {
-            _FriendService = service;
-        }
-
-        //POST: Friends/Create
-        [HttpPost("AddFriend")]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SenderId,ReceiverId")] Friends friends)
-        {
-            if (ModelState.IsValid)
-            {
-                await _FriendService.AddFriends(friends);
-            }
-            return Ok(friends);
-        }
-    }
-}
-
-
-//    private readonly ChatroomB_BackendContext _context;
+        //    private readonly ChatroomB_BackendContext _context;
 
 //    public FriendsController(ChatroomB_BackendContext context)
 //    {
@@ -188,7 +166,47 @@ namespace ChatroomB_Backend.Controllers
 //        return RedirectToAction(nameof(Index));
 //    }
 
-//    private bool FriendsExists(int? id)
-//    {
-//        return _context.Friends.Any(e => e.RequestId == id);
-//    }
+        //    private bool FriendsExists(int? id)
+        //    {
+        //        return _context.Friends.Any(e => e.RequestId == id);
+        //    }
+
+        private readonly IFriendService _FriendService ;
+        private readonly IChatRoomService _ChatRoomService;
+
+        public FriendsController(IFriendService Fservice, IChatRoomService CService)
+        {
+            _FriendService = Fservice;
+            _ChatRoomService = CService;
+        }
+
+        //POST: Friends/Create
+        [HttpPost("AddFriend")]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([FromBody] Friends friends)
+        {
+            if (ModelState.IsValid)
+            {
+                await _FriendService.AddFriends(friends);
+            }
+            return Ok(friends);
+        }
+
+        [HttpPost("UpdateFriendRequest")]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateFriendRequest(FriendRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+               int result =  await _FriendService.UpdateFriendRequest(request);
+
+                if (request.Status == 1)
+                {
+                    await _ChatRoomService.AddChatRoom(request);
+                }
+            }
+            return Ok();
+        }
+
+    }
+}

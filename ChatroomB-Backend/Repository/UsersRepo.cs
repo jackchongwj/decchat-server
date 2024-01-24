@@ -19,12 +19,54 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<IEnumerable<Users>> GetByName(string profileName)
+        public async Task<IEnumerable<Users>> GetByName(string profileName, int userId)
         {
-            string sql = "exec GetUserByProfileName @profileName";
+            string sql = "exec GetUserByProfileName @profileName, @userId";
 
-            IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, new {profileName});
+            IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, new {profileName, userId });
 
+            return result;
+        }
+
+        public async Task<IEnumerable<Users>> GetFriendRequest(int userId)
+        {
+            string sql = "exec GetFriendsRequest @userId";
+
+            IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, new { userId });
+
+            return result;
+        }
+
+        public async Task<Users> GetUserById(int userId)
+        {
+            string sql = "exec GetUserById @UserId";
+            Users users = await _dbConnection.QueryFirstAsync<Users>(sql, new { UserId = userId });
+            return users;
+        }
+
+        public async Task<int> UpdateUserProfile(Users userProfile)
+        {
+            string sql = "exec UpdateUserProfile @UserId, @NewProfileName, @NewProfilePicture";
+            int result = await _dbConnection.ExecuteAsync(sql, new
+            {
+                UserId = userProfile.UserId,
+                NewProfileName = userProfile.ProfileName,
+                NewProfilePicture = userProfile.ProfilePicture
+            });
+            return result;
+        }
+
+        public async Task<int> DeleteUserProfile(int userId)
+        {
+            string sql = "exec DeleteUserProfile @UserId";
+            int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId });
+            return result;
+        }
+
+        public async Task<int> ChangePassword(int userId, string newPassword)
+        {
+            string sql = "exec ChangePassword @UserId, @NewPassword";
+            int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId, NewPassword = newPassword });
             return result;
         }
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
