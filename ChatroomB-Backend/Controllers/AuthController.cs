@@ -34,7 +34,7 @@ namespace ChatroomB_Backend.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpGet("IsUsernameUnique/{username}")]
+        [HttpGet("IsUsernameUnique")]
         public async Task<ActionResult> IsUsernameUnique(string username)
         {
             var isUnique = await _userService.IsUsernameUnique(username);
@@ -169,7 +169,7 @@ namespace ChatroomB_Backend.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("logout")]
         [Authorize]
         public async Task<ActionResult> Logout()
         {
