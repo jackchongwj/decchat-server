@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Dapper;
 using System.Data;
 using System.Collections.Generic;
+using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Repository
 {
@@ -18,20 +19,41 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<IEnumerable<Users>> GetByName(string profileName)
+        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
         {
-            try
-            {
-                string sql = "exec GetUserByProfileName @profileName";
+            string sql = "exec GetUserByProfileName @profileName, @userId";
 
-                IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, new { profileName });
+            IEnumerable<UserSearch> result = await _dbConnection.QueryAsync<UserSearch>(sql, new {profileName, userId });
 
-                return result;
-            }
-            catch
+            return result;
+        }
+
+        public async Task<IEnumerable<Users>> GetFriendRequest(int userId)
+        {
+            string sql = "exec GetFriendsRequest @userId";
+
+            IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, new { userId });
+
+            return result;
+        }
+
+        public async Task<Users> GetUserById(int userId)
+        {
+            string sql = "exec GetUserById @UserId";
+            Users users = await _dbConnection.QueryFirstAsync<Users>(sql, new { UserId = userId });
+            return users;
+        }
+
+        public async Task<int> UpdateUserProfile(Users userProfile)
+        {
+            string sql = "exec UpdateUserProfile @UserId, @NewProfileName, @NewProfilePicture";
+            int result = await _dbConnection.ExecuteAsync(sql, new
             {
-                throw new Exception("An unexpected error occurred");
-            }
+                UserId = userProfile.UserId,
+                NewProfileName = userProfile.ProfileName,
+                NewProfilePicture = userProfile.ProfilePicture
+            });
+            return result;
         }
 
         public async Task<bool> IsUsernameUnique(string username)
@@ -66,5 +88,24 @@ namespace ChatroomB_Backend.Repository
             }
             
         }
+        public async Task<int> ChangePassword(int userId, string newPassword)
+        {
+            string sql = "exec ChangePassword @UserId, @NewPassword";
+            int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId, NewPassword = newPassword });
+            return result;
+        }
+        public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
+        {
+            var parameter = new DynamicParameters();
+            parameter.Add("@UserId", userId);
+
+            string sql = "EXEC GetChatListByUserId @UserId";
+
+           var chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
+
+            return chatList.AsList();
+        }
+
+
     }
 }

@@ -20,5 +20,6 @@ namespace ChatroomB_Backend.Data
         public DbSet<ChatRooms> ChatRooms { get; set; } = default!;
         public DbSet<UserChatRooms> UserChatRooms { get; set; } = default!;
         public DbSet<Messages> Messages { get; set; } = default!;
+
     }
 }

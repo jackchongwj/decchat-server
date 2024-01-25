@@ -1,5 +1,7 @@
-﻿using ChatroomB_Backend.Models;
+﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
+using Microsoft.AspNetCore.SignalR;
 using NuGet.Protocol.Core.Types;
 
 namespace ChatroomB_Backend.Service
@@ -13,9 +15,40 @@ namespace ChatroomB_Backend.Service
             _repo = reponsitory;
         }
 
-        public async Task<IEnumerable<Users>> GetByName(string profileName)
+        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
         {
-            return (await _repo.GetByName(profileName));
+            return (await _repo.GetByName(profileName, userId));
+        }
+
+        public async Task<IEnumerable<Users>> GetFriendRequest(int userId)
+        {
+            return (await _repo.GetFriendRequest(userId));
+        }
+
+        public async Task<Users> GetUserById(int userId)
+        {
+            return await _repo.GetUserById(userId);
+        }
+
+        public async Task<int> UpdateUser(Users user)
+        {
+            return await _repo.UpdateUserProfile(user);
+        }
+
+        public async Task<int> DeleteUser(int userId)
+        {
+            return await _repo.DeleteUserProfile(userId);
+        }
+
+        public async Task<int> ChangePassword(int userId, string newPassword)
+        {
+            // Ensure newPassword is hashed appropriately before sending it to the repository
+            return await _repo.ChangePassword(userId, newPassword);
+        }
+
+        public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
+        {
+            return await _repo.GetChatListByUserId(userId);
         }
 
         public async Task<bool> IsUsernameUnique(string username)

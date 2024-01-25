@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using ChatroomB_Backend.Data;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using ChatroomB_Backend.DTO;
+using System.Linq;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -23,11 +27,73 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpGet("Search")]
-        public async Task<IActionResult> SearchByProfileName(string profileName)
+        public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
         {
-            IEnumerable<Users> GetUserByName = await _UserService.GetByName(profileName);
+            IEnumerable<UserSearch> GetUserByName = await _UserService.GetByName(profileName, userId);
+
+            //await _hubContext.Clients.All.SendAsync("ReceiveSearchResults", GetUserByName);
 
             return Ok(GetUserByName);
+        }
+
+        [HttpGet("GetChatListByUserId")]
+        public async Task<IActionResult> GetChatListByUserId(int userId)
+        {
+            var friendList = await _UserService.GetChatListByUserId(userId);
+            return Ok(friendList); //HTTP 200 OK indicates that the request was successful, and the server is returning the requested data.
+        }
+
+        [HttpGet("FriendRequest")]
+        public async Task<IActionResult> GetFriendRequest(int userId)
+        {
+            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
+
+            return Ok(GetFriendRequest);
+        }
+
+        [HttpGet("UserDetails")]
+        public async Task<ActionResult<Users>> GetUserById(int id)
+        {
+            var user = await _UserService.GetUserById(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+
+        [HttpPut("UserUpdate")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] Users user)
+        {
+            if (id != user.UserId)
+            {
+                return BadRequest();
+            }
+
+            int updatedUser = await _UserService.UpdateUser(user);
+            if (updatedUser == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
+
+        [HttpDelete("UserDeletion")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            int result = await _UserService.DeleteUser(id);
+            if (result == 0) { return BadRequest(); }
+            else { return Ok(); }
+
+        }
+
+        [HttpPost("UserDetails/PasswordChange")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] string newPassword)
+        {
+            await _UserService.ChangePassword(id, newPassword);
+            return Ok();
         }
 
         //// GET: api/Users
