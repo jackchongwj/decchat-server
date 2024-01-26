@@ -8,12 +8,10 @@ namespace ChatroomB_Backend.Service
     public class BlobServices: IBlobService
     {
         private readonly IBlobRepo _blobRepo;
-        private readonly string folderpath;
 
         public BlobServices(IBlobRepo blobRepo)
         {
             _blobRepo = blobRepo;
-            folderpath = "";
         }
 
         public async Task DeleteBlob(string blobUri)
