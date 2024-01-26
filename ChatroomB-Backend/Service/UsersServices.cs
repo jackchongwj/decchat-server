@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.Models;
+﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 using NuGet.Protocol.Core.Types;
 
@@ -42,6 +43,11 @@ namespace ChatroomB_Backend.Service
         {
             // Ensure newPassword is hashed appropriately before sending it to the repository
             return await _repo.ChangePassword(userId, newPassword);
+        }
+
+        public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
+        {
+            return await _repo.GetChatListByUserId(userId);
         }
     }
 }

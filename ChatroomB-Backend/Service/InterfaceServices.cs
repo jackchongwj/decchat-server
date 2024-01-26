@@ -12,6 +12,7 @@ namespace ChatroomB_Backend.Service
         Task<int> UpdateUser(Users user);
         Task<int> DeleteUser(int userId);
         Task<int> ChangePassword(int userId, string newPassword);
+        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
     }
 
     public interface IFriendService 
@@ -30,5 +31,13 @@ namespace ChatroomB_Backend.Service
     public interface IMessageService
     {
         Task<int> AddMessages(Messages message);                                                                                 // add new friend 
+    }
+
+    public interface IBlobService
+    {
+        Task<string> UploadImageFiles(string filepath, int CaseImageFile);
+        Task<string> UploadVideoFiles(string filepath);
+        Task<string> UploadDocuments(string filepath);
+        Task DeleteBlob(string blobUri);
     }
 }

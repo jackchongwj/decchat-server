@@ -54,6 +54,8 @@ builder.Services.AddCors(options => {
 
 var app = builder.Build();
 
+app.MapHub<ChatHub>("/chatHub");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -69,7 +71,5 @@ app.UseCors("AngularApp");
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
