@@ -15,7 +15,6 @@ namespace ChatroomB_Backend.Service
         Task<int> DeleteUser(int userId);
         Task<int> ChangePassword(int userId, string newPassword);
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
-        Task<IEnumerable<Users>> GetByName(string profileName);                                                         //Get user by user profile name
         Task<bool> IsUsernameUnique(string username);
         Task<int> GetUserId(string username);
     }
