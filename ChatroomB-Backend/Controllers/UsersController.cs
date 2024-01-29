@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using ChatroomB_Backend.Data;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using ChatroomB_Backend.DTO;
+using System.Linq;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -25,7 +29,9 @@ namespace ChatroomB_Backend.Controllers
         [HttpGet("Search")]
         public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
         {
-            IEnumerable<Users> GetUserByName = await _UserService.GetByName(profileName, userId);
+            IEnumerable<UserSearch> GetUserByName = await _UserService.GetByName(profileName, userId);
+
+            //await _hubContext.Clients.All.SendAsync("ReceiveSearchResults", GetUserByName);
 
             return Ok(GetUserByName);
         }

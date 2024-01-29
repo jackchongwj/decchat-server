@@ -1,20 +1,21 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
+using Microsoft.AspNetCore.SignalR;
 using NuGet.Protocol.Core.Types;
 
 namespace ChatroomB_Backend.Service
 {
-    public class UsersService : IUserService
+    public class UsersServices : IUserService
     {
         private readonly IUserRepo _repo;
 
-        public UsersService(IUserRepo reponsitory)
+        public UsersServices(IUserRepo reponsitory)
         {
             _repo = reponsitory;
         }
 
-        public async Task<IEnumerable<Users>> GetByName(string profileName, int userId)
+        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
         {
             return (await _repo.GetByName(profileName, userId));
         }
@@ -48,6 +49,16 @@ namespace ChatroomB_Backend.Service
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
             return await _repo.GetChatListByUserId(userId);
+        }
+
+        public async Task<bool> IsUsernameUnique(string username)
+        {
+            return await _repo.IsUsernameUnique(username);
+        }
+
+        public async Task<int> GetUserId(string username)
+        {
+            return await _repo.GetUserId(username);
         }
     }
 }

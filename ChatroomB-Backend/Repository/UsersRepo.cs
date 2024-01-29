@@ -19,11 +19,11 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<IEnumerable<Users>> GetByName(string profileName, int userId)
+        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
         {
             string sql = "exec GetUserByProfileName @profileName, @userId";
 
-            IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, new {profileName, userId });
+            IEnumerable<UserSearch> result = await _dbConnection.QueryAsync<UserSearch>(sql, new {profileName, userId });
 
             return result;
         }
@@ -63,6 +63,38 @@ namespace ChatroomB_Backend.Repository
             return result;
         }
 
+        public async Task<bool> IsUsernameUnique(string username)
+        {
+            try
+            {
+                string sql = "exec CheckUserNameUnique @UserName";
+
+                bool isUnique = await _dbConnection.ExecuteScalarAsync<bool>(sql, new { UserName = username });
+
+                return isUnique;
+            }
+            catch
+            {
+                throw new Exception("An unexpected error occurred");
+            }
+        }
+
+        public async Task<int> GetUserId(string username)
+        {
+            try
+            {
+                string sql = "exec GetUserIdByUserName @username";
+
+                int result = await _dbConnection.ExecuteScalarAsync<int>(sql, new { UserName = username });
+
+                return result;
+            }
+            catch
+            {
+                throw new Exception("An unexpected error occurred");
+            }
+            
+        }
         public async Task<int> ChangePassword(int userId, string newPassword)
         {
             string sql = "exec ChangePassword @UserId, @NewPassword";

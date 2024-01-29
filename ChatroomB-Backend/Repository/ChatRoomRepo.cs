@@ -20,8 +20,8 @@ namespace ChatroomB_Backend.Repository
         {
             var param = new
             {
-                RoomName = request.UserName,
-                RoomType = 1,
+                RoomName = "",
+                RoomType = 0,
                 RoomProfilePic = "",
                 InitiatedBy = request.SenderId,
                 SenderId = request.SenderId,

@@ -27,18 +27,10 @@ namespace ChatroomB_Backend.Service
             return blobUri;
         }
 
-        //public async Task<string> UploadImage(string filepath)
-        //{
-        //    string folderpath = "";
-        //    string newFileName = Path.GetFileNameWithoutExtension(filepath) + "-" + DateTime.Now.ToString("yyyy’-‘MM’-‘dd’T’HH’:’mm’:’ss") + ".webp";
-        //    string blobUri = await _blobRepo.UploadImageFiles(filepath, newFileName, folderpath);
-        //    return blobUri;
-        //}
-
-        public async Task<string> UploadImageFiles(string filepath, int CaseImageFile)
+        public async Task<string> UploadImageFiles(byte[] fileByte, string filename, int CaseImageFile)
         {
             string directory = "";
-            string newFileName = Path.GetFileNameWithoutExtension(filepath) + "-" + DateTime.Now.ToString("yyyy’-‘MM’-‘dd’T’HH’:’mm’:’ss") + ".webp";
+            string newFileName = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + "-" + filename;
             switch (CaseImageFile)
             {
                 // Message Attached Image
@@ -58,7 +50,7 @@ namespace ChatroomB_Backend.Service
                     break;
             }
 
-            string blobUri = await _blobRepo.UploadImageFiles(filepath, newFileName, directory);
+            string blobUri = await _blobRepo.UploadImageFiles(fileByte, newFileName, directory);
 
             return blobUri;
         }
@@ -66,7 +58,7 @@ namespace ChatroomB_Backend.Service
         public async Task<string> UploadVideoFiles(string filepath)
         {
             string folderpath = "";
-            string newFileName = Path.GetFileNameWithoutExtension(filepath) + "-" + DateTime.Now.ToString("yyyy’-‘MM’-‘dd’T’HH’:’mm’:’ss") + ".webp";
+            string newFileName = Path.GetFileNameWithoutExtension(filepath) + "-" + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + ".webp";
             string blobUri = await _blobRepo.UploadVideoFiles(filepath, newFileName, folderpath);
             return blobUri;
         }

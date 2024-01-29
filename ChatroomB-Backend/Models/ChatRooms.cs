@@ -11,9 +11,6 @@ namespace ChatroomB_Backend.Models
         public string RoomName { get; set; } = null!;
 
         [Required]
-        public DateTime CreatedDate { get; set; }
-
-        [Required]
         public bool RoomType { get; set; }
 
         public string? RoomProfilePic { get; set; }

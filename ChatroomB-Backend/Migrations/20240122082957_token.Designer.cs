@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatroomB_Backend.Migrations
 {
     [DbContext(typeof(ChatroomB_BackendContext))]
-    [Migration("20240112065709_ChatRoomDB")]
-    partial class ChatRoomDB
+    [Migration("20240122082957_token")]
+    partial class token
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,13 +33,10 @@ namespace ChatroomB_Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatRoomId"));
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("InitiatedBy")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("IsDelete")
+                    b.Property<bool?>("IsDeleted")
                         .IsRequired()
                         .HasColumnType("bit");
 
@@ -86,17 +83,17 @@ namespace ChatroomB_Backend.Migrations
 
             modelBuilder.Entity("ChatroomB_Backend.Models.Messages", b =>
                 {
-                    b.Property<int?>("MessengeId")
+                    b.Property<int?>("MessageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("MessengeId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("MessageId"));
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<bool>("IsDelete")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<int>("MessageType")
@@ -111,7 +108,7 @@ namespace ChatroomB_Backend.Migrations
                     b.Property<int?>("UserChatRoomId")
                         .HasColumnType("int");
 
-                    b.HasKey("MessengeId");
+                    b.HasKey("MessageId");
 
                     b.HasIndex("UserChatRoomId");
 
@@ -128,10 +125,10 @@ namespace ChatroomB_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDelete")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("TokenHash")
+                    b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("varchar(256)");
 
@@ -156,7 +153,7 @@ namespace ChatroomB_Backend.Migrations
                     b.Property<int?>("ChatRoomId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsDelete")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<int?>("UserId")
@@ -179,18 +176,21 @@ namespace ChatroomB_Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("UserId"));
 
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Password")
+                    b.Property<string>("HashedPassword")
                         .IsRequired()
                         .HasColumnType("varchar(256)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ProfileName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(15)");
 
                     b.Property<string>("ProfilePicture")
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("Salt")
+                        .IsRequired()
                         .HasColumnType("varchar(256)");
 
                     b.Property<string>("UserName")

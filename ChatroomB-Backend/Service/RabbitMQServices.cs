@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Text;
 using RabbitMQ.Client.Events;
 using System.Threading.Channels;
+using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Service
 {
@@ -28,12 +29,12 @@ namespace ChatroomB_Backend.Service
             _channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false);
         }
 
-        public void PublishMessage(Messages message)
+        public void PublishMessage(FileMessage fileMessage)
         {
             try
             {
-                byte[] serializedMessage = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
-
+                byte[] serializedMessage = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(fileMessage));
+                
                 _channel.BasicPublish(exchange: "", routingKey: queueName, body: serializedMessage);
 
                 Console.WriteLine("Message published to RabbitMQ Queue");
@@ -64,10 +65,5 @@ namespace ChatroomB_Backend.Service
                              consumer: consumer);
         }
 
-        //public void Dispose()
-        //{
-        //    _channel?.Dispose();
-        //    _connection?.Dispose();
-        //}
     }
 }
