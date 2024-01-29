@@ -1,6 +1,8 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 
 namespace ChatroomB_Backend.Repository
@@ -14,6 +16,8 @@ namespace ChatroomB_Backend.Repository
         Task<int> DeleteUserProfile(int userId);
         Task<int> ChangePassword(int userId, string newPassword);
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
+        Task<bool> IsUsernameUnique(string username);
+        Task<int> GetUserId(string username);
     }   
 
     public interface IFriendRepo
@@ -35,10 +39,22 @@ namespace ChatroomB_Backend.Repository
 
     public interface IBlobRepo
     {
-        Task<string> UploadImageFiles(string filepath, string filename, string folderPath);
+        Task<string> UploadImageFiles(byte[] fileByte, string filename, string folderPath);
         Task<string> UploadVideoFiles(string filepath, string filename, string folderPath);
         Task<string> UploadDocuments(string filepath, string filename, string folderPath);
-        Task<List<string>> ListBlobs();
         Task DeleteBlob(string blobUri);
+    }
+
+    public interface IAuthRepo
+    {
+        Task<string> GetSalt(string username);
+        Task<bool> VerifyPassword(string username, string hashedPassword);
+        Task<ActionResult> AddUser(Users user);
+    }
+
+    public interface ITokenRepo
+    {
+        Task<ActionResult> StoreRefreshToken(RefreshToken token);
+        Task<ActionResult> RemoveRefreshToken(RefreshToken token);
     }
 }

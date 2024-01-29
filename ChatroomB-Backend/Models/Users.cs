@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatroomB_Backend.Models
@@ -11,16 +12,20 @@ namespace ChatroomB_Backend.Models
         public int? UserId { get; set; }
 
         [Required]
+        [Remote(action: "IsUsernameUnique", controller: "Auth", HttpMethod = "POST", ErrorMessage = "Username is already taken.")]
         [Column(TypeName = "varchar(15)")]
         public string UserName { get; set; } = null!;
 
-        [Required]
         [Column(TypeName = "nvarchar(15)")]
-        public string ProfileName { get; set; } = null!;
+        public string? ProfileName { get; set; } = null!;
 
         [Required]
         [Column(TypeName = "varchar(256)")]
-        public string Password { get; set; } = null!;
+        public string HashedPassword { get; set; } = null!;
+
+        [Required]
+        [Column(TypeName = "varchar(256)")]
+        public string Salt { get; set; } = null!;
 
         [Column(TypeName = "varchar(256)")]
         public string? ProfilePicture { get; set; }
