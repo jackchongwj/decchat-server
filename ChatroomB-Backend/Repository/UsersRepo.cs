@@ -69,6 +69,8 @@ namespace ChatroomB_Backend.Repository
             int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId, NewPassword = newPassword });
             return result;
         }
+
+
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
             var parameter = new DynamicParameters();

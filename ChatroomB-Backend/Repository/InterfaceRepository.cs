@@ -18,7 +18,7 @@ namespace ChatroomB_Backend.Repository
 
     public interface IFriendRepo
     {
-        Task<int> AddFriends(Friends friends);                                                                                 // Add new friend 
+        Task<int> AddFriends(Friends friends);                                                                                     // Add new friend 
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
        
     }
@@ -40,5 +40,10 @@ namespace ChatroomB_Backend.Repository
         Task<string> UploadDocuments(string filepath, string filename, string folderPath);
         Task<List<string>> ListBlobs();
         Task DeleteBlob(string blobUri);
+    }
+
+    public interface IRedisRepo 
+    {
+        Task<int> AddPrivateChatRoomToRedis(Friends friends);
     }
 }

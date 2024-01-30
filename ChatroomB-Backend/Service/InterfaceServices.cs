@@ -18,7 +18,7 @@ namespace ChatroomB_Backend.Service
 
     public interface IFriendService 
     {
-        Task<int> AddFriends(Friends friends);                                                                                 // add new friend
+        Task<int> AddFriends(Friends friends);                                                              // add new friend
         Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request                                                                      // 
 
     }
@@ -32,5 +32,10 @@ namespace ChatroomB_Backend.Service
     public interface IMessageService
     {
         Task<int> AddMessages(Messages message);                                                                                 // add new friend 
+    }
+
+    public interface IRedisServcie 
+    {
+        Task<int> AddPrivateChatRoomToRedis(Friends friends);                                                  // Add Friend To Redis
     }
 }
