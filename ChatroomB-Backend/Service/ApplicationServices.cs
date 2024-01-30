@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.Models;
+﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using RabbitMQ.Client;
 using System.Configuration;
 using System.Text.Json;
@@ -10,9 +11,9 @@ namespace ChatroomB_Backend.Service
     {
         private readonly RabbitMQServices _rabbitMQService;
         private readonly IMessageService _messageService;
-        private readonly BlobServices _blobService;
+        private readonly IBlobService _blobService;
 
-        public ApplicationServices(RabbitMQServices _rabbitMQSer, IMessageService messageService, BlobServices blobService)
+        public ApplicationServices(RabbitMQServices _rabbitMQSer, IMessageService messageService, IBlobService blobService)
         {
             _rabbitMQService = _rabbitMQSer;
             _messageService = messageService;
@@ -29,39 +30,54 @@ namespace ChatroomB_Backend.Service
         {
             try
             {
-                Messages? messages = JsonSerializer.Deserialize<Messages>(message);
-                if (messages != null)
+                FileMessage? fm = JsonSerializer.Deserialize<FileMessage>(message);
+                if (fm != null)
                 {
-                    await (messages.ResourceUrl != null ? StoreMessageWithAttachment(messages) : StoreDatabase(messages));
+                    Console.WriteLine(fm);
+                    if (fm.FileByte != null)
+                    {
+                        await StoreMessageWithAttachment(fm);
+                    }
+                    else
+                    {
+                        await StoreDatabase(fm);
+                    }
+                    //await Task.Delay(100);
                 }
             }
             catch (JsonException ex)
             {
                 Console.WriteLine("Error during JSON deserialization: " + ex.Message);
             }
-
         }
 
-        private async Task StoreMessageWithAttachment(Messages messages)
+
+        private async Task StoreMessageWithAttachment(FileMessage fm)
         {
-            Console.WriteLine("StoreMessageWithAttachment: " + messages.Content);
-            messages.ResourceUrl = await StoreImageBlob(messages);
-            await StoreDatabase(messages);
+            if (fm.Message == null || fm.FileByte == null || fm.FileName == null)
+            {
+                // Handle the null case for fm.Message
+                throw new InvalidOperationException("File message cannot be null.");
+            }
+
+            fm.Message.ResourceUrl = await StoreImageBlob(fm.FileByte, fm.FileName);
+            await StoreDatabase(fm);
         }
 
-        private async Task<string> StoreImageBlob(Messages messages)
+        private async Task<string> StoreImageBlob(byte[] FileByte, string filename)
         {
-            Console.WriteLine("StoreBlob: " + messages.Content);
-            string resourceUrl = messages.ResourceUrl ?? throw new ArgumentException("ResourceUrl is null");
-            string folderpath = "Messages/Images";
-
-            return await _blobService.UploadImageFiles(resourceUrl, folderpath);
+            return await _blobService.UploadImageFiles(FileByte, filename, 1);
         }
 
-        private async Task StoreDatabase(Messages messages)
+        private async Task StoreDatabase(FileMessage fm)
         {
-            Console.WriteLine("StoreDatabase: " + messages.Content);
-            await _messageService.AddMessages(messages);
+            if (fm.Message == null)
+            {
+                // Handle the null case for fm.Message
+                throw new InvalidOperationException("Message cannot be null.");
+            }
+
+            await _messageService.AddMessages(fm.Message);
         }
     }
 }

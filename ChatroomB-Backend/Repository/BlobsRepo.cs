@@ -4,6 +4,10 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using ChatroomB_Backend.Models;
+using Microsoft.AspNetCore.WebUtilities;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
+using System.Reflection.Metadata;
 
 namespace ChatroomB_Backend.Repository
 {
@@ -26,54 +30,17 @@ namespace ChatroomB_Backend.Repository
             client = _blobServiceClient.GetBlobContainerClient(_containerName);
         }
 
-        public async Task<List<string>> ListBlobs()
-        {
-            List<string> blobList = new List<string>();
-
-            await foreach(var blobItem in client.GetBlobsAsync())
-            {
-                blobList.Add(blobItem.Name);
-            }
-            return blobList;
-        }
-
-        //public async Task<BlobObjects> RetrieveResouceFile(string url)
-        //{
-        //    string? filename = new Uri(url).Segments.LastOrDefault();
-
-        //    try
-        //    {
-        //        BlobClient blobClient = client.GetBlobClient(filename);
-        //        if(await blobClient.ExistsAsync())
-        //        {
-        //            BlobDownloadResult content = await blobClient.DownloadContentAsync();
-        //            Stream downloadedData = content.Content.ToStream();
-
-        //            return new BlobObjects { BlobContent = downloadedData};
-        //        }
-        //        else
-        //        {
-        //            throw new FileNotFoundException($"Blob with filename '{filename}' not found.");
-        //        }
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        Console.WriteLine("Exception caught: " + ex);
-        //        throw;
-        //    }
-        //}
-
-        public async Task<string> UploadImageFiles(string filePath, string filename, string folderPath)
+        public async Task<string> UploadImageFiles(byte[] fileByte, string filename, string folderPath)
         {
             // example folderPath : "images/folder1"
             string blobName = folderPath.TrimEnd('/') + '/' + filename;
             BlobClient blobClient = client.GetBlobClient(blobName);
 
-            // Convert image to WebP
-            using (Image image = await Image.LoadAsync(filePath))
+            using (Image image = Image.Load(fileByte))
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
+                    WebpEncoder encoder = new WebpEncoder();
                     await image.SaveAsWebpAsync(ms);
                     ms.Position = 0; // Reset the memory stream position after writing.
 
@@ -81,6 +48,7 @@ namespace ChatroomB_Backend.Repository
                     await blobClient.UploadAsync(ms);
                 }
             }
+
             return blobClient.Uri.AbsoluteUri;
         }
 
