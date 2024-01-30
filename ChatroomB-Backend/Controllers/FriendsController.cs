@@ -174,11 +174,14 @@ namespace ChatroomB_Backend.Controllers
 
         private readonly IFriendService _FriendService ;
         private readonly IChatRoomService _ChatRoomService;
+        private readonly IRedisServcie _RedisServcie;
 
-        public FriendsController(IFriendService Fservice, IChatRoomService CService)
+
+        public FriendsController(IFriendService Fservice, IChatRoomService CService, IRedisServcie redisServcie)
         {
             _FriendService = Fservice;
             _ChatRoomService = CService;
+            _RedisServcie = redisServcie;
         }
 
         //POST: Friends/Create
@@ -188,10 +191,12 @@ namespace ChatroomB_Backend.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _FriendService.AddFriends(friends);
-
+                int result  = await _FriendService.AddFriends(friends);
+                
                 ////update friend status
                 //await _hub.Clients.User(friends.ReceiverId.ToString()).SendAsync("ReceiveFriendRequestNotification");
+
+                //int result = await _RedisServcie.AddFriendsToRedis(friend);
             }
 
             return Ok(friends);
@@ -205,7 +210,7 @@ namespace ChatroomB_Backend.Controllers
             {
                int result =  await _FriendService.UpdateFriendRequest(request);
 
-                if (request.Status == 1)
+                if (request.Status == 2)
                 {
                     await _ChatRoomService.AddChatRoom(request);
                 }

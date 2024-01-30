@@ -3,6 +3,7 @@ using ChatroomB_Backend.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using NuGet.Protocol.Plugins;
 using System.Data;
 
@@ -22,14 +23,15 @@ namespace ChatroomB_Backend.Repository
             var param = new
             {
                 SenderId = friends.SenderId,
-                ReceiverId = friends.ReceiverId
+                ReceiverId = friends.ReceiverId,
             };
             string sql = "exec AddFriend @SenderId, @ReceiverId";
 
-            int result = await _dbConnection.ExecuteAsync(sql, param);
+           int result =  await _dbConnection.ExecuteAsync(sql, param);
 
             return result;
         }
+
 
         public async Task<int> UpdateFriendRequest(FriendRequest request)
         {
