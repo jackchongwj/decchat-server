@@ -60,6 +60,7 @@ namespace ChatroomB_Backend.Repository
 
     public interface IRedisRepo 
     {
-        Task<int> AddPrivateChatRoomToRedis(Friends friends);
+        Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);
+        Task<int> DeleteUserIdFromRedis(string userId);
     }
 }

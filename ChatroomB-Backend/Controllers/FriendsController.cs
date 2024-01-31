@@ -193,10 +193,6 @@ namespace ChatroomB_Backend.Controllers
             {
                 int result  = await _FriendService.AddFriends(friends);
                 
-                ////update friend status
-                //await _hub.Clients.User(friends.ReceiverId.ToString()).SendAsync("ReceiveFriendRequestNotification");
-
-                //int result = await _RedisServcie.AddFriendsToRedis(friend);
             }
 
             return Ok(friends);
@@ -218,5 +214,19 @@ namespace ChatroomB_Backend.Controllers
             return Ok();
         }
 
+
+        [HttpGet]
+        public IActionResult Get()
+        {
+            // 模拟抛出一个异常
+            throw new ApplicationException("This is a simulated exception.");
+        }
+
+        [HttpGet("404")]
+        public IActionResult Geterror()
+        {
+            // 此处不会抛出异常，但返回 404 Not Found
+            return NotFound("Resource not found.");
+        }
     }
 }

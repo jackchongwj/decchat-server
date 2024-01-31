@@ -12,9 +12,14 @@ namespace ChatroomB_Backend.Service
             _repo = _repository;
         }
 
-        public async Task<int> AddPrivateChatRoomToRedis(Friends friends)
+        public async Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId)
         {
-            return await _repo.AddPrivateChatRoomToRedis(friends);
+            return await _repo.AddUserIdAndConnetionIdToRedis(userId, connectionId);
+        }
+
+        public async Task<int> DeleteUserIdFromRedis(string userId)
+        {
+            return await _repo.DeleteUserIdFromRedis(userId);
         }
     }
 }
