@@ -54,5 +54,31 @@ namespace ChatroomB_Backend.Repository
                 return new BadRequestObjectResult(new { Error = "Failed to remove refresh token" });
             }
         }
+
+        public async Task<ActionResult> ValidateRefreshToken(RefreshToken token)
+        {
+            try
+            {
+                string sql = "exec ValidateRefreshToken @Token";
+
+                var refreshToken = await _dbConnection.QueryFirstOrDefaultAsync<RefreshToken>(sql, new { token.Token });
+
+                if (refreshToken == null)
+                {
+                    return new BadRequestObjectResult(new { Error = "Invalid refresh token" });
+                }
+
+                if (refreshToken.ExpiredDateTime < DateTime.UtcNow)
+                {
+                    return new BadRequestObjectResult(new { Error = "Refresh token has expired" });
+                }
+
+                return new OkObjectResult(new { Message = "Refresh token is valid", RefreshToken = refreshToken });
+            }
+            catch
+            {
+                return new BadRequestObjectResult(new { Error = "Failed to validate refresh token" });
+            }
+        }
     }
 }

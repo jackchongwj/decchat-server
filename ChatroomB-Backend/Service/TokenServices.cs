@@ -22,5 +22,10 @@ namespace ChatroomB_Backend.Service
         {
             return await _repo.RemoveRefreshToken(token);
         }
+
+        public async Task<ActionResult> ValidateRefreshToken(RefreshToken token)
+        {
+            return await _repo.ValidateRefreshToken(token);
+        }
     }
 }

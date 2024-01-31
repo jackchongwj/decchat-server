@@ -56,6 +56,7 @@ namespace ChatroomB_Backend.Repository
     {
         Task<ActionResult> StoreRefreshToken(RefreshToken token);
         Task<ActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IRedisRepo 

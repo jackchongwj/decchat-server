@@ -48,6 +48,7 @@ namespace ChatroomB_Backend.Service
     {
         Task<ActionResult> StoreRefreshToken(RefreshToken token);
         Task<ActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<ActionResult> ValidateRefreshToken(RefreshToken token);;
     }
 
     public interface IBlobService

@@ -132,6 +132,16 @@ namespace ChatroomB_Backend.Controllers
                 // Generate refresh token
                 string refreshToken = _tokenUtils.GenerateRefreshToken();
 
+                // Set the refresh token in a cookie
+                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    Path = "/",
+                    SameSite = SameSiteMode.None,
+                    Secure = true
+                });
+
                 // Store refresh token in database
                 await _tokenService.StoreRefreshToken(new RefreshToken
                 {
@@ -140,27 +150,13 @@ namespace ChatroomB_Backend.Controllers
                     ExpiredDateTime = DateTime.UtcNow.AddDays(7)
                 });
 
-                // Set the access token in the Authorization header
-                HttpContext.Response.Headers.Append("Authorization", $"Bearer {accessToken}");
-
-                // Set the refresh token in a cookie
-                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                // Return access token and user Id in the response body
+                return new OkObjectResult(new
                 {
-                    HttpOnly = true,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/"
+                    AccessToken = accessToken,
+                    UserId = userId,
+                    Message = "Login successful!"
                 });
-
-                // Set the user Id in a cookie
-                HttpContext.Response.Cookies.Append("userId", userId.ToString(), new CookieOptions
-                {
-                    HttpOnly = true,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/"
-                });
-
-                // Return user Id, access token, and refresh token
-                return new OkObjectResult(new { Message = "Login successful!"});
             }
             
             catch
@@ -175,14 +171,8 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                // Delete access token from client (header)
-                Response.Headers.Remove("Authorization");
-
                 // Retrieve the refresh token from the request
-                string refreshToken = Request.Cookies["refresh_token"];
-
-                // Delete refresh token from client (cookie)
-                Response.Cookies.Delete("refresh_token");
+                string refreshToken = Request.Cookies["refreshToken"];   
 
                 // Create a refresh token object
                 var token = new RefreshToken
@@ -192,6 +182,9 @@ namespace ChatroomB_Backend.Controllers
 
                 // Delete refresh token from database
                 await _tokenService.RemoveRefreshToken(token);
+
+                // Delete refresh token from client (cookie)
+                Response.Cookies.Delete("refreshToken");
 
                 return Ok(new { Message = "Logout successful" });
             }
