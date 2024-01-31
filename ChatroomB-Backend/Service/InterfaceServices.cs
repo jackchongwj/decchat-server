@@ -11,9 +11,10 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId);                                              //Get user by user profile name and filter friend request
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                               //Get All Friend request
         Task<Users> GetUserById(int userId);
-        Task<int> UpdateUser(Users user);
+        Task<int> UpdateProfileName(Users user);
+        Task<int> UpdateProfilePicture(Users user);
         Task<int> DeleteUser(int userId);
-        Task<int> ChangePassword(int userId, string newPassword);
+        
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> IsUsernameUnique(string username);
         Task<int> GetUserId(string username);
@@ -42,6 +43,7 @@ namespace ChatroomB_Backend.Service
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
         Task<ActionResult> AddUser(Users user);
+        Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
     }
 
     public interface ITokenService

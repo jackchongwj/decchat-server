@@ -44,14 +44,24 @@ namespace ChatroomB_Backend.Repository
             return users;
         }
 
-        public async Task<int> UpdateUserProfile(Users userProfile)
+        public async Task<int> UpdateProfileName(Users user)
         {
-            string sql = "exec UpdateUserProfile @UserId, @NewProfileName, @NewProfilePicture";
+            string sql = "exec UpdateUserProfileName @UserId, @NewProfileName";
             int result = await _dbConnection.ExecuteAsync(sql, new
             {
-                UserId = userProfile.UserId,
-                NewProfileName = userProfile.ProfileName,
-                NewProfilePicture = userProfile.ProfilePicture
+                UserId = user.UserId,
+                NewProfileName = user.ProfileName
+            });
+            return result;
+        }
+
+        public async Task<int> UpdateProfilePicture(Users user)
+        {
+            string sql = "exec UpdateUserProfilePicture @UserId, @NewProfilePicture";
+            int result = await _dbConnection.ExecuteAsync(sql, new
+            {
+                UserId = user.UserId,
+                NewProfilePicture = user.ProfilePicture
             });
             return result;
         }
@@ -95,12 +105,8 @@ namespace ChatroomB_Backend.Repository
             }
             
         }
-        public async Task<int> ChangePassword(int userId, string newPassword)
-        {
-            string sql = "exec ChangePassword @UserId, @NewPassword";
-            int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId, NewPassword = newPassword });
-            return result;
-        }
+        
+
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
             var parameter = new DynamicParameters();

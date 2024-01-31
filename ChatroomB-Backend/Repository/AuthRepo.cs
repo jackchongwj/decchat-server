@@ -77,5 +77,17 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
+        public async Task<bool> ChangePassword(int userId, string newHashedPassword)
+        {
+            string sql = "exec ChangePassword @UserId, @NewHashedPassword";
+
+            var result = await _dbConnection.ExecuteAsync(
+                sql,
+                new { UserId = userId, NewHashedPassword = newHashedPassword }
+            );
+
+            return result == 1; // Return true if the password was successfully changed
+        }
+
     }
 }

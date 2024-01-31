@@ -63,19 +63,31 @@ namespace ChatroomB_Backend.Controllers
             return Ok(user);
         }
 
-        [HttpPut("UserUpdate")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] Users user)
+        [HttpPut("UpdateProfileName")]
+        public async Task<IActionResult> UpdateProfileName(int id, [FromBody] string newProfileName)
         {
-            if (id != user.UserId)
-            {
-                return BadRequest();
-            }
+            var user = await _UserService.GetUserById(id);
+            if (user == null) return NotFound();
 
-            int updatedUser = await _UserService.UpdateUser(user);
-            if (updatedUser == 0)
-            {
-                return NotFound();
-            }
+            user.ProfileName = newProfileName;
+            var result = await _UserService.UpdateProfileName(user);
+            if (result == 0) return NotFound();
+
+            return Ok();
+        }
+
+        [HttpPut("UpdateProfilePicture")]
+        public async Task<IActionResult> UpdateProfilePicture(int id, IFormFile file)
+        {
+            var user = await _UserService.GetUserById(id);
+            if (user == null) return NotFound();
+
+            // Implement file saving logic here and get the URL
+            string fileUrl = "/path/to/saved/file"; // Placeholder for file URL
+
+            user.ProfilePicture = fileUrl;
+            var result = await _UserService.UpdateProfilePicture(user);
+            if (result == 0) return NotFound();
 
             return Ok();
         }
@@ -87,14 +99,7 @@ namespace ChatroomB_Backend.Controllers
             if (result == 0) { return BadRequest(); }
             else { return Ok(); }
 
-        }
-
-        [HttpPost("UserDetails/PasswordChange")]
-        public async Task<IActionResult> ChangePassword(int id, [FromBody] string newPassword)
-        {
-            await _UserService.ChangePassword(id, newPassword);
-            return Ok();
-        }
+        }        
 
         //// GET: api/Users
         //[HttpGet]
