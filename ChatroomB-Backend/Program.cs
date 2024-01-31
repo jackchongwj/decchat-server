@@ -14,6 +14,9 @@ using System.Text;
 using ChatroomB_Backend.Hubs;
 using StackExchange.Redis;
 using SixLabors.ImageSharp;
+using Microsoft.AspNetCore.Diagnostics;
+using System.Net;
+using ChatroomB_Backend.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -120,6 +123,20 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+
+app.UseErrorHandlingMiddleware();
+
+//app.UseExceptionHandler(error => { error.Run(async context => {
+
+//    var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+//    var exception = exceptionHandlerPathFeature?.Error;
+
+//    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+//    context.Response.ContentType = "text/plain";
+//    await context.Response.WriteAsync("An internal server error occurred.");
+//});
+//});
 
 //app.UseEndpoints(endpoints =>
 //{
