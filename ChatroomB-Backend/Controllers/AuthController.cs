@@ -8,7 +8,7 @@ using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Controllers
 {
-    [Route("api/auth")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -34,10 +34,10 @@ namespace ChatroomB_Backend.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpGet("IsUsernameUnique")]
-        public async Task<ActionResult> IsUsernameUnique(string username)
+        [HttpGet("DoesUsernameExist")]
+        public async Task<ActionResult> DoesUsernameExist(string username)
         {
-            var isUnique = await _userService.IsUsernameUnique(username);
+            var isUnique = await _userService.DoesUsernameExist(username);
 
             if (!isUnique)
             {
@@ -57,7 +57,7 @@ namespace ChatroomB_Backend.Controllers
             }
 
             // Check if username exists
-            var isUnique = await _userService.IsUsernameUnique(request.Username);
+            var isUnique = await _userService.DoesUsernameExist(request.Username);
 
             if (!isUnique)
             {
@@ -101,7 +101,7 @@ namespace ChatroomB_Backend.Controllers
             try
             {
                 // Check if username exists
-                bool doesNotExist = await _userService.IsUsernameUnique(request.Username);
+                bool doesNotExist = await _userService.DoesUsernameExist(request.Username);
 
                 if (doesNotExist)
                 {
@@ -184,7 +184,12 @@ namespace ChatroomB_Backend.Controllers
                 await _tokenService.RemoveRefreshToken(token);
 
                 // Delete refresh token from client (cookie)
-                Response.Cookies.Delete("refreshToken");
+                HttpContext.Response.Cookies.Delete("refreshToken", new CookieOptions
+                {
+                    Path = "/",
+                    SameSite = SameSiteMode.None,
+                    Secure = true
+                });
 
                 return Ok(new { Message = "Logout successful" });
             }

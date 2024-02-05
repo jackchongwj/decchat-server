@@ -63,7 +63,7 @@ namespace ChatroomB_Backend.Repository
             return result;
         }
 
-        public async Task<bool> IsUsernameUnique(string username)
+        public async Task<bool> DoesUsernameExist(string username)
         {
             try
             {
