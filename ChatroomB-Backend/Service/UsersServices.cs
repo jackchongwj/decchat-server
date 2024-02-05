@@ -53,9 +53,9 @@ namespace ChatroomB_Backend.Service
             return await _repo.GetChatListByUserId(userId);
         }
 
-        public async Task<bool> IsUsernameUnique(string username)
+        public async Task<bool> DoesUsernameExist(string username)
         {
-            return await _repo.IsUsernameUnique(username);
+            return await _repo.DoesUsernameExist(username);
         }
 
         public async Task<int> GetUserId(string username)

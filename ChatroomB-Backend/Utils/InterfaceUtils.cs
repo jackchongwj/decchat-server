@@ -12,6 +12,5 @@ namespace ChatroomB_Backend.Utils
     {
         string GenerateAccessToken(string username);
         string GenerateRefreshToken();
-        ClaimsPrincipal ValidateAccessToken(string token);
     }
 }

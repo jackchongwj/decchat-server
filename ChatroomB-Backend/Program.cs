@@ -12,15 +12,30 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 using ChatroomB_Backend.Hubs;
+using StackExchange.Redis;
+using SixLabors.ImageSharp;
+using Microsoft.AspNetCore.Diagnostics;
+using System.Net;
+using ChatroomB_Backend.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ChatroomB_BackendContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ChatroomB_BackendContext") ?? throw new InvalidOperationException("Connection string 'ChatroomB_BackendContext' not found.")));
 
+//dapper
 builder.Services.AddTransient<IDbConnection>((sp) =>
            new SqlConnection(builder.Configuration.GetConnectionString("ChatroomB_BackendContext")));
 
+
+//redis set up
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+{
+    ConfigurationOptions configuration = ConfigurationOptions.Parse(builder.Configuration.GetSection("RedisConnection")["RedisConnectionString"]);
+    return ConnectionMultiplexer.Connect(configuration);
+});
+
+// Add services to the container.
 builder.Services.AddControllers();
 
 // SignalR service
@@ -52,6 +67,10 @@ builder.Services.AddScoped<IBlobRepo, BlobsRepo>();
 builder.Services.AddScoped<IChatRoomService, ChatRoomServices>();
 builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 
+//Redis
+builder.Services.AddScoped<IRedisServcie, RedisService>();
+builder.Services.AddScoped<IRedisRepo, RedisRepo>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -71,13 +90,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"])),
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = false,
-            ValidateIssuerSigningKey = true
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration.GetSection("JwtSettings:Issuer").Get<string>(),
+            ValidAudience = builder.Configuration.GetSection("JwtSettings:Audience").Get<string>(),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JwtSettings:SecretKey").Get<string>()))
         };
     });
 
@@ -104,6 +123,20 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+
+app.UseErrorHandlingMiddleware();
+
+//app.UseExceptionHandler(error => { error.Run(async context => {
+
+//    var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+//    var exception = exceptionHandlerPathFeature?.Error;
+
+//    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+//    context.Response.ContentType = "text/plain";
+//    await context.Response.WriteAsync("An internal server error occurred.");
+//});
+//});
 
 //app.UseEndpoints(endpoints =>
 //{
