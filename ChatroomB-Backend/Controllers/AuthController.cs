@@ -172,7 +172,7 @@ namespace ChatroomB_Backend.Controllers
             try
             {
                 // Retrieve the refresh token from the request
-                string refreshToken = Request.Cookies["refreshToken"];   
+                string refreshToken = Request.Cookies["refreshToken"];
 
                 // Create a refresh token object
                 var token = new RefreshToken
