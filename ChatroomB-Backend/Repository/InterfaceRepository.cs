@@ -16,7 +16,7 @@ namespace ChatroomB_Backend.Repository
         Task<int> UpdateProfilePicture(int userId, string newProfilePicture);
         Task<int> DeleteUserProfile(int userId);       
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
-        Task<bool> IsUsernameUnique(string username);
+        Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
     }   
 
@@ -57,11 +57,13 @@ namespace ChatroomB_Backend.Repository
     {
         Task<ActionResult> StoreRefreshToken(RefreshToken token);
         Task<ActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IRedisRepo 
     {
         Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);
         Task<int> DeleteUserIdFromRedis(string userId);
+        Task<string> SelectUserIdFromRedis(int? userId);
     }
 }

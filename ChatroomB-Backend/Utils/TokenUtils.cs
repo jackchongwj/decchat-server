@@ -9,33 +9,23 @@ namespace ChatroomB_Backend.Utils
 {
     public class TokenUtils : ITokenUtils
     {
-        private readonly string _secretKey;
-        private readonly string _issuer;
-        private readonly string _audience;
-        private readonly int _expiryInMinutes;
+        private readonly IConfiguration _config;
 
         public TokenUtils(IConfiguration config)
         {
-            _secretKey = config["JwtSettings:SecretKey"];
-            _issuer = config["JwtSettings:Issuer"];
-            _audience = config["JwtSettings:Audience"];
-            _expiryInMinutes = Convert.ToInt32(config["JwtSettings:ExpirationMinutes"]);
+            _config = config;
+
         }
 
         public string GenerateAccessToken(string username)
         {
-            if (Encoding.UTF8.GetBytes(_secretKey).Length < 32)
-            {
-                throw new InvalidOperationException("Secret key must be at least 32 bytes long for HmacSha256.");
-            }
-
-            var expiryDateTime = DateTime.Now.AddMinutes(_expiryInMinutes);
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+            var expiryDateTime = DateTime.Now.AddMinutes(Convert.ToInt32(_config["JwtSettings:ExpirationMinutes"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _issuer,
-                audience: _audience,
+                issuer: _config["JwtSettings:Issuer"],
+                audience: _config["JwtSettings:Audience"],
                 claims: new[] { new Claim(ClaimTypes.Name, username) },
                 expires: expiryDateTime,
                 signingCredentials: creds
@@ -54,30 +44,5 @@ namespace ChatroomB_Backend.Utils
             }
         }
 
-        public ClaimsPrincipal ValidateAccessToken(string token)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_secretKey);
-
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = _issuer,
-                ValidAudience = _audience,
-                IssuerSigningKey = new SymmetricSecurityKey(key)
-            };
-
-            try
-            {
-                return tokenHandler.ValidateToken(token, validationParameters, out _);
-            }
-            catch (SecurityTokenException)
-            {
-                return null;
-            }
-        }
     }
 }
