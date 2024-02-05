@@ -22,7 +22,7 @@ namespace ChatroomB_Backend.Service
 
     public interface IFriendService 
     {
-        Task<int> AddFriends(Friends friends);                                                                                 // add new friend
+        Task<int> AddFriends(Friends friends);                                                              // add new friend
         Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request                                                                      // 
 
     }
@@ -50,5 +50,19 @@ namespace ChatroomB_Backend.Service
     {
         Task<ActionResult> StoreRefreshToken(RefreshToken token);
         Task<ActionResult> RemoveRefreshToken(RefreshToken token);
+    }
+
+    public interface IBlobService
+    {
+        Task<string> UploadImageFiles(byte[] fileByte, string filename, int CaseImageFile);
+        Task<string> UploadVideoFiles(string filepath);
+        Task<string> UploadDocuments(string filepath);
+        Task DeleteBlob(string blobUri);
+    }
+
+    public interface IRedisServcie 
+    {
+        Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);                                                  // Add userId and connection id to redis
+        Task<int> DeleteUserIdFromRedis(string userId);
     }
 }

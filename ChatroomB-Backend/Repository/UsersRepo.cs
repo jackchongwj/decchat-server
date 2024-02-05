@@ -114,11 +114,9 @@ namespace ChatroomB_Backend.Repository
 
             string sql = "EXEC GetChatListByUserId @UserId";
 
-           var chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
+            var chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
 
             return chatList.AsList();
         }
-
-
     }
 }

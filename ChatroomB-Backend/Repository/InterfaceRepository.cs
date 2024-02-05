@@ -22,7 +22,7 @@ namespace ChatroomB_Backend.Repository
 
     public interface IFriendRepo
     {
-        Task<int> AddFriends(Friends friends);                                                                                 // Add new friend 
+        Task<int> AddFriends(Friends friends);                                                                                     // Add new friend 
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
        
     }
@@ -39,10 +39,9 @@ namespace ChatroomB_Backend.Repository
 
     public interface IBlobRepo
     {
-        Task<string> UploadImageFiles(string filepath, string filename, string folderPath);
+        Task<string> UploadImageFiles(byte[] fileByte, string filename, string folderPath);
         Task<string> UploadVideoFiles(string filepath, string filename, string folderPath);
         Task<string> UploadDocuments(string filepath, string filename, string folderPath);
-        Task<List<string>> ListBlobs();
         Task DeleteBlob(string blobUri);
     }
 
@@ -58,5 +57,11 @@ namespace ChatroomB_Backend.Repository
     {
         Task<ActionResult> StoreRefreshToken(RefreshToken token);
         Task<ActionResult> RemoveRefreshToken(RefreshToken token);
+    }
+
+    public interface IRedisRepo 
+    {
+        Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);
+        Task<int> DeleteUserIdFromRedis(string userId);
     }
 }
