@@ -159,8 +159,16 @@ namespace ChatroomB_Backend.Controllers
                     Path = "/"
                 });
 
+                var response = new
+                {
+                    AccessToken = accessToken, // Make sure this is a secure practice for your case
+                    UserId = userId.ToString(),
+                    Message = "Login successful!"
+                };
+                return Ok(response);
+
                 // Return user Id, access token, and refresh token
-                return new OkObjectResult(new { Message = "Login successful!"});
+                //return new OkObjectResult(new { Message = "Login successful!"});
             }
             
             catch

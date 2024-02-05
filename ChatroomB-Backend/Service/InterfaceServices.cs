@@ -17,6 +17,7 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> IsUsernameUnique(string username);
         Task<int> GetUserId(string username);
+        Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);
     }
 
     public interface IFriendService 
@@ -53,8 +54,9 @@ namespace ChatroomB_Backend.Service
     public interface IBlobService
     {
         Task<string> UploadImageFiles(byte[] fileByte, string filename, int CaseImageFile);
-        Task<string> UploadVideoFiles(string filepath);
-        Task<string> UploadDocuments(string filepath);
+        Task<string> UploadVideoFiles(byte[] vidByte, string vidName);
+        Task<string> UploadDocuments(byte[] docByte, string docName);
+        Task<string> UploadAudios(byte[] audioByte, string audioName);
         Task DeleteBlob(string blobUri);
     }
 }

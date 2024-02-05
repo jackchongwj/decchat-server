@@ -1,6 +1,7 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Service;
 using Microsoft.AspNetCore.SignalR;
+using System;
 
 namespace ChatroomB_Backend.Hubs
 {
@@ -15,26 +16,23 @@ namespace ChatroomB_Backend.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            await Clients.All.SendAsync("aaa", $"{Context.ConnectionId} has joined On Connected");
+            // Add UserId + Associate ConnectionID to Redis
+            string con = Context.ConnectionId;
+            await Clients.All.SendAsync("ReceiveMessage", $"{Context.ConnectionId} has joined On Connected");
+            await base.OnConnectedAsync();
         }
 
-        // group id 
-
-        public async Task ReceiveIncomingMessage(string message)
+        public override async Task OnDisconnectedAsync(Exception? Exception)
         {
-            await PassMessage(message);
+            // Remove the List in Redis
+            await base.OnDisconnectedAsync(Exception);
         }
 
-        public async Task PassMessage(string message)
+        public async Task CheckUserTyping(string name, bool typing)
         {
-            await Clients.All.SendAsync("ReceiveMessage", message);
+            await Clients.All.SendAsync("UserTyping", name, typing);
         }
 
-        //public async Task SendFriendRequestNotification(IEnumerable<Friends> friend)
-        //{
-
-        //    await Clients.User(friend.FirstOrDefault().ReceiverId.ToString()).SendAsync("ReceiveFriendRequestNotification", friend.FirstOrDefault().SenderId);
-        //}
 
         public async Task SendFriendRequestNotification(int receiverId, int senderId, string profileName)
         {
@@ -44,9 +42,7 @@ namespace ChatroomB_Backend.Hubs
                 await Clients.User(receiverId.ToString()).SendAsync("ReceiveFriendRequestNotification");
 
                 IEnumerable<UserSearch> newResult = await GetLatestSearchResults(senderId, profileName);
-                //await Clients.Caller.SendAsync("UpdateSearchResults", newResult);
-                //await Clients.User(senderId.ToString()).SendAsync("UpdateSearchResults", newResult);
-                //await Clients.User(receiverId.ToString()).SendAsync("UpdateSearchResults", newResult);
+
                 await Clients.All.SendAsync("UpdateSearchResults", newResult);
             }
             catch (Exception ex)
@@ -59,6 +55,11 @@ namespace ChatroomB_Backend.Hubs
         private async Task<IEnumerable<UserSearch>> GetLatestSearchResults(int userId, string profileName)
         {
             return await services.GetByName(profileName, userId);
+        }
+
+        private async Task AddToGroup(string UserConnectionId, int ChatRoomId)
+        {
+            await Groups.AddToGroupAsync(UserConnectionId, $"ChatRoomId");
         }
 
     }

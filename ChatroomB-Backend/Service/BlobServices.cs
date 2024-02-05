@@ -19,18 +19,26 @@ namespace ChatroomB_Backend.Service
             await _blobRepo.DeleteBlob(blobUri);
         }
 
-        public async Task<string> UploadDocuments(string filepath)
+        public async Task<string> UploadAudios(byte[] audioByte, string audioName)
         {
-            string folderpath = "";
-            string newFileName = Path.GetFileNameWithoutExtension(filepath) + "-" + DateTime.Now.ToString("yyyy’-‘MM’-‘dd’T’HH’:’mm’:’ss") + ".webp";
-            string blobUri = await _blobRepo.UploadDocuments(filepath, newFileName, folderpath);
+            string folderpath = "Messages/Audios";
+            string newFileName = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + "-" + audioName;
+            string blobUri = await _blobRepo.UploadAudios(audioByte, newFileName, folderpath);
+            return blobUri;
+        }
+
+        public async Task<string> UploadDocuments(byte[] docByte, string docName)
+        {
+            string folderpath = "Messages/Documents";
+            string newFileName = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + "-" + docName;
+            string blobUri = await _blobRepo.UploadDocuments(docByte, newFileName, folderpath);
             return blobUri;
         }
 
         public async Task<string> UploadImageFiles(byte[] fileByte, string filename, int CaseImageFile)
         {
             string directory = "";
-            string newFileName = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + "-" + filename;
+            string newFileName = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + "-" + Path.GetFileNameWithoutExtension(filename) + ".webp";
             switch (CaseImageFile)
             {
                 // Message Attached Image
@@ -55,11 +63,11 @@ namespace ChatroomB_Backend.Service
             return blobUri;
         }
 
-        public async Task<string> UploadVideoFiles(string filepath)
+        public async Task<string> UploadVideoFiles(byte[] vidByte, string vidName)
         {
-            string folderpath = "";
-            string newFileName = Path.GetFileNameWithoutExtension(filepath) + "-" + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + ".webp";
-            string blobUri = await _blobRepo.UploadVideoFiles(filepath, newFileName, folderpath);
+            string folderpath = "Messages/Videos";
+            string newFileName = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + "-" + vidName;
+            string blobUri = await _blobRepo.UploadVideoFiles(vidByte, newFileName, folderpath);
             return blobUri;
         }
     }
