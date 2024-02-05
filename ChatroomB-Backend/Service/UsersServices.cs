@@ -9,6 +9,7 @@ namespace ChatroomB_Backend.Service
     public class UsersServices : IUserService
     {
         private readonly IUserRepo _repo;
+        private readonly IBlobService _blobService;
 
         public UsersServices(IUserRepo reponsitory)
         {
@@ -30,14 +31,28 @@ namespace ChatroomB_Backend.Service
             return await _repo.GetUserById(userId);
         }
 
-        public async Task<int> UpdateProfileName(Users user)
+        public async Task<int> UpdateProfileName(int userId, string newProfileName)
         {
-            return await _repo.UpdateProfileName(user);
+            return await _repo.UpdateProfileName(userId, newProfileName);
         }
 
-        public async Task<int> UpdateProfilePicture(Users user)
+        public async Task<int> UpdateProfilePicture(int userId, string newProfilePicture)
         {
-            return await _repo.UpdateProfilePicture(user);
+            return await _repo.UpdateProfilePicture(userId, newProfilePicture);
+        }
+
+        public async Task<string> UploadProfilePicture(IFormFile file, int userId)
+        {
+            // Convert IFormFile to byte[] for the BlobService if necessary
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                var fileBytes = memoryStream.ToArray();
+
+                // Assuming the filename is important for blob storage
+                var blobUri = await _blobService.UploadImageFiles(fileBytes, file.FileName, 2); // 2 for User Profile Picture
+                return blobUri;
+            }
         }
 
         public async Task<int> DeleteUser(int userId)

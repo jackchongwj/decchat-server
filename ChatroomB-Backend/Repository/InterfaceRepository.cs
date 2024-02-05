@@ -12,8 +12,8 @@ namespace ChatroomB_Backend.Repository
         Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId);                                                    //Get user by user profile name and filter friend request
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                 // Get All Friend request
         Task<Users> GetUserById(int userId);
-        Task<int> UpdateProfileName(Users user);
-        Task<int> UpdateProfilePicture(Users user);
+        Task<int> UpdateProfileName(int userId, string newProfileName);
+        Task<int> UpdateProfilePicture(int userId, string newProfilePicture);
         Task<int> DeleteUserProfile(int userId);       
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> IsUsernameUnique(string username);

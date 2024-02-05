@@ -44,24 +44,24 @@ namespace ChatroomB_Backend.Repository
             return users;
         }
 
-        public async Task<int> UpdateProfileName(Users user)
+        public async Task<int> UpdateProfileName(int userId, string newProfileName)
         {
             string sql = "exec UpdateUserProfileName @UserId, @NewProfileName";
             int result = await _dbConnection.ExecuteAsync(sql, new
             {
-                UserId = user.UserId,
-                NewProfileName = user.ProfileName
+                userId,
+                newProfileName
             });
             return result;
         }
 
-        public async Task<int> UpdateProfilePicture(Users user)
+        public async Task<int> UpdateProfilePicture(int userId, string newProfilePicture)
         {
             string sql = "exec UpdateUserProfilePicture @UserId, @NewProfilePicture";
             int result = await _dbConnection.ExecuteAsync(sql, new
             {
-                UserId = user.UserId,
-                NewProfilePicture = user.ProfilePicture
+                userId,
+                newProfilePicture
             });
             return result;
         }

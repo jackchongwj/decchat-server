@@ -21,6 +21,7 @@ namespace ChatroomB_Backend.Controllers
     {
         private readonly IUserService _UserService;
 
+
         public UsersController(IUserService service)
         {
             _UserService = service;
@@ -66,11 +67,8 @@ namespace ChatroomB_Backend.Controllers
         [HttpPut("UpdateProfileName")]
         public async Task<IActionResult> UpdateProfileName(int id, [FromBody] string newProfileName)
         {
-            var user = await _UserService.GetUserById(id);
-            if (user == null) return NotFound();
 
-            user.ProfileName = newProfileName;
-            var result = await _UserService.UpdateProfileName(user);
+            var result = await _UserService.UpdateProfileName(id,newProfileName);
             if (result == 0) return NotFound();
 
             return Ok();
@@ -79,18 +77,30 @@ namespace ChatroomB_Backend.Controllers
         [HttpPut("UpdateProfilePicture")]
         public async Task<IActionResult> UpdateProfilePicture(int id, IFormFile file)
         {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("File is not provided or empty.");
+            }
+
             var user = await _UserService.GetUserById(id);
-            if (user == null) return NotFound();
+            if (user == null) return NotFound("User not found.");
 
-            // Implement file saving logic here and get the URL
-            string fileUrl = "/path/to/saved/file"; // Placeholder for file URL
+            try
+            {
+                // Assuming BlobService.UploadImageFiles returns the URI of the uploaded image
+                var fileUri = await _UserService.UploadProfilePicture(file, id);
 
-            user.ProfilePicture = fileUrl;
-            var result = await _UserService.UpdateProfilePicture(user);
-            if (result == 0) return NotFound();
+                var result = await _UserService.UpdateProfilePicture(id, fileUri);
+                if (result == 0) return NotFound("Failed to update the profile picture.");
 
-            return Ok();
+                return Ok(new { Message = "Profile picture updated successfully.", Uri = fileUri });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
+
 
         [HttpDelete("UserDeletion")]
         public async Task<IActionResult> DeleteUser(int id)
@@ -99,88 +109,6 @@ namespace ChatroomB_Backend.Controllers
             if (result == 0) { return BadRequest(); }
             else { return Ok(); }
 
-        }        
-
-        //// GET: api/Users
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
-        //{
-        //    return await _context.Users.ToListAsync();
-        //}
-
-        //// GET: api/Users/5
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<Users>> GetUsers(int? id)
-        //{
-        //    var users = await _context.Users.FindAsync(id);
-
-        //    if (users == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return users;
-        //}
-
-        //// PUT: api/Users/5
-        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutUsers(int? id, Users users)
-        //{
-        //    if (id != users.UserId)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Entry(users).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!UsersExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
-
-        //// POST: api/Users
-        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPost]
-        //public async Task<ActionResult<Users>> PostUsers(Users users)
-        //{
-        //    _context.Users.Add(users);
-        //    await _context.SaveChangesAsync();
-
-        //    return CreatedAtAction("GetUsers", new { id = users.UserId }, users);
-        //}
-
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPost]
-        //public async Task<ActionResult<Users>> PostUsers(Users users)
-        //{
-        //    _context.Users.Add(users);
-        //    await _context.SaveChangesAsync();
-
-        //    _context.Users.Remove(users);
-        //    await _context.SaveChangesAsync();
-
-        //    return NoContent();
-        //}
-
-        //private bool UsersExists(int? id)
-        //{
-        //    return _context.Users.Any(e => e.UserId == id);
-        //}
+        }               
     }
 }
