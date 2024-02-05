@@ -133,14 +133,15 @@ namespace ChatroomB_Backend.Controllers
                 string refreshToken = _tokenUtils.GenerateRefreshToken();
 
                 // Set the refresh token in a cookie
-                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/",
-                    SameSite = SameSiteMode.None,
-                    Secure = true
-                });
+                    Secure = true,
+                    SameSite = SameSiteMode.None
+                };
+
+                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
 
                 // Store refresh token in database
                 await _tokenService.StoreRefreshToken(new RefreshToken
@@ -155,6 +156,7 @@ namespace ChatroomB_Backend.Controllers
                 {
                     AccessToken = accessToken,
                     UserId = userId,
+                    refreshToken = refreshToken,
                     Message = "Login successful!"
                 });
             }
@@ -184,12 +186,14 @@ namespace ChatroomB_Backend.Controllers
                 await _tokenService.RemoveRefreshToken(token);
 
                 // Delete refresh token from client (cookie)
-                HttpContext.Response.Cookies.Delete("refreshToken", new CookieOptions
+                var cookieOptions = new CookieOptions
                 {
                     Path = "/",
-                    SameSite = SameSiteMode.None,
-                    Secure = true
-                });
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.None // Be sure this matches what was set when creating the cookie
+                };
+
+                HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
 
                 return Ok(new { Message = "Logout successful" });
             }
