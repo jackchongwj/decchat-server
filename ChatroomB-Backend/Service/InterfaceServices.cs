@@ -15,7 +15,7 @@ namespace ChatroomB_Backend.Service
         Task<int> DeleteUser(int userId);
         Task<int> ChangePassword(int userId, string newPassword);
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
-        Task<bool> IsUsernameUnique(string username);
+        Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
     }
 
@@ -48,6 +48,7 @@ namespace ChatroomB_Backend.Service
     {
         Task<ActionResult> StoreRefreshToken(RefreshToken token);
         Task<ActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IBlobService
