@@ -41,7 +41,7 @@ namespace ChatroomB_Backend.Controllers
 
             if (!isUnique)
             {
-                return new BadRequestObjectResult(new { IsUnique = false, Message = "Username already exists." });  
+                return new BadRequestObjectResult(new { IsUnique = false, Error = "Username already exists." });  
             }
 
             return Ok();
@@ -53,7 +53,7 @@ namespace ChatroomB_Backend.Controllers
             // Check if request data valid
             if (!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Error = "Invalid request data" });
             }
 
             // Check if username exists
@@ -61,7 +61,7 @@ namespace ChatroomB_Backend.Controllers
 
             if (!isUnique)
             {
-                return new BadRequestObjectResult(new { Message = "Username already exists." });
+                return new ConflictObjectResult(new { Error = "Duplicate username detected" });
             }
 
             // Generate salt, hash password, and store user object
@@ -95,7 +95,7 @@ namespace ChatroomB_Backend.Controllers
         {
             if(!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Error = "Invalid request data" });
             }
 
             try
@@ -105,7 +105,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (doesNotExist)
                 {
-                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
+                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
 
                 // Get salt from user object in database
@@ -119,8 +119,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (!isAuthenticated)
                 {
-                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
-                    
+                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
 
                 // Get user Id
@@ -143,20 +142,21 @@ namespace ChatroomB_Backend.Controllers
 
                 HttpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
 
-                // Store refresh token in database
-                await _tokenService.StoreRefreshToken(new RefreshToken
+                // Store the refresh token in database
+                RefreshToken token = new RefreshToken
                 {
                     UserId = userId,
                     Token = refreshToken,
                     ExpiredDateTime = DateTime.UtcNow.AddDays(7)
-                });
+                };
+
+                await _tokenService.StoreRefreshToken(token);
 
                 // Return access token and user Id in the response body
                 return new OkObjectResult(new
                 {
                     AccessToken = accessToken,
                     UserId = userId,
-                    refreshToken = refreshToken,
                     Message = "Login successful!"
                 });
             }
@@ -195,7 +195,7 @@ namespace ChatroomB_Backend.Controllers
 
                 HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
 
-                return Ok(new { Message = "Logout successful" });
+                return new OkObjectResult (new { Message = "Logout successful" });
             }
             catch
             {
