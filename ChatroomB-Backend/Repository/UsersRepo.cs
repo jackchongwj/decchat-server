@@ -104,12 +104,12 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
-            var parameter = new DynamicParameters();
+            DynamicParameters parameter = new DynamicParameters();
             parameter.Add("@UserId", userId);
 
             string sql = "EXEC GetChatListByUserId @UserId";
 
-            var chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
+            IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
 
             return chatList.AsList();
         }

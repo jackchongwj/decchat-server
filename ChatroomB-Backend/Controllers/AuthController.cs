@@ -37,7 +37,7 @@ namespace ChatroomB_Backend.Controllers
         [HttpGet("DoesUsernameExist")]
         public async Task<ActionResult> DoesUsernameExist(string username)
         {
-            var isUnique = await _userService.DoesUsernameExist(username);
+            bool isUnique = await _userService.DoesUsernameExist(username);
 
             if (!isUnique)
             {
@@ -57,7 +57,7 @@ namespace ChatroomB_Backend.Controllers
             }
 
             // Check if username exists
-            var isUnique = await _userService.DoesUsernameExist(request.Username);
+            bool isUnique = await _userService.DoesUsernameExist(request.Username);
 
             if (!isUnique)
             {
@@ -133,7 +133,7 @@ namespace ChatroomB_Backend.Controllers
                 string refreshToken = _tokenUtils.GenerateRefreshToken();
 
                 // Set the refresh token in a cookie
-                var cookieOptions = new CookieOptions
+                CookieOptions cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Expires = DateTime.UtcNow.AddDays(7),
@@ -177,7 +177,7 @@ namespace ChatroomB_Backend.Controllers
                 string refreshToken = Request.Cookies["refreshToken"];
 
                 // Create a refresh token object
-                var token = new RefreshToken
+                RefreshToken token = new RefreshToken
                 {
                     Token = refreshToken
                 };
@@ -186,7 +186,7 @@ namespace ChatroomB_Backend.Controllers
                 await _tokenService.RemoveRefreshToken(token);
 
                 // Delete refresh token from client (cookie)
-                var cookieOptions = new CookieOptions
+                CookieOptions cookieOptions = new CookieOptions
                 {
                     Path = "/",
                     HttpOnly = true,
