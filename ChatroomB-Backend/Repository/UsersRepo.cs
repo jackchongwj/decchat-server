@@ -67,7 +67,7 @@ namespace ChatroomB_Backend.Repository
         {
             try
             {
-                string sql = "exec CheckUserNameUnique @UserName";
+                string sql = "exec DoesUsernameExist @UserName";
 
                 bool isUnique = await _dbConnection.ExecuteScalarAsync<bool>(sql, new { UserName = username });
 

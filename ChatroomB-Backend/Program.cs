@@ -36,7 +36,11 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 });
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    });
 
 // SignalR service
 builder.Services.AddSignalR();
@@ -136,11 +140,6 @@ app.UseErrorHandlingMiddleware();
 //    context.Response.ContentType = "text/plain";
 //    await context.Response.WriteAsync("An internal server error occurred.");
 //});
-//});
-
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapHub<ChatHub>("/chatHub");
 //});
 
 app.MapControllers();

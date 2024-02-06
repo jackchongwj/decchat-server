@@ -37,11 +37,11 @@ namespace ChatroomB_Backend.Controllers
         [HttpGet("DoesUsernameExist")]
         public async Task<ActionResult> DoesUsernameExist(string username)
         {
-            var isUnique = await _userService.DoesUsernameExist(username);
+            bool isUnique = await _userService.DoesUsernameExist(username);
 
             if (!isUnique)
             {
-                return new BadRequestObjectResult(new { IsUnique = false, Message = "Username already exists." });  
+                return new BadRequestObjectResult(new { IsUnique = false, Error = "Username already exists." });
             }
 
             return Ok();
@@ -138,8 +138,8 @@ namespace ChatroomB_Backend.Controllers
                     HttpOnly = true,
                     Expires = DateTime.UtcNow.AddDays(7),
                     Path = "/",
-                    SameSite = SameSiteMode.None,
-                    Secure = true
+                    //SameSite = SameSiteMode.Strict,
+                    //Secure = false
                 });
 
                 // Store refresh token in database
