@@ -17,6 +17,7 @@ using SixLabors.ImageSharp;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using ChatroomB_Backend.Middleware;
+using Microsoft.AspNetCore.CookiePolicy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,15 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 {
     ConfigurationOptions configuration = ConfigurationOptions.Parse(builder.Configuration.GetSection("RedisConnection")["RedisConnectionString"]);
     return ConnectionMultiplexer.Connect(configuration);
+});
+
+// Add Cookie Policy
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => true;
+    options.MinimumSameSitePolicy = SameSiteMode.None; 
+    options.HttpOnly = HttpOnlyPolicy.Always;
+    options.Secure = CookieSecurePolicy.SameAsRequest; 
 });
 
 // Add services to the container.
@@ -80,12 +90,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // add policy
-builder.Services.AddCors(options => {
-    options.AddPolicy("AngularApp",
-            builder => builder.WithOrigins("http://localhost:4200")
-                              .AllowAnyMethod()
-                              .AllowAnyHeader()
-                              .AllowCredentials());
+builder.Services.AddCors(options => 
+{
+    options.AddPolicy("AngularApp", policy => 
+            policy.WithOrigins("http://localhost:4200")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials());
 });
 
 // add jwt bearer authentication

@@ -41,7 +41,7 @@ namespace ChatroomB_Backend.Controllers
 
             if (!isUnique)
             {
-                return new BadRequestObjectResult(new { IsUnique = false, Error = "Username already exists." });
+                return new BadRequestObjectResult(new { IsUnique = false, Error = "Username already exists." });  
             }
 
             return Ok();
@@ -53,15 +53,15 @@ namespace ChatroomB_Backend.Controllers
             // Check if request data valid
             if (!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Error = "Invalid request data" });
             }
 
             // Check if username exists
-            var isUnique = await _userService.DoesUsernameExist(request.Username);
+            bool isUnique = await _userService.DoesUsernameExist(request.Username);
 
             if (!isUnique)
             {
-                return new BadRequestObjectResult(new { Message = "Username already exists." });
+                return new ConflictObjectResult(new { Error = "Duplicate username detected" });
             }
 
             // Generate salt, hash password, and store user object
@@ -95,7 +95,7 @@ namespace ChatroomB_Backend.Controllers
         {
             if(!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Error = "Invalid request data" });
             }
 
             try
@@ -105,7 +105,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (doesNotExist)
                 {
-                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
+                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
 
                 // Get salt from user object in database
@@ -119,8 +119,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (!isAuthenticated)
                 {
-                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
-                    
+                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
 
                 // Get user Id
@@ -133,22 +132,25 @@ namespace ChatroomB_Backend.Controllers
                 string refreshToken = _tokenUtils.GenerateRefreshToken();
 
                 // Set the refresh token in a cookie
-                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                CookieOptions cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/",
-                    //SameSite = SameSiteMode.Strict,
-                    //Secure = false
-                });
+                    Secure = true,
+                    SameSite = SameSiteMode.None
+                };
 
-                // Store refresh token in database
-                await _tokenService.StoreRefreshToken(new RefreshToken
+                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+
+                // Store the refresh token in database
+                RefreshToken token = new RefreshToken
                 {
                     UserId = userId,
                     Token = refreshToken,
                     ExpiredDateTime = DateTime.UtcNow.AddDays(7)
-                });
+                };
+
+                await _tokenService.StoreRefreshToken(token);
 
                 // Return access token and user Id in the response body
                 return new OkObjectResult(new
@@ -175,7 +177,7 @@ namespace ChatroomB_Backend.Controllers
                 string refreshToken = Request.Cookies["refreshToken"];
 
                 // Create a refresh token object
-                var token = new RefreshToken
+                RefreshToken token = new RefreshToken
                 {
                     Token = refreshToken
                 };
@@ -184,14 +186,16 @@ namespace ChatroomB_Backend.Controllers
                 await _tokenService.RemoveRefreshToken(token);
 
                 // Delete refresh token from client (cookie)
-                HttpContext.Response.Cookies.Delete("refreshToken", new CookieOptions
+                CookieOptions cookieOptions = new CookieOptions
                 {
                     Path = "/",
-                    SameSite = SameSiteMode.None,
-                    Secure = true
-                });
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.None // Be sure this matches what was set when creating the cookie
+                };
 
-                return Ok(new { Message = "Logout successful" });
+                HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
+
+                return new OkObjectResult (new { Message = "Logout successful" });
             }
             catch
             {
