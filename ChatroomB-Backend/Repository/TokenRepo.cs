@@ -61,7 +61,7 @@ namespace ChatroomB_Backend.Repository
             {
                 string sql = "exec ValidateRefreshToken @Token";
 
-                var refreshToken = await _dbConnection.QueryFirstOrDefaultAsync<RefreshToken>(sql, new { token.Token });
+                RefreshToken refreshToken = await _dbConnection.QueryFirstOrDefaultAsync<RefreshToken>(sql, new { token.Token });
 
                 if (refreshToken == null)
                 {
