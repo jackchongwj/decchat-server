@@ -36,7 +36,11 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 });
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    });
 
 // SignalR service
 builder.Services.AddSignalR();
@@ -121,6 +125,7 @@ app.UseCors("AngularApp");
 app.UseRouting();
 
 app.UseAuthentication();
+
 
 app.UseAuthorization();
 

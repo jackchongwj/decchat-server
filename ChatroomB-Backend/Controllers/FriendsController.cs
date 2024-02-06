@@ -208,8 +208,8 @@ namespace ChatroomB_Backend.Controllers
 
                 if (request.Status == 2)
                 {
-                    int classroomId = await _ChatRoomService.AddChatRoom(request);
-                    return Ok(classroomId);
+                    int chatroomId = await _ChatRoomService.AddChatRoom(request);
+                    return Ok(chatroomId);
                 }
             }
             return Ok(0);

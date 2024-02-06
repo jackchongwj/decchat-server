@@ -1,4 +1,5 @@
 ﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using Microsoft.AspNetCore.SignalR;
 using NuGet.Protocol.Plugins;
@@ -22,7 +23,7 @@ namespace ChatroomB_Backend.Hubs
         public override async Task OnConnectedAsync()
         {
             //string? userId = Context.User?.Identity?.Name;
-            string userId = "7";
+            string userId = Context.GetHttpContext().Request.Query["userId"];
             string connectionId = Context.ConnectionId;
             Console.WriteLine($"Connection ID {connectionId} connected.");
 
@@ -30,13 +31,15 @@ namespace ChatroomB_Backend.Hubs
 
             await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
 
+            await Groups.AddToGroupAsync(Context.ConnectionId, "FR"+ userId);
+
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception) 
         {
             //string? userId = Context.User?.Identity?.Name;
-            string userId = "7";
+            string userId = Context.GetHttpContext().Request.Query["userId"];
             string connectionId = Context.ConnectionId;
 
             await _RServices.DeleteUserIdFromRedis(userId);
@@ -69,14 +72,13 @@ namespace ChatroomB_Backend.Hubs
         {
             try
             {
+                IEnumerable<UserSearch> RnewResult = await _Uservices.GetByName(profileName, receiverId);
+                IEnumerable<UserSearch> SnewResult = await _Uservices.GetByName(profileName, senderId);
+                IEnumerable<Users> GetFriendRequest = await _Uservices.GetFriendRequest(receiverId);
 
-                await Clients.User(receiverId.ToString()).SendAsync("ReceiveFriendRequestNotification");
-
-                IEnumerable<UserSearch> newResult = await _Uservices.GetByName(profileName, senderId);
-                //await Clients.Caller.SendAsync("UpdateSearchResults", newResult);
-                //await Clients.User(senderId.ToString()).SendAsync("UpdateSearchResults", newResult);
-                //await Clients.User(receiverId.ToString()).SendAsync("UpdateSearchResults", newResult);
-                await Clients.All.SendAsync("UpdateSearchResults", newResult);
+                await Clients.Group("FR"+ receiverId.ToString()).SendAsync("UpdateSearchResults", senderId);
+                await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResults", receiverId);
+                await Clients.Group("FR" + receiverId.ToString()).SendAsync("UpdateFriendRequest", GetFriendRequest);
             }
             catch (Exception ex)
             {
