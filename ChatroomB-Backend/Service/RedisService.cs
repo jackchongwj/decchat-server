@@ -21,5 +21,10 @@ namespace ChatroomB_Backend.Service
         {
             return await _repo.DeleteUserIdFromRedis(userId);
         }
+
+        public async Task<string> SelectUserIdFromRedis(int? userId)
+        {
+            return await _repo.SelectUserIdFromRedis(userId);
+        }
     }
 }

@@ -65,5 +65,7 @@ namespace ChatroomB_Backend.Service
     {
         Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);                                                  // Add userId and connection id to redis
         Task<int> DeleteUserIdFromRedis(string userId);
+        Task<string> SelectUserIdFromRedis(int? userId);
     }
+    
 }

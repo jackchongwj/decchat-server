@@ -65,5 +65,24 @@ namespace ChatroomB_Backend.Repository
                 return 0;
             }
         }
+
+        public async Task<string> SelectUserIdFromRedis(int? userId)
+        {
+            try
+            {
+                string key = $"User:{userId}:connection";
+
+                // get hash
+                var data = await _redisDatabase.StringGetAsync(key);
+
+                string result = data.ToString();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
     }
 }
