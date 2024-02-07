@@ -18,6 +18,18 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
+        //public async Task<bool> IsRefreshTokenValid(RefreshToken token)
+        //{
+        //    try
+        //    {
+
+        //    }
+        //    catch
+        //    {
+
+        //    }
+        //}
+
         public async Task<ActionResult> StoreRefreshToken(RefreshToken token)
         {
             try
