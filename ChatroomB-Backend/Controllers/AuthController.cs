@@ -34,19 +34,6 @@ namespace ChatroomB_Backend.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpGet("DoesUsernameExist")]
-        public async Task<ActionResult> DoesUsernameExist(string username)
-        {
-            bool isUnique = await _userService.DoesUsernameExist(username);
-
-            if (!isUnique)
-            {
-                return new BadRequestObjectResult(new { IsUnique = false, Error = "Username already exists." });  
-            }
-
-            return Ok();
-        }
-
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] AuthRequest request)
         {
@@ -176,23 +163,27 @@ namespace ChatroomB_Backend.Controllers
                 // Retrieve the refresh token from the request
                 string refreshToken = Request.Cookies["refreshToken"];
 
-                // Create a refresh token object
-                RefreshToken token = new RefreshToken
+                if(!string.IsNullOrEmpty(refreshToken)) 
                 {
-                    Token = refreshToken
-                };
+                    // Create a refresh token object
+                    RefreshToken token = new RefreshToken
+                    {
+                        Token = refreshToken
+                    };
 
-                // Delete refresh token from database
-                await _tokenService.RemoveRefreshToken(token);
+                    // Delete refresh token from database
+                    await _tokenService.RemoveRefreshToken(token);
+                }
 
-                // Delete refresh token from client (cookie)
+                // Replicate the cookie options
                 CookieOptions cookieOptions = new CookieOptions
                 {
-                    Path = "/",
                     HttpOnly = true,
-                    SameSite = SameSiteMode.None // Be sure this matches what was set when creating the cookie
+                    Secure = true,
+                    SameSite = SameSiteMode.None
                 };
 
+                // Delete refresh token from client (cookie)
                 HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
 
                 return new OkObjectResult (new { Message = "Logout successful" });

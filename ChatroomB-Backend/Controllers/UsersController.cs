@@ -96,6 +96,13 @@ namespace ChatroomB_Backend.Controllers
             return Ok();
         }
 
+        [HttpGet("DoesUsernameExist")]
+        public async Task<ActionResult> DoesUsernameExist(string username)
+        {
+            bool isUnique = await _UserService.DoesUsernameExist(username);
+
+            return Ok(new { IsUnique = isUnique });
+        }
         //// GET: api/Users
         //[HttpGet]
         //public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
