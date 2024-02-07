@@ -10,6 +10,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Cors;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -200,7 +201,7 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("UpdateFriendRequest")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateFriendRequest(FriendRequest request)
+        public async Task<ActionResult<int>> UpdateFriendRequest(FriendRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -208,25 +209,27 @@ namespace ChatroomB_Backend.Controllers
 
                 if (request.Status == 2)
                 {
-                    await _ChatRoomService.AddChatRoom(request);
+                    int chatroomId = await _ChatRoomService.AddChatRoom(request);
+                    return Ok(chatroomId);
                 }
             }
-            return Ok();
+            return Ok(0);
         }
 
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            // 模拟抛出一个异常
-            throw new ApplicationException("This is a simulated exception.");
-        }
+       
+        //[HttpGet]
+        //public IActionResult Get()
+        //{
+        //    // 模拟抛出一个异常
+        //    throw new ApplicationException("This is a simulated exception.");
+        //}
 
-        [HttpGet("404")]
-        public IActionResult Geterror()
-        {
-            // 此处不会抛出异常，但返回 404 Not Found
-            return NotFound("Resource not found.");
-        }
+        //[HttpGet("404")]
+        //public IActionResult Geterror()
+        //{
+        //    // 此处不会抛出异常，但返回 404 Not Found
+        //    return NotFound("Resource not found.");
+        //}
     }
 }

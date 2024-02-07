@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using ChatroomB_Backend.DTO;
 using System.Linq;
+using Microsoft.AspNetCore.Cors;
 
 namespace ChatroomB_Backend.Controllers
 {

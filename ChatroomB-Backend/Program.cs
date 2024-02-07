@@ -46,10 +46,18 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 });
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    });
 
 // SignalR service
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+    });
 
 // service repository utils
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
@@ -132,6 +140,7 @@ app.UseCors("AngularApp");
 app.UseRouting();
 
 app.UseAuthentication();
+
 
 app.UseAuthorization();
 
