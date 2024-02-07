@@ -53,7 +53,11 @@ builder.Services.AddControllers()
     });
 
 // SignalR service
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+    });
 
 // service repository utils
 builder.Services.AddScoped<IUserRepo, UsersRepo>();

@@ -10,6 +10,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Cors;
 
 namespace ChatroomB_Backend.Controllers
 {

@@ -5,6 +5,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.Utils;
 using ChatroomB_Backend.DTO;
+using Microsoft.AspNetCore.Cors;
 
 namespace ChatroomB_Backend.Controllers
 {

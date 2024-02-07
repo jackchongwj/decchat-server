@@ -23,7 +23,7 @@ namespace ChatroomB_Backend.Repository
             param.Add("@RoomType", 0);
             param.Add("@RoomProfilePic", "");
             param.Add("@SenderId", request.SenderId);
-            param.Add("@ReceiverId", request.SenderId);
+            param.Add("@ReceiverId", request.ReceivedId);
             param.Add("@ChatRoomId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @ChatRoomId OUTPUT";

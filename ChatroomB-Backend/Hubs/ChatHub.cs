@@ -72,8 +72,6 @@ namespace ChatroomB_Backend.Hubs
         {
             try
             {
-                IEnumerable<UserSearch> RnewResult = await _Uservices.GetByName(profileName, receiverId);
-                IEnumerable<UserSearch> SnewResult = await _Uservices.GetByName(profileName, senderId);
                 IEnumerable<Users> GetFriendRequest = await _Uservices.GetFriendRequest(receiverId);
 
                 await Clients.Group("FR"+ receiverId.ToString()).SendAsync("UpdateSearchResults", senderId);
@@ -87,19 +85,13 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
-        public async Task acceptFriendRequest(int chatroomId, int userId) 
+        public async Task acceptFriendRequest(int chatroomId, int senderId,int receiverId) 
         {
             try
             {
-
-                await Clients.User(userId.ToString()).SendAsync("ReceiveFriendRequestNotification");
-
-                await AddToGroup(null,chatroomId, userId);
-                IEnumerable<ChatlistVM> newResult = await _Uservices.GetChatListByUserId(userId);
-                //await Clients.Caller.SendAsync("UpdateSearchResults", newResult);
-                //await Clients.User(senderId.ToString()).SendAsync("UpdateSearchResults", newResult);
-                //await Clients.User(receiverId.ToString()).SendAsync("UpdateSearchResults", newResult);
-                await Clients.All.SendAsync("UpdateSearchResults", newResult);
+                await AddToGroup(null,chatroomId, senderId);
+                IEnumerable<ChatlistVM> newResult = await _Uservices.GetChatListByUserId(senderId);
+                await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterAccept", receiverId);
             }
             catch (Exception ex)
             {
