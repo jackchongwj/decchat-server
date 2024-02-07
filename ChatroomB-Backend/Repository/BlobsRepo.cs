@@ -30,18 +30,18 @@ namespace ChatroomB_Backend.Repository
             client = _blobServiceClient.GetBlobContainerClient(_containerName);
         }
 
-        public async Task<string> UploadImageFiles(byte[] fileByte, string filename, string folderPath)
+        public async Task<string> UploadImageFiles(byte[] imgByte, string filename, string folderPath)
         {
             // example folderPath : "images/folder1"
             string blobName = folderPath.TrimEnd('/') + '/' + filename;
             BlobClient blobClient = client.GetBlobClient(blobName);
 
-            using (Image image = Image.Load(fileByte))
+            using (Image image = Image.Load(imgByte))
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
                     WebpEncoder encoder = new WebpEncoder();
-                    await image.SaveAsWebpAsync(ms);
+                    await image.SaveAsWebpAsync(ms, encoder);
                     ms.Position = 0; // Reset the memory stream position after writing.
 
                     // Upload the WebP image
@@ -52,31 +52,46 @@ namespace ChatroomB_Backend.Repository
             return blobClient.Uri.AbsoluteUri;
         }
 
-        public async Task<string> UploadVideoFiles(string filepath, string filename, string folderPath)
+        public async Task<string> UploadVideoFiles(byte[] vidByte, string filename, string folderPath)
         {
             // example folderPath : "images/folder1"
             string blobName = folderPath.TrimEnd('/') + '/' + filename;
             BlobClient blobClient = client.GetBlobClient(blobName);
 
             // Upload the video file
-            using (FileStream fs = new FileStream(filepath, FileMode.Open))
+            using (MemoryStream ms = new MemoryStream(vidByte))
             {
-                await blobClient.UploadAsync(fs);
+                await blobClient.UploadAsync(ms);
             }
 
             return blobClient.Uri.AbsoluteUri;
         }
 
-        public async Task<string> UploadDocuments(string filepath, string filename, string folderPath)
+        public async Task<string> UploadDocuments(byte[] docByte, string filename, string folderPath)
         {
             // example folderPath : "images/folder1"
             string blobName = folderPath.TrimEnd('/') + '/' + filename;
             BlobClient blobClient = client.GetBlobClient(blobName);
 
             // Upload documents
-            using (FileStream fs = new FileStream(filepath, FileMode.Open, FileAccess.Read))
+            using (MemoryStream ms = new MemoryStream(docByte))
             {
-                await blobClient.UploadAsync(fs);
+                await blobClient.UploadAsync(ms);
+            }
+
+            return blobClient.Uri.AbsoluteUri;
+        }
+
+        public async Task<string> UploadAudios(byte[] audioByte, string filename, string folderPath)
+        {
+            // example folderPath : "images/folder1"
+            string blobName = folderPath.TrimEnd('/') + '/' + filename;
+            BlobClient blobClient = client.GetBlobClient(blobName);
+
+            // Upload documents
+            using (MemoryStream ms = new MemoryStream(audioByte))
+            {
+                await blobClient.UploadAsync(ms);
             }
 
             return blobClient.Uri.AbsoluteUri;

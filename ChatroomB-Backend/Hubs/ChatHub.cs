@@ -37,6 +37,7 @@ namespace ChatroomB_Backend.Hubs
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception) 
+        
         {
             //string? userId = Context.User?.Identity?.Name;
             string userId = Context.GetHttpContext().Request.Query["userId"];
@@ -45,23 +46,13 @@ namespace ChatroomB_Backend.Hubs
             await _RServices.DeleteUserIdFromRedis(userId);
 
             await base.OnDisconnectedAsync(exception);
+            
         }
 
-        // group id 
-
-
-        //public async Task ReceiveIncomingMessage(string message)
-        //{
-        //    await PassMessage(message);
-        //}
-
-        //public async Task PassMessage(string message)
-        //{
-        //    await Clients.All.SendAsync("ReceiveMessage", message);
-        //}
-
-
-
+        public async Task CheckUserTyping(string name, bool typing)
+        {
+            await Clients.All.SendAsync("UserTyping", name, typing);
+        }
         //public async Task SendFriendRequestNotification(IEnumerable<Friends> friend)
         //{
 

@@ -158,11 +158,6 @@ app.UseErrorHandlingMiddleware();
 //});
 //});
 
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapHub<ChatHub>("/chatHub");
-//});
-
 app.MapControllers();
 
 app.Run();

@@ -37,8 +37,8 @@ namespace ChatroomB_Backend.Controllers
             return Ok(GetUserByName);
         }
 
-        [HttpGet("GetChatListByUserId")]
-        public async Task<IActionResult> GetChatListByUserId(int userId)
+        [HttpGet("RetrieveChatListByUser")]
+        public async Task<IActionResult> GetChatListByUserId([FromQuery] int userId)
         {
             var friendList = await _UserService.GetChatListByUserId(userId);
             return Ok(friendList); //HTTP 200 OK indicates that the request was successful, and the server is returning the requested data.
@@ -185,5 +185,14 @@ namespace ChatroomB_Backend.Controllers
         //{
         //    return _context.Users.Any(e => e.UserId == id);
         //}
+        private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                return memoryStream.ToArray();
+            }
+        }
+        
     }
 }
