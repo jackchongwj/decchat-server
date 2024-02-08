@@ -29,7 +29,7 @@ namespace ChatroomB_Backend.Repository
                     new HashEntry("ConnectionId", connectionId)
                 });
 
-                ////set time
+                //set time
                 //await _redisDatabase.KeyExpireAsync(key, TimeSpan.FromDays(7));
 
                 return 1;
@@ -73,7 +73,7 @@ namespace ChatroomB_Backend.Repository
                 string key = $"User:{userId}:connection";
 
                 // get hash
-                var data = await _redisDatabase.StringGetAsync(key);
+                RedisValue data = await _redisDatabase.StringGetAsync(key);
 
                 string result = data.ToString();
 
