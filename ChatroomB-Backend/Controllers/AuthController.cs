@@ -5,6 +5,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.Utils;
 using ChatroomB_Backend.DTO;
+using Microsoft.AspNetCore.Cors;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -34,34 +35,21 @@ namespace ChatroomB_Backend.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpGet("IsUsernameUnique")]
-        public async Task<ActionResult> IsUsernameUnique(string username)
-        {
-            var isUnique = await _userService.IsUsernameUnique(username);
-
-            if (!isUnique)
-            {
-                return new BadRequestObjectResult(new { IsUnique = false, Message = "Username already exists." });  
-            }
-
-            return Ok();
-        }
-
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] AuthRequest request)
         {
             // Check if request data valid
             if (!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Error = "Invalid request data" });
             }
 
             // Check if username exists
-            var isUnique = await _userService.IsUsernameUnique(request.Username);
+            bool isUnique = await _userService.DoesUsernameExist(request.Username);
 
             if (!isUnique)
             {
-                return new BadRequestObjectResult(new { Message = "Username already exists." });
+                return new ConflictObjectResult(new { Error = "Duplicate username detected" });
             }
 
             // Generate salt, hash password, and store user object
@@ -95,17 +83,17 @@ namespace ChatroomB_Backend.Controllers
         {
             if(!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Error = "Invalid request data" });
             }
 
             try
             {
                 // Check if username exists
-                bool doesNotExist = await _userService.IsUsernameUnique(request.Username);
+                bool doesNotExist = await _userService.DoesUsernameExist(request.Username);
 
                 if (doesNotExist)
                 {
-                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
+                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
 
                 // Get salt from user object in database
@@ -119,8 +107,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (!isAuthenticated)
                 {
-                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
-                    
+                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
 
                 // Get user Id
@@ -132,35 +119,34 @@ namespace ChatroomB_Backend.Controllers
                 // Generate refresh token
                 string refreshToken = _tokenUtils.GenerateRefreshToken();
 
-                // Store refresh token in database
-                await _tokenService.StoreRefreshToken(new RefreshToken
+                // Set the refresh token in a cookie
+                CookieOptions cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    Secure = true,
+                    SameSite = SameSiteMode.None
+                };
+
+                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+
+                // Store the refresh token in database
+                RefreshToken token = new RefreshToken
                 {
                     UserId = userId,
                     Token = refreshToken,
                     ExpiredDateTime = DateTime.UtcNow.AddDays(7)
-                });
+                };
 
-                // Set the access token in the Authorization header
-                HttpContext.Response.Headers.Append("Authorization", $"Bearer {accessToken}");
+                await _tokenService.StoreRefreshToken(token);
 
-                // Set the refresh token in a cookie
-                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                // Return access token and user Id in the response body
+                return new OkObjectResult(new
                 {
-                    HttpOnly = true,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/"
+                    AccessToken = accessToken,
+                    UserId = userId,
+                    Message = "Login successful!"
                 });
-
-                // Set the user Id in a cookie
-                HttpContext.Response.Cookies.Append("userId", userId.ToString(), new CookieOptions
-                {
-                    HttpOnly = true,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/"
-                });
-
-                // Return user Id, access token, and refresh token
-                return new OkObjectResult(new { Message = "Login successful!"});
             }
             
             catch
@@ -175,25 +161,33 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                // Delete access token from client (header)
-                Response.Headers.Remove("Authorization");
-
                 // Retrieve the refresh token from the request
-                string refreshToken = Request.Cookies["refresh_token"];
+                string refreshToken = Request.Cookies["refreshToken"];
 
-                // Delete refresh token from client (cookie)
-                Response.Cookies.Delete("refresh_token");
-
-                // Create a refresh token object
-                var token = new RefreshToken
+                if(!string.IsNullOrEmpty(refreshToken)) 
                 {
-                    Token = refreshToken
+                    // Create a refresh token object
+                    RefreshToken token = new RefreshToken
+                    {
+                        Token = refreshToken
+                    };
+
+                    // Delete refresh token from database
+                    await _tokenService.RemoveRefreshToken(token);
+                }
+
+                // Replicate the cookie options
+                CookieOptions cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None
                 };
 
-                // Delete refresh token from database
-                await _tokenService.RemoveRefreshToken(token);
+                // Delete refresh token from client (cookie)
+                HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
 
-                return Ok(new { Message = "Logout successful" });
+                return new OkObjectResult (new { Message = "Logout successful" });
             }
             catch
             {

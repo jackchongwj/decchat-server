@@ -25,21 +25,21 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<int> AddChatRoom(FriendRequest request)
         {
-            var param = new
-            {
-                RoomName = "",
-                RoomType = 0,
-                RoomProfilePic = "",
-                InitiatedBy = request.SenderId,
-                SenderId = request.SenderId,
-                ReceiverId = request.ReceivedId
+            var param = new DynamicParameters();
+            param.Add("@RoomName", "");
+            param.Add("@RoomType", 0);
+            param.Add("@RoomProfilePic", "");
+            param.Add("@SenderId", request.SenderId);
+            param.Add("@ReceiverId", request.ReceivedId);
+            param.Add("@ChatRoomId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            };
-            string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId ";
+            string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @ChatRoomId OUTPUT";
 
             int result = await _dbConnection.ExecuteAsync(sql, param);
 
-            return result;
+            int chatRoomId = param.Get<int>("@ChatRoomId");
+
+            return chatRoomId;
         }
 
 

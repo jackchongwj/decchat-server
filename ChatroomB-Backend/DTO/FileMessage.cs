@@ -7,5 +7,6 @@ namespace ChatroomB_Backend.DTO
         public Messages? Message { get; set; }
         public byte[]? FileByte { get; set; }
         public string? FileName { get; set; }
+        public string? FileType { get; set; }
     }
 }

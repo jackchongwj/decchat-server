@@ -10,6 +10,8 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Cors;
+using StackExchange.Redis;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -175,6 +177,7 @@ namespace ChatroomB_Backend.Controllers
         private readonly IFriendService _FriendService ;
         private readonly IChatRoomService _ChatRoomService;
 
+
         public FriendsController(IFriendService Fservice, IChatRoomService CService)
         {
             _FriendService = Fservice;
@@ -184,34 +187,76 @@ namespace ChatroomB_Backend.Controllers
         //POST: Friends/Create
         [HttpPost("AddFriend")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([FromBody] Friends friends)
+        public async Task<IActionResult> AddFriend([FromBody] Friends friends)
         {
-            if (ModelState.IsValid)
+            try
             {
-                await _FriendService.AddFriends(friends);
+                if (ModelState.IsValid)
+                {
+                    int result = await _FriendService.AddFriends(friends);
+                    return Ok(friends);
+                }
+                else
+                {
+                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
+                }
 
-                ////update friend status
-                //await _hub.Clients.User(friends.ReceiverId.ToString()).SendAsync("ReceiveFriendRequestNotification");
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in AddFriend method: {ex.ToString()}");
 
-            return Ok(friends);
+                //return error message to client
+                return StatusCode(500, "An error occurred while processing your request.");
+
+                //return StatusCode(500, new { ErrorMessage = ex.Message, StackTrace = ex.StackTrace });
+            }
         }
 
         [HttpPost("UpdateFriendRequest")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateFriendRequest(FriendRequest request)
+        public async Task<ActionResult<int>> UpdateFriendRequest(FriendRequest request)
         {
-            if (ModelState.IsValid)
+            try
             {
-               int result =  await _FriendService.UpdateFriendRequest(request);
-
-                if (request.Status == 1)
+                if (ModelState.IsValid)
                 {
-                    await _ChatRoomService.AddChatRoom(request);
+                    int result = await _FriendService.UpdateFriendRequest(request);
+
+                    if (request.Status == 2)
+                    {
+                        int chatroomId = await _ChatRoomService.AddChatRoom(request);
+                        return Ok(chatroomId);
+                    }
+
+                    return Ok(0);
                 }
+                else 
+                {
+                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
+                }
+
+            }catch(Exception ex) 
+            {
+                Console.Error.WriteLine($"Error in UpdateFriendRequest method: {ex.ToString()}");
+                return StatusCode(500, "An error occurred while processing your request.");
             }
-            return Ok();
         }
 
+
+       
+        //[HttpGet]
+        //public IActionResult Get()
+        //{
+        //    // 模拟抛出一个异常
+        //    throw new ApplicationException("This is a simulated exception.");
+        //}
+
+        //[HttpGet("404")]
+        //public IActionResult Geterror()
+        //{
+        //    // 此处不会抛出异常，但返回 404 Not Found
+        //    return NotFound("Resource not found.");
+        //}
     }
 }

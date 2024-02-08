@@ -10,20 +10,21 @@ namespace ChatroomB_Backend.Service
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId);                                              //Get user by user profile name and filter friend request
+        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                              //Get user by user profile name and filter friend request
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                               //Get All Friend request
         Task<Users> GetUserById(int userId);
         Task<int> UpdateUser(Users user);
         Task<int> DeleteUser(int userId);
         Task<int> ChangePassword(int userId, string newPassword);
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
-        Task<bool> IsUsernameUnique(string username);
+        Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
+        Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);
     }
 
     public interface IFriendService
     {
-        Task<int> AddFriends(Friends friends);                                                                                 // add new friend
+        Task<int> AddFriends(Friends friends);                                                              // add new friend
         Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request                                                                      // 
 
     }
@@ -52,13 +53,23 @@ namespace ChatroomB_Backend.Service
     {
         Task<ActionResult> StoreRefreshToken(RefreshToken token);
         Task<ActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IBlobService
     {
         Task<string> UploadImageFiles(byte[] fileByte, string filename, int CaseImageFile);
-        Task<string> UploadVideoFiles(string filepath);
-        Task<string> UploadDocuments(string filepath);
+        Task<string> UploadVideoFiles(byte[] vidByte, string vidName);
+        Task<string> UploadDocuments(byte[] docByte, string docName);
+        Task<string> UploadAudios(byte[] audioByte, string audioName);
         Task DeleteBlob(string blobUri);
     }
+
+    public interface IRedisServcie 
+    {
+        Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);                                                  // Add userId and connection id to redis
+        Task<int> DeleteUserIdFromRedis(string userId);
+        Task<string> SelectUserIdFromRedis(int? userId);
+    }
+    
 }
