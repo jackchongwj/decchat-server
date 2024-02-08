@@ -8,7 +8,7 @@ using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Controllers
 {
-    [Route("api/auth")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {

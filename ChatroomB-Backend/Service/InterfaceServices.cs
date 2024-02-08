@@ -2,7 +2,9 @@
 using ChatroomB_Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Core.Types;
+using System.Data;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace ChatroomB_Backend.Service
 {
@@ -19,7 +21,7 @@ namespace ChatroomB_Backend.Service
         Task<int> GetUserId(string username);
     }
 
-    public interface IFriendService 
+    public interface IFriendService
     {
         Task<int> AddFriends(Friends friends);                                                                                 // add new friend
         Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request                                                                      // 
@@ -28,9 +30,11 @@ namespace ChatroomB_Backend.Service
 
     public interface IChatRoomService
     {
-        Task<int> AddChatRoom(FriendRequest request);                                             // add new ChatRoom and user chat room with private user
-    }
+        Task<int> AddChatRoom(FriendRequest request);
 
+
+        Task CreateGroupWithSelectedUsers(string roomName, int initiatedBy, List<int> SelectedUsers);
+    }
 
     public interface IMessageService
     {
