@@ -47,6 +47,7 @@ namespace ChatroomB_Backend.Hubs
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception) 
+        
         {
             try
             {

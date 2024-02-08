@@ -107,7 +107,7 @@ namespace ChatroomB_Backend.Repository
             DynamicParameters parameter = new DynamicParameters();
             parameter.Add("@UserId", userId);
 
-            string sql = "EXEC GetChatListByUserId @UserId";
+            string sql = "EXEC RetrieveChatRoomListById @UserId";
 
             IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
 

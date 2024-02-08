@@ -39,9 +39,10 @@ namespace ChatroomB_Backend.Repository
 
     public interface IBlobRepo
     {
-        Task<string> UploadImageFiles(byte[] fileByte, string filename, string folderPath);
-        Task<string> UploadVideoFiles(string filepath, string filename, string folderPath);
-        Task<string> UploadDocuments(string filepath, string filename, string folderPath);
+        Task<string> UploadImageFiles(byte[] imgByte, string filename, string folderPath);
+        Task<string> UploadVideoFiles(byte[] vidByte, string filename, string folderPath);
+        Task<string> UploadDocuments(byte[] docByte, string filename, string folderPath);
+        Task<string> UploadAudios(byte[] audioByte, string audioName, string folderpath);
         Task DeleteBlob(string blobUri);
     }
 
