@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ChatroomB_Backend.DTO
 {
-    public class UserSearch 
+    public class UserSearchDetails 
     {
         public int? UserId { get; set; }
 

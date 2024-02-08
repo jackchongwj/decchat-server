@@ -15,7 +15,7 @@ namespace ChatroomB_Backend.Service
             _repo = reponsitory;
         }
 
-        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
+        public async Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId)
         {
             return (await _repo.GetByName(profileName, userId));
         }

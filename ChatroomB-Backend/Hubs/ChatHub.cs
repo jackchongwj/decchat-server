@@ -22,51 +22,47 @@ namespace ChatroomB_Backend.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            //string? userId = Context.User?.Identity?.Name;
-            string userId = Context.GetHttpContext().Request.Query["userId"];
-            string connectionId = Context.ConnectionId;
-            Console.WriteLine($"Connection ID {connectionId} connected.");
+            try
+            {
+                // declare userId and connection Id
+                string userId = Context.GetHttpContext().Request.Query["userId"];
+                string connectionId = Context.ConnectionId;
 
-            //await Clients.All.SendAsync("aaa", $"{Context.ConnectionId} has joined On Connected");
+                Console.WriteLine($"Connection ID {connectionId} connected.");
 
-            await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
+                // call redis to add userId and Connection id to redis
+                await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, "FR"+ userId);
+                //add user to a group to easy call them
+                await Groups.AddToGroupAsync(Context.ConnectionId, "FR"+ userId);
 
-            await base.OnConnectedAsync();
+                await base.OnConnectedAsync();
+
+            }
+            catch (Exception ex) 
+            {
+                Console.Error.WriteLine($"Error in Redis Connection method: {ex.ToString()}");
+                throw;
+            }
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception) 
         {
-            //string? userId = Context.User?.Identity?.Name;
-            string userId = Context.GetHttpContext().Request.Query["userId"];
-            string connectionId = Context.ConnectionId;
+            try
+            {
+                string userId = Context.GetHttpContext().Request.Query["userId"];
+                string connectionId = Context.ConnectionId;
 
-            await _RServices.DeleteUserIdFromRedis(userId);
+                await _RServices.DeleteUserIdFromRedis(userId);
 
-            await base.OnDisconnectedAsync(exception);
+                await base.OnDisconnectedAsync(exception);
+            }
+            catch (Exception ex) 
+            {
+                Console.Error.WriteLine($"Error in Redis Connection method: {ex.ToString()}");
+                throw;
+            }
         }
-
-        // group id 
-
-
-        //public async Task ReceiveIncomingMessage(string message)
-        //{
-        //    await PassMessage(message);
-        //}
-
-        //public async Task PassMessage(string message)
-        //{
-        //    await Clients.All.SendAsync("ReceiveMessage", message);
-        //}
-
-
-
-        //public async Task SendFriendRequestNotification(IEnumerable<Friends> friend)
-        //{
-
-        //    await Clients.User(friend.FirstOrDefault().ReceiverId.ToString()).SendAsync("ReceiveFriendRequestNotification", friend.FirstOrDefault().SenderId);
-        //}
 
         public async Task SendFriendRequestNotification(int receiverId, int senderId, string profileName)
         {
@@ -92,6 +88,19 @@ namespace ChatroomB_Backend.Hubs
                 await AddToGroup(null,chatroomId, senderId);
                 IEnumerable<ChatlistVM> newResult = await _Uservices.GetChatListByUserId(senderId);
                 await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterAccept", receiverId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task rejectFriendRequest(int senderId, int receiverId)
+        {
+            try
+            {
+                await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterReject", receiverId);
             }
             catch (Exception ex)
             {
