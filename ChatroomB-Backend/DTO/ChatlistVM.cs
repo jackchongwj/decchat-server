@@ -15,7 +15,6 @@ namespace ChatroomB_Backend.DTO
         public string? ProfilePicture { get; set; }
         public string? ChatRoomName  { get; set; }
         public bool RoomType { get; set; }
-        public int ChatRoomId { get; set; }
         public DataTable SelectedUsers { get; set; }
 
     }

@@ -8,11 +8,11 @@ namespace ChatroomB_Backend.Controllers
     [ApiController]
     public class UserChatRoomController : ControllerBase
     {
-        private readonly IUserChatRoomService _userChatRoomService;
+        //private readonly IUserChatRoomService _userChatRoomService;
 
-        public UserChatRoomController(IUserChatRoomService userChatRoomService)
-        {
-            _userChatRoomService = userChatRoomService;
-        }
+        //public UserChatRoomController(IUserChatRoomService userChatRoomService)
+        //{
+        //    _userChatRoomService = userChatRoomService;
+        //}
     }
 }
