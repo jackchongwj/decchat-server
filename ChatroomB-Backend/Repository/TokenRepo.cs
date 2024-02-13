@@ -18,6 +18,18 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
+        //public async Task<bool> IsRefreshTokenValid(RefreshToken token)
+        //{
+        //    try
+        //    {
+
+        //    }
+        //    catch
+        //    {
+
+        //    }
+        //}
+
         public async Task<ActionResult> StoreRefreshToken(RefreshToken token)
         {
             try
@@ -61,7 +73,7 @@ namespace ChatroomB_Backend.Repository
             {
                 string sql = "exec ValidateRefreshToken @Token";
 
-                var refreshToken = await _dbConnection.QueryFirstOrDefaultAsync<RefreshToken>(sql, new { token.Token });
+                RefreshToken refreshToken = await _dbConnection.QueryFirstOrDefaultAsync<RefreshToken>(sql, new { token.Token });
 
                 if (refreshToken == null)
                 {

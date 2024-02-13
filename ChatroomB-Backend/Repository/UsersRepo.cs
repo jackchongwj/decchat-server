@@ -19,11 +19,11 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
+        public async Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId)
         {
             string sql = "exec GetUserByProfileName @profileName, @userId";
 
-            IEnumerable<UserSearch> result = await _dbConnection.QueryAsync<UserSearch>(sql, new {profileName, userId });
+            IEnumerable<UserSearchDetails> result = await _dbConnection.QueryAsync<UserSearchDetails>(sql, new {profileName, userId });
 
             return result;
         }
@@ -77,11 +77,11 @@ namespace ChatroomB_Backend.Repository
         {
             try
             {
-                string sql = "exec CheckUserNameUnique @UserName";
+                string sql = "exec DoesUsernameExist @UserName";
 
-                bool isUnique = await _dbConnection.ExecuteScalarAsync<bool>(sql, new { UserName = username });
+                bool isExist = await _dbConnection.ExecuteScalarAsync<bool>(sql, new { UserName = username });
 
-                return isUnique;
+                return isExist;
             }
             catch
             {
@@ -99,22 +99,22 @@ namespace ChatroomB_Backend.Repository
 
                 return result;
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("An unexpected error occurred");
+                throw new InvalidOperationException("An unexpected error occurred", ex);
             }
-            
+
         }
         
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
-            var parameter = new DynamicParameters();
+            DynamicParameters parameter = new DynamicParameters();
             parameter.Add("@UserId", userId);
 
-            string sql = "EXEC GetChatListByUserId @UserId";
+            string sql = "EXEC RetrieveChatRoomListById @UserId";
 
-            var chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
+            IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
 
             return chatList.AsList();
         }

@@ -28,16 +28,19 @@ namespace ChatroomB_Backend.Repository
                 if (salt == null)
 
                 {
-                    throw new Exception("Salt not found for the user");
+                    throw new ArgumentNullException("Salt not found for the user");
                 }
 
                 return salt;
             }
-            catch
+            catch (SqlException ex)
             {
-                throw new Exception("An unexpected error occurred");
+                throw new InvalidOperationException("A database error occurred while fetching salt", ex);
             }
-            
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An unexpected error occurred", ex);
+            }
         }
 
         public async Task<bool> VerifyPassword(string username, string hashedPassword)
@@ -50,9 +53,13 @@ namespace ChatroomB_Backend.Repository
 
                 return result == 1;
             }
-            catch
+            catch (SqlException ex)
             {
-                throw new Exception("An unexpected error occurred.");
+                throw new InvalidOperationException("A database error occurred while verifying password", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An unexpected error occurred", ex);
             }
         }
 

@@ -19,3 +19,4 @@ namespace ChatroomB_Backend.Models
         public bool IsDeleted { get; set; }
     }
 }
+    

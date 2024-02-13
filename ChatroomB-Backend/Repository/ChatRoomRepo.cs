@@ -2,8 +2,15 @@
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using Dapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Plugins;
 using System.Data;
+using System.Text.RegularExpressions;
+using System.Data.SqlClient;
+using System.Threading.Tasks;
+
 
 namespace ChatroomB_Backend.Repository
 {
@@ -23,7 +30,7 @@ namespace ChatroomB_Backend.Repository
             param.Add("@RoomType", 0);
             param.Add("@RoomProfilePic", "");
             param.Add("@SenderId", request.SenderId);
-            param.Add("@ReceiverId", request.SenderId);
+            param.Add("@ReceiverId", request.ReceivedId);
             param.Add("@ChatRoomId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @ChatRoomId OUTPUT";
@@ -34,5 +41,25 @@ namespace ChatroomB_Backend.Repository
 
             return chatRoomId;
         }
+
+
+        public async Task CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers)
+        {
+            try
+            {
+                var dynamicParam = new DynamicParameters();
+                dynamicParam.Add("@RoomName", roomName);
+                dynamicParam.Add("@InitiatedBy", initiatedBy);
+                dynamicParam.Add("@SelectedUsers", selectedUsers.AsTableValuedParameter("IntListTableType"));
+
+                _dbConnection.Query("CreateGroup", dynamicParam, commandType: CommandType.StoredProcedure);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                throw;
+            }
+        }      
     }
 }
+

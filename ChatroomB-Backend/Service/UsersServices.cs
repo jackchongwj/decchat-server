@@ -11,13 +11,13 @@ namespace ChatroomB_Backend.Service
         private readonly IUserRepo _repo;
         private readonly IBlobService _blobService;
 
-        public UsersServices(IUserRepo reponsitory,IBlobService blobService)
+        public UsersServices(IUserRepo reponsitory, IBlobService blobService)
         {
             _repo = reponsitory;
             _blobService = blobService;
         }
 
-        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
+        public async Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId)
         {
             return (await _repo.GetByName(profileName, userId));
         }
@@ -77,6 +77,11 @@ namespace ChatroomB_Backend.Service
         public async Task<int> GetUserId(string username)
         {
             return await _repo.GetUserId(username);
+        }
+
+        public async Task<string> GetProfilePictureUrl(byte[] fileByte, string filename)
+        {
+            return await _blobService.UploadImageFiles(fileByte, filename, 2);
         }
     }
 }

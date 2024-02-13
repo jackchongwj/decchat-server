@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ChatroomB_Backend.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using ChatroomB_Backend.DTO;
-using System.Linq;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -30,15 +20,36 @@ namespace ChatroomB_Backend.Controllers
         [HttpGet("Search")]
         public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
         {
-            IEnumerable<UserSearch> GetUserByName = await _UserService.GetByName(profileName, userId);
+            try
+            {
+                //if (string.IsNullOrEmpty(profileName))
+                //{
+                //    return BadRequest("Profile name cannot be empty");
+                //}
+                //else if (userId == null) 
+                //{
+                //    return BadRequest("User ID cannot be null");
+                //}
+                //else
+                //{
+                //    IEnumerable<UserSearch> GetUserByName = await _UserService.GetByName(profileName, userId);
 
-            //await _hubContext.Clients.All.SendAsync("ReceiveSearchResults", GetUserByName);
+                //    return Ok(GetUserByName);
+                //}
 
-            return Ok(GetUserByName);
+                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userId);
+
+                return Ok(GetUserByName);
+
+            } catch (Exception ex) 
+            {
+                Console.Error.WriteLine($"Error in SearchByProfileName method: {ex.ToString()}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
 
-        [HttpGet("GetChatListByUserId")]
-        public async Task<IActionResult> GetChatListByUserId(int userId)
+        [HttpGet("RetrieveChatListByUser")]
+        public async Task<IActionResult> GetChatListByUserId([FromQuery] int userId)
         {
             var friendList = await _UserService.GetChatListByUserId(userId);
             return Ok(friendList); //HTTP 200 OK indicates that the request was successful, and the server is returning the requested data.

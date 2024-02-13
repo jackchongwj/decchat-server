@@ -5,6 +5,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.Utils;
 using ChatroomB_Backend.DTO;
+using Microsoft.AspNetCore.Cors;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -34,34 +35,21 @@ namespace ChatroomB_Backend.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpGet("DoesUsernameExist")]
-        public async Task<ActionResult> DoesUsernameExist(string username)
-        {
-            var isUnique = await _userService.DoesUsernameExist(username);
-
-            if (!isUnique)
-            {
-                return new BadRequestObjectResult(new { IsUnique = false, Message = "Username already exists." });  
-            }
-
-            return Ok();
-        }
-
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] AuthRequest request)
         {
             // Check if request data valid
             if (!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Error = "Invalid request data" });
             }
 
             // Check if username exists
-            var isUnique = await _userService.DoesUsernameExist(request.Username);
+            bool isUnique = await _userService.DoesUsernameExist(request.Username);
 
             if (!isUnique)
             {
-                return new BadRequestObjectResult(new { Message = "Username already exists." });
+                return new ConflictObjectResult(new { Error = "Duplicate username detected" });
             }
 
             // Generate salt, hash password, and store user object
@@ -95,7 +83,7 @@ namespace ChatroomB_Backend.Controllers
         {
             if(!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Message = "Invalid request data" });
+                return new BadRequestObjectResult(new { Error = "Invalid request data" });
             }
 
             try
@@ -105,7 +93,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (doesNotExist)
                 {
-                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
+                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
 
                 // Get salt from user object in database
@@ -119,8 +107,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (!isAuthenticated)
                 {
-                    return new UnauthorizedObjectResult(new { Message = "Invalid username or password" });
-                    
+                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
 
                 // Get user Id
@@ -133,22 +120,25 @@ namespace ChatroomB_Backend.Controllers
                 string refreshToken = _tokenUtils.GenerateRefreshToken();
 
                 // Set the refresh token in a cookie
-                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                CookieOptions cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
                     Expires = DateTime.UtcNow.AddDays(7),
-                    Path = "/",
-                    SameSite = SameSiteMode.None,
-                    Secure = true
-                });
+                    Secure = true,
+                    SameSite = SameSiteMode.None
+                };
 
-                // Store refresh token in database
-                await _tokenService.StoreRefreshToken(new RefreshToken
+                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+
+                // Store the refresh token in database
+                RefreshToken token = new RefreshToken
                 {
                     UserId = userId,
                     Token = refreshToken,
                     ExpiredDateTime = DateTime.UtcNow.AddDays(7)
-                });
+                };
+
+                await _tokenService.StoreRefreshToken(token);
 
                 // Return access token and user Id in the response body
                 return new OkObjectResult(new
@@ -174,24 +164,30 @@ namespace ChatroomB_Backend.Controllers
                 // Retrieve the refresh token from the request
                 string refreshToken = Request.Cookies["refreshToken"];
 
-                // Create a refresh token object
-                var token = new RefreshToken
+                if(!string.IsNullOrEmpty(refreshToken)) 
                 {
-                    Token = refreshToken
+                    // Create a refresh token object
+                    RefreshToken token = new RefreshToken
+                    {
+                        Token = refreshToken
+                    };
+
+                    // Delete refresh token from database
+                    await _tokenService.RemoveRefreshToken(token);
+                }
+
+                // Replicate the cookie options
+                CookieOptions cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None
                 };
 
-                // Delete refresh token from database
-                await _tokenService.RemoveRefreshToken(token);
-
                 // Delete refresh token from client (cookie)
-                HttpContext.Response.Cookies.Delete("refreshToken", new CookieOptions
-                {
-                    Path = "/",
-                    SameSite = SameSiteMode.None,
-                    Secure = true
-                });
+                HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
 
-                return Ok(new { Message = "Logout successful" });
+                return new OkObjectResult (new { Message = "Logout successful" });
             }
             catch
             {
