@@ -18,5 +18,10 @@ namespace ChatroomB_Backend.Service
 
             return await _MessageRepo.AddMessages(message);
         }
+
+        public async Task<IEnumerable<Messages>> GetMessages(int ChatRoomId)
+        {
+            return await _MessageRepo.GetMessages(ChatRoomId);
+        }
     }
 }

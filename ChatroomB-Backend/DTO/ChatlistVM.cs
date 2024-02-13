@@ -8,6 +8,7 @@ namespace ChatroomB_Backend.DTO
     public class ChatlistVM
     {
         public int ChatRoomId { get; set; }
+        public int UserChatRoomId { get; set; }
         public string? ProfilePicture { get; set; }
         public string? ChatRoomName  { get; set; }
         public bool RoomType { get; set; }

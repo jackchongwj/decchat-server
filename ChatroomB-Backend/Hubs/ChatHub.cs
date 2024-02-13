@@ -12,12 +12,14 @@ namespace ChatroomB_Backend.Hubs
     public sealed class ChatHub: Hub
     {
         private readonly IUserService _Uservices;
+        private readonly IMessageService _MServices;
         private readonly IRedisServcie _RServices;
 
-        public ChatHub(IUserService _UserService, IRedisServcie rServices)
+        public ChatHub(IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
         {
             _Uservices = _UserService;
-            _RServices = rServices;
+            _RServices = _RedisServices;
+            _MServices = _MessageService;
         }
 
         public override async Task OnConnectedAsync()
@@ -147,5 +149,20 @@ namespace ChatroomB_Backend.Hubs
             await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
         }
 
+
+        public async Task SendMessageNotification(DTO.Message newMessage)
+        {
+            try
+            {
+                //IEnumerable<Messages> GetMessage = await _MServices.GetMessages(ChatRoomId);
+
+                await Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
