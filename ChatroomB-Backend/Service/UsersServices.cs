@@ -11,9 +11,10 @@ namespace ChatroomB_Backend.Service
         private readonly IUserRepo _repo;
         private readonly IBlobService _blobService;
 
-        public UsersServices(IUserRepo reponsitory)
+        public UsersServices(IUserRepo reponsitory,IBlobService blobService)
         {
             _repo = reponsitory;
+            _blobService = blobService;
         }
 
         public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
@@ -36,22 +37,25 @@ namespace ChatroomB_Backend.Service
             return await _repo.UpdateProfileName(userId, newProfileName);
         }
 
-        public async Task<int> UpdateProfilePicture(int userId, string newProfilePicture)
+        public async Task<bool> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName)
         {
-            return await _repo.UpdateProfilePicture(userId, newProfilePicture);
-        }
-
-        public async Task<string> UploadProfilePicture(IFormFile file, int userId)
-        {
-            // Convert IFormFile to byte[] for the BlobService if necessary
-            using (var memoryStream = new MemoryStream())
+            try
             {
-                await file.CopyToAsync(memoryStream);
-                var fileBytes = memoryStream.ToArray();
+                // Upload the file to blob storage and get the URI
+                string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
 
-                // Assuming the filename is important for blob storage
-                var blobUri = await _blobService.UploadImageFiles(fileBytes, file.FileName, 2); // 2 for User Profile Picture
-                return blobUri;
+                // Update the user's profile picture URI in the database
+                int updateResult = await _repo.UpdateProfilePicture(userId, blobUri);
+
+                // Assuming the updateResult is an int that signifies the number of records updated
+                // You might want to check if it actually succeeded based on your repository implementation
+                return updateResult != 0;
+            }
+            catch (Exception ex)
+            {
+                // Depending on your logging framework, log the exception
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
             }
         }
 

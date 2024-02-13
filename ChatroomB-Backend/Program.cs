@@ -36,7 +36,11 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 });
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    });
 
 // SignalR service
 builder.Services.AddSignalR();
@@ -99,6 +103,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JwtSettings:SecretKey").Get<string>()))
         };
     });
+
 
 var app = builder.Build();
 

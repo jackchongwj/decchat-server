@@ -86,7 +86,7 @@ namespace ChatroomB_Backend.Repository
                 new { UserId = userId, NewHashedPassword = newHashedPassword }
             );
 
-            return result == 1; // Return true if the password was successfully changed
+            return true; // Return true if the password was successfully changed
         }
 
     }

@@ -12,8 +12,7 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                               //Get All Friend request
         Task<Users> GetUserById(int userId);
         Task<int> UpdateProfileName(int userId, string newProfileName);
-        Task<string> UploadProfilePicture(IFormFile file, int userId);
-        Task<int> UpdateProfilePicture(int userId, string newProfilePicture);
+        Task<bool> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);
         Task<int> DeleteUser(int userId);
         
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist

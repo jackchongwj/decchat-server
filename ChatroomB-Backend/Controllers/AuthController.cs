@@ -218,7 +218,7 @@ namespace ChatroomB_Backend.Controllers
                 }
 
                 // If the password was successfully changed
-                return Ok("Password changed successfully.");
+                return Ok(new { Message = "Password changed successfully." });
             }
             catch (Exception ex)
             {
@@ -227,7 +227,7 @@ namespace ChatroomB_Backend.Controllers
                 Console.WriteLine(ex.Message);
 
                 // Return a generic error message to avoid exposing sensitive details
-                return StatusCode(500, "An error occurred while changing the password.");
+                return StatusCode(500, new { Error = "An error occurred while changing the password." });
             }
         }
     }

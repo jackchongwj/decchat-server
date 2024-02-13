@@ -64,51 +64,56 @@ namespace ChatroomB_Backend.Controllers
             return Ok(user);
         }
 
-        [HttpPut("UpdateProfileName")]
-        public async Task<IActionResult> UpdateProfileName(int id, [FromBody] string newProfileName)
+        [HttpPost("UpdateProfileName")]
+        public async Task<IActionResult> UpdateProfileName([FromBody] UpdateProfileName model)
         {
+            if (model == null || !ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            var result = await _UserService.UpdateProfileName(id,newProfileName);
+            var result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
             if (result == 0) return NotFound();
 
             return Ok();
         }
 
-        [HttpPut("UpdateProfilePicture")]
-        public async Task<IActionResult> UpdateProfilePicture(int id, IFormFile file)
+
+        [HttpPost("UpdateProfilePicture")]
+        public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file, [FromForm(Name = "id")] string userId)
         {
+            byte[] filebyte = await ConvertToByteArrayAsync(file);
             if (file == null || file.Length == 0)
             {
                 return BadRequest("File is not provided or empty.");
             }
 
-            var user = await _UserService.GetUserById(id);
-            if (user == null) return NotFound("User not found.");
+            var success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId) , filebyte, file.FileName);
 
-            try
+            if (!success)
             {
-                // Assuming BlobService.UploadImageFiles returns the URI of the uploaded image
-                var fileUri = await _UserService.UploadProfilePicture(file, id);
-
-                var result = await _UserService.UpdateProfilePicture(id, fileUri);
-                if (result == 0) return NotFound("Failed to update the profile picture.");
-
-                return Ok(new { Message = "Profile picture updated successfully.", Uri = fileUri });
+                return NotFound("Failed to update the profile picture.");
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+
+            return Ok(new { Message =  "Profile picture updated successfully." });
         }
 
 
-        [HttpDelete("UserDeletion")]
-        public async Task<IActionResult> DeleteUser(int id)
+        [HttpPost("UserDeletion")]
+        public async Task<IActionResult> DeleteUser([FromQuery]int id)
         {
             int result = await _UserService.DeleteUser(id);
             if (result == 0) { return BadRequest(); }
             else { return Ok(); }
+        }
 
-        }               
+        private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                return memoryStream.ToArray();
+            }
+        }
     }
 }
