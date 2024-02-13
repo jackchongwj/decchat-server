@@ -54,13 +54,6 @@ namespace ChatroomB_Backend.Repository
                 throw;
             }
 
-            //using (SqlConnection connection = new SqlConnection(_dbConnectionString))
-            //{
-            //    string StoredProcedure = "AddMessage";
-
-            //    int result = await connection.ExecuteAsync(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
-            //    return result;
-            //}
         }
     }
 }
