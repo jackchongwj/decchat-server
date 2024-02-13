@@ -37,7 +37,8 @@ namespace ChatroomB_Backend.Repository
 
     public interface IMessageRepo
     {
-        Task<int> AddMessages(Messages message); // add new friend 
+        Task<int> AddMessages(Messages message);                                                                               
+        Task<IEnumerable<Messages>> GetMessages(int ChatRoomId);
     }
 
     public interface IBlobRepo

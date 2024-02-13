@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.Models;
+﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using NuGet.Packaging.Signing;
@@ -61,6 +62,15 @@ namespace ChatroomB_Backend.Repository
             //    int result = await connection.ExecuteAsync(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
             //    return result;
             //}
+        }
+
+        public async Task<IEnumerable<Messages>> GetMessages(int ChatRoomId)
+        {
+            string sql = "exec RetrieveMessage @ChatRoomId";
+
+            IEnumerable<Messages> result = await _dbConnection.QueryAsync<Messages>(sql, new { ChatRoomId });
+
+            return result;
         }
     }
 }
