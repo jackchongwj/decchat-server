@@ -2,7 +2,9 @@
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 
 namespace ChatroomB_Backend.Repository
@@ -29,7 +31,8 @@ namespace ChatroomB_Backend.Repository
 
     public interface IChatRoomRepo
     {
-        Task<int> AddChatRoom(FriendRequest request);                                             // add new ChatRoom and user chat room with private user
+        Task<int> AddChatRoom(FriendRequest request); // add new ChatRoom and user chat room with private user
+        Task CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
     }
 
     public interface IMessageRepo
