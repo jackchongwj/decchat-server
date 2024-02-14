@@ -17,9 +17,9 @@ namespace ChatroomB_Backend.Service
             _repo = _repository;
         }
 
-        public async Task<int> AddChatRoom(FriendRequest request)
+        public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
         {
-            return (await _repo.AddChatRoom(request));
+            return (await _repo.AddChatRoom(request, userId));
         }
 
         public async Task CreateGroupWithSelectedUsers(string roomName, int initiatedBy, List<int> SelectedUsers)

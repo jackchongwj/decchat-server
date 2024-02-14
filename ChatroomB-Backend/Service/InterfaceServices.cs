@@ -31,7 +31,7 @@ namespace ChatroomB_Backend.Service
 
     public interface IChatRoomService
     {
-        Task<int> AddChatRoom(FriendRequest request);
+        Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId);
 
 
         Task CreateGroupWithSelectedUsers(string roomName, int initiatedBy, List<int> SelectedUsers);
