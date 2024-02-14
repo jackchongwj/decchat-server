@@ -67,11 +67,12 @@ namespace ChatroomB_Backend.Repository
         {
             try
             {
-                string sql = "exec AddUser @UserName, @HashedPassword, @Salt";
+                string sql = "exec AddUser @UserName, @HashedPassword, @Salt, @ProfileName";
 
                 await _dbConnection.ExecuteAsync(sql, new Users
                 {
                     UserName = user.UserName,
+                    ProfileName = user.UserName,
                     HashedPassword = user.HashedPassword,
                     Salt = user.Salt
                 });

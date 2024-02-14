@@ -59,7 +59,18 @@ namespace ChatroomB_Backend.Repository
                 Console.WriteLine("Error: " + ex.Message);
                 throw;
             }
-        }      
+        }
+
+        public async Task<int> UpdateGroupPicture(int ChatRoomId, string newGroupPicture)
+        {
+            string sql = "exec UpdateGroupProfilePicture @ChatRoomId, @NewGroupProfilePic";
+            int result = await _dbConnection.ExecuteAsync(sql, new
+            {
+                ChatRoomId,
+                newGroupPicture
+            });
+            return result;
+        }
     }
 }
 

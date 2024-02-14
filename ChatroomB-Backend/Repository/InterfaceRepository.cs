@@ -33,6 +33,7 @@ namespace ChatroomB_Backend.Repository
     {
         Task<int> AddChatRoom(FriendRequest request); // add new ChatRoom and user chat room with private user
         Task CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
+        Task<int> UpdateGroupPicture(int ChatRoomId, string newGroupPicture);
     }
 
     public interface IMessageRepo
