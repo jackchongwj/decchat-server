@@ -95,6 +95,7 @@ namespace ChatroomB_Backend.Repository
             }
 
         }
+
         public async Task<int> ChangePassword(int userId, string newPassword)
         {
             string sql = "exec ChangePassword @UserId, @NewPassword";
