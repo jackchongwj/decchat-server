@@ -215,7 +215,7 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("UpdateFriendRequest")]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult<int>> UpdateFriendRequest(FriendRequest request)
+        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody]FriendRequest request, [FromQuery]int userId)
         {
             try
             {
@@ -225,7 +225,9 @@ namespace ChatroomB_Backend.Controllers
 
                     if (request.Status == 2)
                     {
-                        int chatroomId = await _ChatRoomService.AddChatRoom(request);
+                        IEnumerable<ChatlistVM> chatroomId = await _ChatRoomService.AddChatRoom(request, userId);
+                        
+
                         return Ok(chatroomId);
                     }
 

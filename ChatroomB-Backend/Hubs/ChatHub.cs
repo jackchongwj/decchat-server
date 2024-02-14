@@ -12,14 +12,17 @@ namespace ChatroomB_Backend.Hubs
     public sealed class ChatHub: Hub
     {
         private readonly IUserService _Uservices;
+        private readonly IMessageService _MServices;
         private readonly IRedisServcie _RServices;
 
-        public ChatHub(IUserService _UserService, IRedisServcie rServices)
+        public ChatHub(IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
         {
             _Uservices = _UserService;
-            _RServices = rServices;
+            _RServices = _RedisServices;
+            _MServices = _MessageService;
         }
 
+        //SignalR start and destroy connection
         public override async Task OnConnectedAsync()
         {
             try
@@ -65,6 +68,7 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+        //Friend request SignalR
         public async Task SendFriendRequestNotification(int receiverId, int senderId, string profileName)
         {
             try
@@ -110,6 +114,7 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+        //Add chatlist to SignalR group
         public async Task AddToGroup(List<ChatlistVM>? chatlists, int? chatRoomId, int? userId)
         {
             if (chatlists!= null)
@@ -147,5 +152,28 @@ namespace ChatroomB_Backend.Hubs
             await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
         }
 
+
+        //update private chatlist signalR
+        public async Task NotifyUserUpdatePrivateChatlist(List<ChatlistVM> chatlist) 
+        {
+            await Clients.Group("FR"+ chatlist[1].UserId).SendAsync("UpdatePrivateChatlist", chatlist[1]);
+            await Clients.Group("FR"+ chatlist[0].UserId).SendAsync("UpdatePrivateChatlist", chatlist[0]);
+            //await Clients.Group(chatlist[0].ChatRoomId.ToString()).SendAsync("UpdatePrivateChatlist", chatlist);
+        }
+
+        //send message signalR
+        public async Task SendMessageNotification(DTO.Message newMessage)
+        {
+            try
+            {
+
+                await Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
