@@ -25,7 +25,7 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("AddMessage")]
-        public async Task<IActionResult> AddMessage([FromForm] IFormFile file)
+        public async Task<IActionResult> AddMessage([FromForm] IFormFile? file)
         {
             string? messageJson = Request.Form["message"];
 
@@ -43,14 +43,26 @@ namespace ChatroomB_Backend.Controllers
                 return BadRequest("The message content could not be parsed.");
             }
 
-            FileMessage fileMessage = new FileMessage
+            if (file!=null)
             {
-                Message = message,
-                FileByte = await ConvertToByteArrayAsync(file),
-                FileName = file.FileName
-            };
+                FileMessage fileMessage = new FileMessage
+                {
+                    Message = message,
+                    FileByte = await ConvertToByteArrayAsync(file),
+                    FileName = file.FileName,
+                    FileType = file.ContentType.Split('/')[0]
+                };
 
-            _RabbitMQService.PublishMessage(fileMessage);
+                _RabbitMQService.PublishMessage(fileMessage);
+            }
+            else
+            {
+                _RabbitMQService.PublishMessage(new FileMessage
+                {
+                    Message = message
+                });
+            }
+
 
             return Ok(1);
         }
@@ -61,6 +73,13 @@ namespace ChatroomB_Backend.Controllers
             return Ok(0);
         }
 
+        [HttpGet("GetMessage")]
+        public async Task<IActionResult> RetrieveMessage(int ChatRoomId) 
+        {
+           IEnumerable<Messages> message = await _MessageService.GetMessages(ChatRoomId);
+
+            return Ok(message);
+        }
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
         {
             using (MemoryStream memoryStream = new MemoryStream())

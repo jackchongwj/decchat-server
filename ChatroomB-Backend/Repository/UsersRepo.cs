@@ -19,11 +19,11 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId)
+        public async Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId)
         {
             string sql = "exec GetUserByProfileName @profileName, @userId";
 
-            IEnumerable<UserSearch> result = await _dbConnection.QueryAsync<UserSearch>(sql, new {profileName, userId });
+            IEnumerable<UserSearchDetails> result = await _dbConnection.QueryAsync<UserSearchDetails>(sql, new {profileName, userId });
 
             return result;
         }
@@ -107,7 +107,7 @@ namespace ChatroomB_Backend.Repository
             DynamicParameters parameter = new DynamicParameters();
             parameter.Add("@UserId", userId);
 
-            string sql = "EXEC GetChatListByUserId @UserId";
+            string sql = "EXEC RetrieveChatRoomListById @UserId";
 
             IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
 

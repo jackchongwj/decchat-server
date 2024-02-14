@@ -51,7 +51,6 @@ namespace ChatroomB_Backend.Service
             }
         }
 
-
         private async Task StoreMessageWithAttachment(FileMessage fm)
         {
             if (fm.Message == null || fm.FileByte == null || fm.FileName == null)
@@ -60,13 +59,43 @@ namespace ChatroomB_Backend.Service
                 throw new InvalidOperationException("File message cannot be null.");
             }
 
-            fm.Message.ResourceUrl = await StoreImageBlob(fm.FileByte, fm.FileName);
+            switch(fm.FileType)
+            {
+                case ("image"):
+                    fm.Message.ResourceUrl = await StoreImageBlob(fm.FileByte, fm.FileName);
+                    break;
+                case ("video"):
+                    fm.Message.ResourceUrl = await StoreVideoBlob(fm.FileByte, fm.FileName);
+                    break;
+                case ("audio"):
+                    fm.Message.ResourceUrl = await StoreAudioBlob(fm.FileByte, fm.FileName);
+                    break;
+                default:
+                    fm.Message.ResourceUrl = await StoreDocsBlob(fm.FileByte, fm.FileName);
+                    break;
+            }
+            
             await StoreDatabase(fm);
         }
 
         private async Task<string> StoreImageBlob(byte[] FileByte, string filename)
         {
             return await _blobService.UploadImageFiles(FileByte, filename, 1);
+        }
+
+        private async Task<string> StoreVideoBlob(byte[] FileByte, string filename)
+        {
+            return await _blobService.UploadVideoFiles(FileByte, filename);
+        }
+
+        private async Task<string> StoreDocsBlob(byte[] FileByte, string filename)
+        {
+            return await _blobService.UploadDocuments(FileByte, filename);
+        }
+
+        private async Task<string> StoreAudioBlob(byte[] FileByte, string filename)
+        {
+            return await _blobService.UploadAudios(FileByte, filename);
         }
 
         private async Task StoreDatabase(FileMessage fm)
