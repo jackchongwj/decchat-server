@@ -17,7 +17,7 @@ namespace ChatroomB_Backend.Utils
 
         }
 
-        public string GenerateAccessToken(string username)
+        public string GenerateAccessToken(int userId)
         {
             DateTime expiryDateTime = DateTime.Now.AddMinutes(Convert.ToInt32(_config["JwtSettings:ExpirationMinutes"]));
             SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]));
@@ -26,7 +26,7 @@ namespace ChatroomB_Backend.Utils
             JwtSecurityToken token = new JwtSecurityToken(
                 issuer: _config["JwtSettings:Issuer"],
                 audience: _config["JwtSettings:Audience"],
-                claims: new[] { new Claim(ClaimTypes.Name, username) },
+                claims: new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) },
                 expires: expiryDateTime,
                 signingCredentials: creds
             );

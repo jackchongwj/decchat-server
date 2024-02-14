@@ -41,14 +41,15 @@ namespace ChatroomB_Backend.Service
     {
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
-        Task<ActionResult> AddUser(Users user);
+        Task<IActionResult> AddUser(Users user);
     }
 
     public interface ITokenService
     {
-        Task<ActionResult> StoreRefreshToken(RefreshToken token);
-        Task<ActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
+        Task<string> RenewAccessToken(RefreshToken token, int userId);
+        Task<IActionResult> StoreRefreshToken(RefreshToken token);
+        Task<IActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IBlobService

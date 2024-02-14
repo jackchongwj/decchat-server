@@ -63,7 +63,7 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<ActionResult> AddUser(Users user)
+        public async Task<IActionResult> AddUser(Users user)
         {
             try
             {

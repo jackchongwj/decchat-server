@@ -49,14 +49,15 @@ namespace ChatroomB_Backend.Repository
     {
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
-        Task<ActionResult> AddUser(Users user);
+        Task<IActionResult> AddUser(Users user);
     }
 
     public interface ITokenRepo
     {
-        Task<ActionResult> StoreRefreshToken(RefreshToken token);
-        Task<ActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
+        Task<bool> IsRefreshTokenValid(RefreshToken token);
+        Task<IActionResult> StoreRefreshToken(RefreshToken token);
+        Task<IActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IRedisRepo 

@@ -141,11 +141,11 @@ app.UseRouting();
 
 app.UseAuthentication();
 
-
 app.UseAuthorization();
 
-
 app.UseErrorHandlingMiddleware();
+
+app.UseTokenValidationMiddleware();
 
 //app.UseExceptionHandler(error => { error.Run(async context => {
 

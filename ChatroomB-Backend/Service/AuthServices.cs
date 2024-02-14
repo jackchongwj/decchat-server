@@ -26,7 +26,7 @@ namespace ChatroomB_Backend.Service
             return await _repo.VerifyPassword(username, hashedPassword);
         }
 
-        public async Task<ActionResult> AddUser(Users user)
+        public async Task<IActionResult> AddUser(Users user)
         {
             return await _repo.AddUser(user);
         }
