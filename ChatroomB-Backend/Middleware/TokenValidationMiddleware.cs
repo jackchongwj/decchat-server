@@ -19,7 +19,7 @@ namespace ChatroomB_Backend.Middleware
         public async Task Invoke(HttpContext context)
         {
             // Skip middleware for auth routes
-            if (context.Request.Path.StartsWithSegments("/auth"))
+            if (context.Request.Path.StartsWithSegments("/api/Auth"))
             {
                 await _next(context);
                 return;
