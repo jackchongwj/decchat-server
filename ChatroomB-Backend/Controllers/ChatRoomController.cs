@@ -31,8 +31,9 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM.RoomName, createGroupVM.InitiatedBy, createGroupVM.SelectedUsers);
-                await _hubContext.Clients.All.SendAsync("NewGroupCreated", createGroupVM.RoomName);
+                ChatlistVM chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
+                await _hubContext.Clients.All.SendAsync("NewGroupCreated", chatinfo);
+                /*await _hubContext.Clients.Group(createGroupVM.RoomName).SendAsync("NewGroupCreated", createGroupVM.RoomName);*/
                 return Ok("Group created successfully");
 
 
