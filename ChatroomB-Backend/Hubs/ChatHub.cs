@@ -14,12 +14,14 @@ namespace ChatroomB_Backend.Hubs
         private readonly IUserService _Uservices;
         private readonly IMessageService _MServices;
         private readonly IRedisServcie _RServices;
+        private readonly IChatRoomService _ChatRoomService;
 
-        public ChatHub(IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
+        public ChatHub(IChatRoomService ChatRoomService, IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
         {
             _Uservices = _UserService;
             _RServices = _RedisServices;
             _MServices = _MessageService;
+            _ChatRoomService = ChatRoomService;
         }
 
         public override async Task OnConnectedAsync()
@@ -164,5 +166,19 @@ namespace ChatroomB_Backend.Hubs
                 throw;
             }
         }
+
+       /* public async Task CreateGroup(string roomName, int initiatedBy, List<int> selectedUsers)
+        {
+            // Your logic to create the group...
+            await _ChatRoomService.CreateGroupWithSelectedUsers(roomName,initiatedBy, selectedUsers);
+            await Clients.All.SendAsync("NewGroupCreated", roomName);
+        }*/
+
+
+
+
     }
+
+
 }
+

@@ -5,6 +5,9 @@ using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
 using System.Text.RegularExpressions;
 using Azure.Core;
+using Microsoft.AspNetCore.SignalR;
+using ChatroomB_Backend.Hubs;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace ChatroomB_Backend.Controllers
@@ -14,10 +17,11 @@ namespace ChatroomB_Backend.Controllers
     public class ChatRoomController: Controller 
     {
         private readonly IChatRoomService _ChatRoomService;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-
-        public ChatRoomController(IChatRoomService CService)
+        public ChatRoomController(IHubContext<ChatHub> hubContext, IChatRoomService CService)
         {
+            _hubContext = hubContext;
             _ChatRoomService = CService;
         }
 
@@ -27,8 +31,11 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM.RoomName, createGroupVM.InitiatedBy, createGroupVM.SelectedUsers);
+                await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM.RoomName, createGroupVM.InitiatedBy, createGroupVM.SelectedUsers);
+                await _hubContext.Clients.All.SendAsync("NewGroupCreated", createGroupVM.RoomName);
                 return Ok("Group created successfully");
+
+
             }
             catch (Exception ex)
             {

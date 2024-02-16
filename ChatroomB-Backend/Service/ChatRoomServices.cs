@@ -1,6 +1,7 @@
 ﻿
 using Azure.Core;
 using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Hubs;
 using ChatroomB_Backend.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -31,9 +32,8 @@ namespace ChatroomB_Backend.Service
             {
                 selectedUsersTable.Rows.Add(userId);
             }
-
             // Call CreateGroup method with the DataTable of selected users
-           await _repo.CreateGroup(roomName, initiatedBy, selectedUsersTable);
+            await _repo.CreateGroup(roomName, initiatedBy, selectedUsersTable);
         }    
     }
 }
