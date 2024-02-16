@@ -20,10 +20,12 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<bool> IsRefreshTokenValid(RefreshToken token)
         {
+            Console.WriteLine(token.Token);
             try
             {
-                var result = await _dbConnection.ExecuteScalarAsync("EXEC dbo.CheckRefreshTokenValidity @Token",
-                    new SqlParameter("@Token", token.Token));
+                string sql = "exec CheckRefreshTokenValidity @Token";
+
+                int result = await _dbConnection.ExecuteScalarAsync<int>(sql, new { Token = token.Token });
 
                 bool isValid = Convert.ToBoolean(result);
 

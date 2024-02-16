@@ -113,5 +113,21 @@ namespace ChatroomB_Backend.Repository
 
             return chatList.AsList();
         }
+
+        public async Task<string> GetUserName(int userId)
+        {
+            try
+            {
+                string sql = "exec GetUserNameByUserId @UserId";
+
+                string result = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserId = userId });
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An unexpected error occurred", ex);
+            }
+        }
     }
 }

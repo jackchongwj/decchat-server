@@ -112,7 +112,7 @@ namespace ChatroomB_Backend.Controllers
                 int userId = await _userService.GetUserId(request.Username);
 
                 // Generate access token
-                string accessToken = _tokenUtils.GenerateAccessToken(userId);
+                string accessToken = _tokenUtils.GenerateAccessToken(userId, request.Username);
 
                 // Generate refresh token
                 string refreshToken = _tokenUtils.GenerateRefreshToken();

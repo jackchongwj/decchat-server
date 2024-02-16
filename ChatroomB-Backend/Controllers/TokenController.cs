@@ -49,7 +49,7 @@ namespace ChatroomB_Backend.Controllers
             {
                 return new UnauthorizedObjectResult(new { Error = "Invalid or expired refresh token" });
             }
-
+            
             return new OkObjectResult(new { AccessToken = newAccessToken });
         }
     } 

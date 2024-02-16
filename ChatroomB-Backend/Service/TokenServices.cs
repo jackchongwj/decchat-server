@@ -9,11 +9,13 @@ namespace ChatroomB_Backend.Service
     {
         private readonly ITokenRepo _repo;
         private readonly ITokenUtils _tokenUtils;
+        private readonly IUserService _userService;
 
-        public TokenServices(ITokenRepo repo, ITokenUtils tokenUtils)
+        public TokenServices(ITokenRepo repo, ITokenUtils tokenUtils, IUserService userService)
         {
             _repo = repo;
             _tokenUtils = tokenUtils;
+            _userService = userService;
         }
 
         public async Task<string> RenewAccessToken(RefreshToken refreshToken, int userId)
@@ -25,8 +27,10 @@ namespace ChatroomB_Backend.Service
                 throw new UnauthorizedAccessException("Invalid or expired refresh token.");
             }
 
+            string username = await _userService.GetUserName(userId);
+
             // If valid, generate a new access token
-            string newAccessToken = _tokenUtils.GenerateAccessToken(userId);
+            string newAccessToken = _tokenUtils.GenerateAccessToken(userId, username);
 
             return newAccessToken;
         }

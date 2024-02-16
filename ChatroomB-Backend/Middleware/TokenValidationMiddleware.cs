@@ -28,12 +28,12 @@ namespace ChatroomB_Backend.Middleware
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             if (token != null)
-                AttachUserIdToContext(context, token);
+                AttachUserToContext(context, token);
 
             await _next(context);
         }
 
-        private void AttachUserIdToContext(HttpContext context, string token)
+        private void AttachUserToContext(HttpContext context, string token)
         {
             try
             {
@@ -47,19 +47,17 @@ namespace ChatroomB_Backend.Middleware
                 {
                     context.Items["UserId"] = int.Parse(userIdClaim);
                 }
+
+                var usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value;
+                if (usernameClaim != null)
+                {
+                    context.Items["Username"] = usernameClaim;
+                }
             }
             catch
             {
                 // Do nothing 
             }
-        }
-    }
-
-    public static class TokenValidationMiddlewareExtensions
-    {
-        public static IApplicationBuilder UseTokenValidationMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<TokenValidationMiddleware>();
         }
     }
 }

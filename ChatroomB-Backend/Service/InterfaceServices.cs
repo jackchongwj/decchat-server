@@ -19,6 +19,7 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
+        Task<string> GetUserName(int userId);  
         Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);
     }
 
