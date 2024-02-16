@@ -68,8 +68,9 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+
         //Friend request SignalR
-        public async Task SendFriendRequestNotification(int receiverId, int senderId, string profileName)
+        public async Task SendFriendRequestNotification(int receiverId, int senderId)
         {
             try
             {
@@ -162,18 +163,18 @@ namespace ChatroomB_Backend.Hubs
         }
 
         //send message signalR
-        public async Task SendMessageNotification(DTO.Message newMessage)
-        {
-            try
-            {
-
-                await Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
-                throw;
-            }
-        }
+        //public async Task SendMessageNotification(DTO.Message newMessage)
+        //{
+        //    try
+        //    {
+        //        await Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
+        //        Console.WriteLine($"message has send to {newMessage.ChatRoomId}.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
+        //        throw;
+        //    }
+        //}
     }
 }

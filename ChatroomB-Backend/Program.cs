@@ -93,6 +93,8 @@ builder.Services.AddScoped<IRedisRepo, RedisRepo>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+
 // add policy
 builder.Services.AddCors(options => 
 {

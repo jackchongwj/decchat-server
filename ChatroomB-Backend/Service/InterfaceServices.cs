@@ -39,8 +39,8 @@ namespace ChatroomB_Backend.Service
 
     public interface IMessageService
     {
-        Task<int> AddMessages(Messages message);                                                                                 // add new friend 
-        Task<IEnumerable<Messages>> GetMessages(int ChatRoomId);
+        Task<DTO.Message> AddMessages(Messages message);                                                                                 // add new friend 
+        Task<IEnumerable<DTO.Message>> GetMessages(int ChatRoomId);
     }
 
     public interface IAuthService

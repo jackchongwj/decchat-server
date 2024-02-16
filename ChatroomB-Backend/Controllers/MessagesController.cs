@@ -76,7 +76,7 @@ namespace ChatroomB_Backend.Controllers
         [HttpGet("GetMessage")]
         public async Task<IActionResult> RetrieveMessage(int ChatRoomId) 
         {
-           IEnumerable<Messages> message = await _MessageService.GetMessages(ChatRoomId);
+           IEnumerable<DTO.Message> message = await _MessageService.GetMessages(ChatRoomId);
 
             return Ok(message);
         }

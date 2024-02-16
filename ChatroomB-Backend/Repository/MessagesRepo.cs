@@ -20,7 +20,7 @@ namespace ChatroomB_Backend.Repository
             _logger = logger;
         }
 
-        public async Task<int> AddMessages(Messages message)
+        public async Task <DTO.Message> AddMessages(Messages message)
         {
             var param = new
             {
@@ -39,7 +39,9 @@ namespace ChatroomB_Backend.Repository
                     await connection.OpenAsync(); // Ensure the connection is open
                     string StoredProcedure = "AddMessage";
 
-                    int result = await connection.ExecuteAsync(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
+                    DTO.Message result = await connection.QueryFirstAsync<DTO.Message>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
+
+                    Console.WriteLine($"Message  {result}");
                     return result;
                 }
             }
@@ -64,11 +66,11 @@ namespace ChatroomB_Backend.Repository
             //}
         }
 
-        public async Task<IEnumerable<Messages>> GetMessages(int ChatRoomId)
+        public async Task<IEnumerable<DTO.Message>> GetMessages(int ChatRoomId)
         {
             string sql = "exec RetrieveMessage @ChatRoomId";
 
-            IEnumerable<Messages> result = await _dbConnection.QueryAsync<Messages>(sql, new { ChatRoomId });
+            IEnumerable<DTO.Message> result = await _dbConnection.QueryAsync<DTO.Message>(sql, new { ChatRoomId });
 
             return result;
         }

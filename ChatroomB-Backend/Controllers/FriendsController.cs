@@ -225,10 +225,10 @@ namespace ChatroomB_Backend.Controllers
 
                     if (request.Status == 2)
                     {
-                        IEnumerable<ChatlistVM> chatroomId = await _ChatRoomService.AddChatRoom(request, userId);
+                        IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userId);
                         
 
-                        return Ok(chatroomId);
+                        return Ok(PrivateChatlist);
                     }
 
                     return Ok(0);
