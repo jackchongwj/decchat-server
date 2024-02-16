@@ -73,15 +73,23 @@ namespace ChatroomB_Backend.Repository
                 string key = $"User:{userId}:connection";
 
                 // get hash
-                RedisValue data = await _redisDatabase.StringGetAsync(key);
+                HashEntry[] hashEntries = await _redisDatabase.HashGetAllAsync(key);
 
-                string result = data.ToString();
-
-                return result;
+                // Check if hashEntries array has at least one element
+                if (hashEntries.Length > 0)
+                {
+                    // Return the second value in the first HashEntry
+                    string secondValue = hashEntries[1].Value.ToString();
+                    return secondValue;
+                }
+                else
+                {
+                    return "Hash entry not found or empty.";
+                }
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                return $"Error: {ex.Message}";
             }
         }
     }

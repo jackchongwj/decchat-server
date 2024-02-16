@@ -67,11 +67,12 @@ namespace ChatroomB_Backend.Repository
         {
             try
             {
-                string sql = "exec AddUser @UserName, @HashedPassword, @Salt";
+                string sql = "exec AddUser @UserName, @HashedPassword, @Salt, @ProfileName";
 
                 await _dbConnection.ExecuteAsync(sql, new Users
                 {
                     UserName = user.UserName,
+                    ProfileName = user.UserName,
                     HashedPassword = user.HashedPassword,
                     Salt = user.Salt
                 });
@@ -82,6 +83,18 @@ namespace ChatroomB_Backend.Repository
             {
                 return new BadRequestObjectResult(new { Error = "Failed to register user" });
             }
+        }
+
+        public async Task<bool> ChangePassword(int userId, string newHashedPassword)
+        {
+            string sql = "exec ChangePassword @UserId, @NewHashedPassword";
+
+            var result = await _dbConnection.ExecuteAsync(
+                sql,
+                new { UserId = userId, NewHashedPassword = newHashedPassword }
+            );
+
+            return true; // Return true if the password was successfully changed
         }
 
     }

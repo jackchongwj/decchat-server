@@ -10,6 +10,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using System.Reflection.Metadata;
 
 
 namespace ChatroomB_Backend.Repository
@@ -23,23 +24,23 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<int> AddChatRoom(FriendRequest request)
+        public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
         {
-            var param = new DynamicParameters();
-            param.Add("@RoomName", "");
-            param.Add("@RoomType", 0);
-            param.Add("@RoomProfilePic", "");
-            param.Add("@SenderId", request.SenderId);
-            param.Add("@ReceiverId", request.ReceivedId);
-            param.Add("@ChatRoomId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            var param = new
+            {
+                RoomName = "",
+                RoomType = 0,
+                RoomProfilePic = "",
+                SenderId = request.SenderId,
+                ReceiverId = request.ReceiverId,
+                UserId = userId  // Adjust the parameter name
+            };
 
-            string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @ChatRoomId OUTPUT";
+            string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @UserId";
 
-            int result = await _dbConnection.ExecuteAsync(sql, param);
+            IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, param);
 
-            int chatRoomId = param.Get<int>("@ChatRoomId");
-
-            return chatRoomId;
+            return chatList;
         }
 
 
@@ -59,7 +60,18 @@ namespace ChatroomB_Backend.Repository
                 Console.WriteLine("Error: " + ex.Message);
                 throw;
             }
-        }      
+        }
+
+        public async Task<int> UpdateGroupPicture(int ChatRoomId, string newGroupPicture)
+        {
+            string sql = "exec UpdateGroupProfilePicture @ChatRoomId, @NewGroupProfilePic";
+            int result = await _dbConnection.ExecuteAsync(sql, new
+            {
+                ChatRoomId,
+                newGroupPicture
+            });
+            return result;
+        }
     }
 }
 

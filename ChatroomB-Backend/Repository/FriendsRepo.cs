@@ -38,7 +38,7 @@ namespace ChatroomB_Backend.Repository
             var param = new
             {
                 SenderId = request.SenderId,
-                ReceiverId = request.ReceivedId,
+                ReceiverId = request.ReceiverId,
                 Status = request.Status
             };
 

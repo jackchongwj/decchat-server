@@ -11,15 +11,17 @@ namespace ChatroomB_Backend.Service
     public class ChatRoomServices : IChatRoomService
     {
         private readonly IChatRoomRepo _repo;
+        private readonly IBlobService _blobService;
 
-        public ChatRoomServices(IChatRoomRepo _repository)
+        public ChatRoomServices(IChatRoomRepo _repository, IBlobService blobService)
         {
             _repo = _repository;
+            _blobService = blobService;
         }
 
-        public async Task<int> AddChatRoom(FriendRequest request)
+        public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
         {
-            return (await _repo.AddChatRoom(request));
+            return (await _repo.AddChatRoom(request, userId));
         }
 
         public async Task CreateGroupWithSelectedUsers(string roomName, int initiatedBy, List<int> SelectedUsers)
@@ -33,11 +35,29 @@ namespace ChatroomB_Backend.Service
             }
 
             // Call CreateGroup method with the DataTable of selected users
-            // assume return chatroomid for new group
-            await _repo.CreateGroup(roomName, initiatedBy, selectedUsersTable);
+           await _repo.CreateGroup(roomName, initiatedBy, selectedUsersTable);
+        }
 
-            // foreach (let userid of SelectedUsers)
-            // AddToGroup(chatlists = null, chatRoomId = , userId = userid)
+        public async Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName)
+        {
+            try
+            {
+                // Upload the file to blob storage and get the URI
+                string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
+
+                // Update the user's profile picture URI in the database
+                int updateResult = await _repo.UpdateGroupPicture(ChatRoomId, blobUri);
+
+                // Assuming the updateResult is an int that signifies the number of records updated
+                // You might want to check if it actually succeeded based on your repository implementation
+                return updateResult != 0;
+            }
+            catch (Exception ex)
+            {
+                // Depending on your logging framework, log the exception
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
         }
     }
 }
