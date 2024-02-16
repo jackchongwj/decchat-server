@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.Models;
+﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 
 namespace ChatroomB_Backend.Service
@@ -17,6 +18,11 @@ namespace ChatroomB_Backend.Service
             message.TimeStamp = DateTime.Now;
 
             return await _MessageRepo.AddMessages(message);
+        }
+
+        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId)
+        {
+            return await _MessageRepo.GetMessages(ChatRoomId);
         }
     }
 }

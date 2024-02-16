@@ -2,14 +2,16 @@
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 
 namespace ChatroomB_Backend.Repository
 {
     public interface IUserRepo
     {
-        Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId);                                                    //Get user by user profile name and filter friend request
+        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                                    //Get user by user profile name and filter friend request
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                 // Get All Friend request
         Task<Users> GetUserById(int userId);
         Task<int> UpdateUserProfile(Users userProfile);
@@ -29,12 +31,14 @@ namespace ChatroomB_Backend.Repository
 
     public interface IChatRoomRepo
     {
-        Task<int> AddChatRoom(FriendRequest request);                                             // add new ChatRoom and user chat room with private user
+        Task<int> AddChatRoom(FriendRequest request); // add new ChatRoom and user chat room with private user
+        Task CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
     }
 
     public interface IMessageRepo
     {
-        Task<int> AddMessages(Messages message);                                                                                 // add new friend 
+        Task<int> AddMessages(Messages message);                                                                               
+        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
     }
 
     public interface IBlobRepo

@@ -43,7 +43,7 @@ namespace ChatroomB_Backend.Controllers
                 return BadRequest("The message content could not be parsed.");
             }
 
-            if(file!=null)
+            if (file!=null)
             {
                 FileMessage fileMessage = new FileMessage
                 {
@@ -62,7 +62,7 @@ namespace ChatroomB_Backend.Controllers
                     Message = message
                 });
             }
-            
+
 
             return Ok(1);
         }
@@ -71,6 +71,14 @@ namespace ChatroomB_Backend.Controllers
         public IActionResult ClearQueueMessage()
         {
             return Ok(0);
+        }
+
+        [HttpGet("GetMessage")]
+        public async Task<IActionResult> RetrieveMessage(int ChatRoomId) 
+        {
+           IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId);
+
+            return Ok(message);
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)

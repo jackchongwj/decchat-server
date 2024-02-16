@@ -2,13 +2,15 @@
 using ChatroomB_Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Core.Types;
+using System.Data;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace ChatroomB_Backend.Service
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserSearch>> GetByName(string profileName, int userId);                                              //Get user by user profile name and filter friend request
+        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                              //Get user by user profile name and filter friend request
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                               //Get All Friend request
         Task<Users> GetUserById(int userId);
         Task<int> UpdateUser(Users user);
@@ -20,7 +22,7 @@ namespace ChatroomB_Backend.Service
         Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);
     }
 
-    public interface IFriendService 
+    public interface IFriendService
     {
         Task<int> AddFriends(Friends friends);                                                              // add new friend
         Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request                                                                      // 
@@ -29,13 +31,16 @@ namespace ChatroomB_Backend.Service
 
     public interface IChatRoomService
     {
-        Task<int> AddChatRoom(FriendRequest request);                                             // add new ChatRoom and user chat room with private user
-    }
+        Task<int> AddChatRoom(FriendRequest request);
 
+
+        Task CreateGroupWithSelectedUsers(string roomName, int initiatedBy, List<int> SelectedUsers);
+    }
 
     public interface IMessageService
     {
         Task<int> AddMessages(Messages message);                                                                                 // add new friend 
+        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
     }
 
     public interface IAuthService

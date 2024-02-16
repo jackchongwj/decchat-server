@@ -12,52 +12,69 @@ namespace ChatroomB_Backend.Hubs
     public sealed class ChatHub: Hub
     {
         private readonly IUserService _Uservices;
+        private readonly IMessageService _MServices;
         private readonly IRedisServcie _RServices;
 
-        public ChatHub(IUserService _UserService, IRedisServcie rServices)
+        public ChatHub(IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
         {
             _Uservices = _UserService;
-            _RServices = rServices;
+            _RServices = _RedisServices;
+            _MServices = _MessageService;
         }
 
         public override async Task OnConnectedAsync()
         {
-            //string? userId = Context.User?.Identity?.Name;
-            string userId = Context.GetHttpContext().Request.Query["userId"];
-            string connectionId = Context.ConnectionId;
-            Console.WriteLine($"Connection ID {connectionId} connected.");
+            try
+            {
+                // declare userId and connection Id
+                string userId = Context.GetHttpContext().Request.Query["userId"];
+                string connectionId = Context.ConnectionId;
 
-            //await Clients.All.SendAsync("aaa", $"{Context.ConnectionId} has joined On Connected");
+                Console.WriteLine($"Connection ID {connectionId} connected.");
 
-            await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
+                // call redis to add userId and Connection id to redis
+                await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, "FR"+ userId);
+                //add user to a group to easy call them
+                await Groups.AddToGroupAsync(Context.ConnectionId, "FR"+ userId);
 
-            await base.OnConnectedAsync();
+                await base.OnConnectedAsync();
+
+            }
+            catch (Exception ex) 
+            {
+                Console.Error.WriteLine($"Error in Redis Connection method: {ex.ToString()}");
+                throw;
+            }
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception) 
         
         {
-            //string? userId = Context.User?.Identity?.Name;
-            string userId = Context.GetHttpContext().Request.Query["userId"];
-            string connectionId = Context.ConnectionId;
+            try
+            {
+                string userId = Context.GetHttpContext().Request.Query["userId"];
+                string connectionId = Context.ConnectionId;
 
-            await _RServices.DeleteUserIdFromRedis(userId);
+                await _RServices.DeleteUserIdFromRedis(userId);
 
-            await base.OnDisconnectedAsync(exception);
-            
+                await base.OnDisconnectedAsync(exception);
+            }
+            catch (Exception ex) 
+            {
+                Console.Error.WriteLine($"Error in Redis Connection method: {ex.ToString()}");
+                throw;
+            }
         }
 
-        public async Task CheckUserTyping(string name, bool typing)
+
+        public async Task CheckUserTyping(int ChatRoomId, bool typing)
         {
-            await Clients.All.SendAsync("UserTyping", name, typing);
+            
+            await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing);
+            Console.WriteLine($"{Context.ConnectionId} has sending active status to the group {ChatRoomId}.");
         }
-        //public async Task SendFriendRequestNotification(IEnumerable<Friends> friend)
-        //{
 
-        //    await Clients.User(friend.FirstOrDefault().ReceiverId.ToString()).SendAsync("ReceiveFriendRequestNotification", friend.FirstOrDefault().SenderId);
-        //}
 
         public async Task SendFriendRequestNotification(int receiverId, int senderId, string profileName)
         {
@@ -76,6 +93,7 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+
         public async Task acceptFriendRequest(int chatroomId, int senderId,int receiverId) 
         {
             try
@@ -91,6 +109,20 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+        public async Task rejectFriendRequest(int senderId, int receiverId)
+        {
+            try
+            {
+                await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterReject", receiverId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
+                throw;
+            }
+        }
+
+
         public async Task AddToGroup(List<ChatlistVM>? chatlists, int? chatRoomId, int? userId)
         {
             if (chatlists!= null)
@@ -100,7 +132,8 @@ namespace ChatroomB_Backend.Hubs
                     string groupName = list.ChatRoomId.ToString();
                     await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
-                    await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("Send", $"{Context.ConnectionId} has joined the group {groupName}.");
+                    Console.WriteLine($"{Context.ConnectionId} has joined the group {groupName}.");
+                    //await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("Send", $"{Context.ConnectionId} has joined the group {groupName}.");
                 }
             }
             else
@@ -121,12 +154,29 @@ namespace ChatroomB_Backend.Hubs
             } 
         }
 
-        public async Task RemoveFromGroup(string groupName)
+
+        public async Task RemoveFromGroup(string groupName, int removedUserId)
         {
+            // Run Redis and Get RemovedUserId Connection Id
+
+
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
 
             await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
         }
 
+
+        public async Task SendMessageNotification(ChatRoomMessage newMessage)
+        {
+            try
+            {
+                await Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
