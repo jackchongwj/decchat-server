@@ -176,7 +176,7 @@ namespace ChatroomB_Backend.Hubs
         }
 
         //send message signalR
-        public async Task SendMessageNotification(DTO.Message newMessage)
+        public async Task SendMessageNotification(ChatRoomMessage newMessage)
         {
             try
             {
