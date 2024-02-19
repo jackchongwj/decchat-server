@@ -52,9 +52,6 @@ namespace ChatroomB_Backend.Service
             return chatList;             
         }
 
-            // Call CreateGroup method with the DataTable of selected users
-           await _repo.CreateGroup(roomName, initiatedBy, selectedUsersTable);
-        }
 
         public async Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName)
         {
