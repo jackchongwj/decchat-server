@@ -33,8 +33,8 @@ namespace ChatroomB_Backend.Controllers
             {
                 ChatlistVM chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
                 await _hubContext.Clients.All.SendAsync("NewGroupCreated", chatinfo);
-                /*await _hubContext.Clients.Group(createGroupVM.RoomName).SendAsync("NewGroupCreated", createGroupVM.RoomName);*/
-                return Ok("Group created successfully");
+                return Ok(new { Message = "Group created successfully" });
+
 
 
             }
