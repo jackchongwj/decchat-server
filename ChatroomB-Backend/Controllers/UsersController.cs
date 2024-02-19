@@ -11,6 +11,7 @@ namespace ChatroomB_Backend.Controllers
     {
         private readonly IUserService _UserService;
 
+
         public UsersController(IUserService service)
         {
             _UserService = service;
@@ -74,37 +75,47 @@ namespace ChatroomB_Backend.Controllers
             return Ok(user);
         }
 
-        [HttpPut("UserUpdate")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] Users user)
+        [HttpPost("UpdateProfileName")]
+        public async Task<IActionResult> UpdateProfileName([FromBody] UpdateProfileName model)
         {
-            if (id != user.UserId)
+            if (model == null || !ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
-            int updatedUser = await _UserService.UpdateUser(user);
-            if (updatedUser == 0)
-            {
-                return NotFound();
-            }
+            var result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
+            if (result == 0) return NotFound();
 
             return Ok();
         }
 
-        [HttpDelete("UserDeletion")]
-        public async Task<IActionResult> DeleteUser(int id)
+
+        [HttpPost("UpdateProfilePicture")]
+        public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file, [FromForm(Name = "id")] string userId)
+        {
+            byte[] filebyte = await ConvertToByteArrayAsync(file);
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("File is not provided or empty.");
+            }
+
+            var success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId) , filebyte, file.FileName);
+
+            if (!success)
+            {
+                return NotFound("Failed to update the profile picture.");
+            }
+
+            return Ok(new { Message =  "Profile picture updated successfully." });
+        }
+
+
+        [HttpPost("UserDeletion")]
+        public async Task<IActionResult> DeleteUser([FromQuery]int id)
         {
             int result = await _UserService.DeleteUser(id);
             if (result == 0) { return BadRequest(); }
             else { return Ok(); }
-
-        }
-
-        [HttpPost("UserDetails/PasswordChange")]
-        public async Task<IActionResult> ChangePassword(int id, [FromBody] string newPassword)
-        {
-            await _UserService.ChangePassword(id, newPassword);
-            return Ok();
         }
 
         [HttpGet("DoesUsernameExist")]
@@ -114,7 +125,7 @@ namespace ChatroomB_Backend.Controllers
 
             return Ok(new { IsUnique = isUnique });
         }
-      
+
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -123,6 +134,5 @@ namespace ChatroomB_Backend.Controllers
                 return memoryStream.ToArray();
             }
         }
-        
     }
 }

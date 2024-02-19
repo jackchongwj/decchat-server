@@ -32,20 +32,36 @@ namespace ChatroomB_Backend.Service
             return await _repo.GetUserById(userId);
         }
 
-        public async Task<int> UpdateUser(Users user)
+        public async Task<int> UpdateProfileName(int userId, string newProfileName)
         {
-            return await _repo.UpdateUserProfile(user);
+            return await _repo.UpdateProfileName(userId, newProfileName);
+        }
+
+        public async Task<bool> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName)
+        {
+            try
+            {
+                // Upload the file to blob storage and get the URI
+                string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
+
+                // Update the user's profile picture URI in the database
+                int updateResult = await _repo.UpdateProfilePicture(userId, blobUri);
+
+                // Assuming the updateResult is an int that signifies the number of records updated
+                // You might want to check if it actually succeeded based on your repository implementation
+                return updateResult != 0;
+            }
+            catch (Exception ex)
+            {
+                // Depending on your logging framework, log the exception
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<int> DeleteUser(int userId)
         {
             return await _repo.DeleteUserProfile(userId);
-        }
-
-        public async Task<int> ChangePassword(int userId, string newPassword)
-        {
-            // Ensure newPassword is hashed appropriately before sending it to the repository
-            return await _repo.ChangePassword(userId, newPassword);
         }
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)

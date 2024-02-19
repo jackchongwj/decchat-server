@@ -191,5 +191,37 @@ namespace ChatroomB_Backend.Controllers
                 return StatusCode(500, new { Error = "Internal Server Error" });
             }
         }
+        
+        [HttpPost("PasswordChange")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] PasswordChange model)
+        {
+            // Check if the model is valid
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await _authService.ChangePassword(id, model.CurrentPassword, model.NewPassword);
+                if (!result)
+                {
+                    // This means the current password did not match
+                    return BadRequest("Current password is incorrect or user not found.");
+                }
+
+                // If the password was successfully changed
+                return Ok(new { Message = "Password changed successfully." });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details for debugging purposes
+                // Consider using a logging framework or service
+                Console.WriteLine(ex.Message);
+
+                // Return a generic error message to avoid exposing sensitive details
+                return StatusCode(500, new { Error = "An error occurred while changing the password." });
+            }
+        }
     }
 }
