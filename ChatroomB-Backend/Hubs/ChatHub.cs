@@ -144,12 +144,28 @@ namespace ChatroomB_Backend.Hubs
             } 
         }
 
-        public async Task RemoveFromGroup(string groupName)
+        public async Task RemoveFromGroup(string groupName, int initiatedBy)
         {
+            // Check if the user initiating the removal is the same as the one who created the group
+            if (Context.UserIdentifier != initiatedBy.ToString())
+            {
+                await Clients.Caller.SendAsync("Error", "You are not authorized to remove users from this chat room.");
+                return;
+            }
+
+            // Remove the user from the group
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
 
             await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
         }
+
+
+        /*public async Task RemoveFromGroup(string groupName)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+
+            await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
+        }*/
 
 
         public async Task SendMessageNotification(DTO.Message newMessage)
@@ -166,19 +182,6 @@ namespace ChatroomB_Backend.Hubs
                 throw;
             }
         }
-
-       /* public async Task CreateGroup(string roomName, int initiatedBy, List<int> selectedUsers)
-        {
-            // Your logic to create the group...
-            await _ChatRoomService.CreateGroupWithSelectedUsers(roomName,initiatedBy, selectedUsers);
-            await Clients.All.SendAsync("NewGroupCreated", roomName);
-        }*/
-
-
-
-
     }
-
-
 }
 
