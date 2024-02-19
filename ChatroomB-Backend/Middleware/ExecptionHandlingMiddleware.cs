@@ -40,10 +40,10 @@ namespace ChatroomB_Backend.Middleware
                         code = HttpStatusCode.Forbidden;
                         break;
 
-                    default: 
-                        code = HttpStatusCode.InternalServerError; 
-                        await context.Response.WriteAsync("An unexpected error occurred.");
-                        break;
+                    //default: 
+                    //    code = HttpStatusCode.InternalServerError; 
+                    //    await context.Response.WriteAsync("An unexpected error occurred.");
+                    //    break;
                 }
             }
 

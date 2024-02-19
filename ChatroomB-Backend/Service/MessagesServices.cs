@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.Models;
+﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 
 namespace ChatroomB_Backend.Service
@@ -19,7 +20,7 @@ namespace ChatroomB_Backend.Service
             return await _MessageRepo.AddMessages(message);
         }
 
-        public async Task<IEnumerable<Messages>> GetMessages(int ChatRoomId)
+        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId)
         {
             return await _MessageRepo.GetMessages(ChatRoomId);
         }

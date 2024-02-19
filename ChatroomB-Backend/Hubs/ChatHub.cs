@@ -70,7 +70,15 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
-        //Friend request SignalR
+
+        public async Task CheckUserTyping(int ChatRoomId, bool typing)
+        {
+            
+            await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing);
+            Console.WriteLine($"{Context.ConnectionId} has sending active status to the group {ChatRoomId}.");
+        }
+
+
         public async Task SendFriendRequestNotification(int receiverId, int senderId, string profileName)
         {
             try
@@ -87,6 +95,7 @@ namespace ChatroomB_Backend.Hubs
                 throw;
             }
         }
+
 
         public async Task acceptFriendRequest(int chatroomId, int senderId,int receiverId) 
         {
@@ -126,7 +135,8 @@ namespace ChatroomB_Backend.Hubs
                     string groupName = list.ChatRoomId.ToString();
                     await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
-                    await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("Send", $"{Context.ConnectionId} has joined the group {groupName}.");
+                    Console.WriteLine($"{Context.ConnectionId} has joined the group {groupName}.");
+                    //await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("Send", $"{Context.ConnectionId} has joined the group {groupName}.");
                 }
             }
             else
@@ -172,7 +182,7 @@ namespace ChatroomB_Backend.Hubs
         }
 
         //send message signalR
-        public async Task SendMessageNotification(DTO.Message newMessage)
+        public async Task SendMessageNotification(ChatRoomMessage newMessage)
         {
             try
             {

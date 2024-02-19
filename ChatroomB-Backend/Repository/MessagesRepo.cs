@@ -55,20 +55,13 @@ namespace ChatroomB_Backend.Repository
                 throw;
             }
 
-            //using (SqlConnection connection = new SqlConnection(_dbConnectionString))
-            //{
-            //    string StoredProcedure = "AddMessage";
-
-            //    int result = await connection.ExecuteAsync(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
-            //    return result;
-            //}
         }
 
-        public async Task<IEnumerable<Messages>> GetMessages(int ChatRoomId)
+        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId)
         {
             string sql = "exec RetrieveMessage @ChatRoomId";
 
-            IEnumerable<Messages> result = await _dbConnection.QueryAsync<Messages>(sql, new { ChatRoomId });
+            IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, new { ChatRoomId });
 
             return result;
         }
