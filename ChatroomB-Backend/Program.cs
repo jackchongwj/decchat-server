@@ -67,6 +67,7 @@ builder.Services.AddScoped<IAuthService, AuthServices>();
 builder.Services.AddScoped<ITokenService, TokenServices>();
 builder.Services.AddScoped<IMessageService, MessagesServices>();
 
+builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();  
@@ -142,22 +143,11 @@ app.UseRouting();
 
 app.UseAuthentication();
 
-
 app.UseAuthorization();
 
+app.UseMiddleware<ExecptionHandlingMiddleware>();
 
-app.UseErrorHandlingMiddleware();
-
-//app.UseExceptionHandler(error => { error.Run(async context => {
-
-//    var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-//    var exception = exceptionHandlerPathFeature?.Error;
-
-//    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-//    context.Response.ContentType = "text/plain";
-//    await context.Response.WriteAsync("An internal server error occurred.");
-//});
-//});
+app.UseMiddleware<TokenValidationMiddleware>();
 
 app.MapControllers();
 

@@ -10,7 +10,7 @@ namespace ChatroomB_Backend.Utils
     
     public interface ITokenUtils
     {
-        string GenerateAccessToken(string username);
+        string GenerateAccessToken(int userId, string username);
         string GenerateRefreshToken();
     }
 }

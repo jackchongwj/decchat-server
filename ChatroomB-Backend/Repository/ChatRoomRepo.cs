@@ -46,7 +46,7 @@ namespace ChatroomB_Backend.Repository
         }
 
 
-        public async Task CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers)
+        public async Task <ChatlistVM?> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers)
         {
             try
             {
@@ -56,7 +56,8 @@ namespace ChatroomB_Backend.Repository
                 dynamicParam.Add("@InitiatedBy", initiatedBy);
                 dynamicParam.Add("@SelectedUsers", selectedUsers.AsTableValuedParameter("IntListTableType"));
 
-                _dbConnection.Query("CreateGroup", dynamicParam, commandType: CommandType.StoredProcedure);
+                ChatlistVM chatinfo = await _dbConnection.QuerySingleAsync <ChatlistVM>("CreateGroup", dynamicParam, commandType: CommandType.StoredProcedure);
+                return chatinfo;               
             }
             catch (Exception ex)
             {

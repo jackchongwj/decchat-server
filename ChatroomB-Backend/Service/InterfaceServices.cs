@@ -20,6 +20,7 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
+        Task<string> GetUserName(int userId);  
         Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);
     }
 
@@ -35,7 +36,7 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId);
 
 
-        Task CreateGroupWithSelectedUsers(string roomName, int initiatedBy, List<int> SelectedUsers);
+        Task<ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM);
         Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName);
     }
 
@@ -49,15 +50,16 @@ namespace ChatroomB_Backend.Service
     {
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
-        Task<ActionResult> AddUser(Users user);
+        Task<IActionResult> AddUser(Users user);
         Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
     }
 
     public interface ITokenService
     {
-        Task<ActionResult> StoreRefreshToken(RefreshToken token);
-        Task<ActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
+        Task<string> RenewAccessToken(RefreshToken token, int userId);
+        Task<IActionResult> StoreRefreshToken(RefreshToken token);
+        Task<IActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IBlobService
