@@ -119,6 +119,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
 var app = builder.Build();
 
 app.MapHub<ChatHub>("/chatHub");
@@ -141,22 +142,11 @@ app.UseRouting();
 
 app.UseAuthentication();
 
-
 app.UseAuthorization();
 
+app.UseMiddleware<ExecptionHandlingMiddleware>();
 
-app.UseErrorHandlingMiddleware();
-
-//app.UseExceptionHandler(error => { error.Run(async context => {
-
-//    var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-//    var exception = exceptionHandlerPathFeature?.Error;
-
-//    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-//    context.Response.ContentType = "text/plain";
-//    await context.Response.WriteAsync("An internal server error occurred.");
-//});
-//});
+app.UseMiddleware<TokenValidationMiddleware>();
 
 app.MapControllers();
 

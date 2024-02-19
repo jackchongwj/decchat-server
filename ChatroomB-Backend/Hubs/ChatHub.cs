@@ -24,6 +24,7 @@ namespace ChatroomB_Backend.Hubs
             _ChatRoomService = ChatRoomService;
         }
 
+        //SignalR start and destroy connection
         public override async Task OnConnectedAsync()
         {
             try
@@ -69,6 +70,7 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+        //Friend request SignalR
         public async Task SendFriendRequestNotification(int receiverId, int senderId, string profileName)
         {
             try
@@ -114,6 +116,7 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+        //Add chatlist to SignalR group
         public async Task AddToGroup(List<ChatlistVM>? chatlists, int? chatRoomId, int? userId)
         {
             if (chatlists!= null)
@@ -160,19 +163,19 @@ namespace ChatroomB_Backend.Hubs
         }
 
 
-        /*public async Task RemoveFromGroup(string groupName)
+        //update private chatlist signalR
+        public async Task NotifyUserUpdatePrivateChatlist(List<ChatlistVM> chatlist) 
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            await Clients.Group("FR"+ chatlist[1].UserId).SendAsync("UpdatePrivateChatlist", chatlist[1]);
+            await Clients.Group("FR"+ chatlist[0].UserId).SendAsync("UpdatePrivateChatlist", chatlist[0]);
+            //await Clients.Group(chatlist[0].ChatRoomId.ToString()).SendAsync("UpdatePrivateChatlist", chatlist);
+        }
 
-            await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
-        }*/
-
-
+        //send message signalR
         public async Task SendMessageNotification(DTO.Message newMessage)
         {
             try
             {
-                //IEnumerable<Messages> GetMessage = await _MServices.GetMessages(ChatRoomId);
 
                 await Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
             }

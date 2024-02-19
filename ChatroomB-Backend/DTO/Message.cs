@@ -20,5 +20,7 @@ namespace ChatroomB_Backend.DTO
         public bool IsDeleted { get; set; }
 
         public int? ChatRoomId { get; set; }
+
+        public int? UserId { get; set; }
     }
 }

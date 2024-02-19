@@ -9,41 +9,43 @@ namespace ChatroomB_Backend.Service
     {
         private readonly ITokenRepo _repo;
         private readonly ITokenUtils _tokenUtils;
+        private readonly IUserService _userService;
 
-        public TokenServices(ITokenRepo repo, ITokenUtils tokenUtils)
+        public TokenServices(ITokenRepo repo, ITokenUtils tokenUtils, IUserService userService)
         {
             _repo = repo;
             _tokenUtils = tokenUtils;
+            _userService = userService;
         }
 
-        //public async Task<string> RenewAccessToken(RefreshToken refreshToken)
-        //{
-        //    bool isValid = await _repo.IsRefreshTokenValid(refreshToken);
+        public async Task<string> RenewAccessToken(RefreshToken refreshToken, int userId)
+        {
+            bool isValid = await _repo.IsRefreshTokenValid(refreshToken);
 
-        //    if (!isValid)
-        //    {
-        //        // Token is invalid or expired
-        //        // You can throw an exception or handle this case as per your application's need
-        //        throw new UnauthorizedAccessException("Invalid or expired refresh token.");
-        //    }
+            if (!isValid)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+            }
 
-        //    // If valid, generate a new access token
-        //    string newAccessToken = _tokenUtils.GenerateAccessToken(/* user info or claims */);
+            string username = await _userService.GetUserName(userId);
 
-        //    return newAccessToken;
-        //}
+            // If valid, generate a new access token
+            string newAccessToken = _tokenUtils.GenerateAccessToken(userId, username);
 
-        public async Task<ActionResult> StoreRefreshToken(RefreshToken token)
+            return newAccessToken;
+        }
+
+        public async Task<IActionResult> StoreRefreshToken(RefreshToken token)
         {
             return await _repo.StoreRefreshToken(token);
         }
 
-        public async Task<ActionResult> RemoveRefreshToken(RefreshToken token)
+        public async Task<IActionResult> RemoveRefreshToken(RefreshToken token)
         {
             return await _repo.RemoveRefreshToken(token);
         }
 
-        public async Task<ActionResult> ValidateRefreshToken(RefreshToken token)
+        public async Task<IActionResult> ValidateRefreshToken(RefreshToken token)
         {
             return await _repo.ValidateRefreshToken(token);
         }

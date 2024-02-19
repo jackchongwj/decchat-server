@@ -9,12 +9,14 @@ namespace ChatroomB_Backend.Repository
 {
     public class AuthRepo : IAuthRepo
     {
-
         private readonly IDbConnection _dbConnection;
+        private readonly IConfiguration _config;
 
-        public AuthRepo(IDbConnection db) 
+
+        public AuthRepo(IDbConnection db, IConfiguration config) 
         { 
             _dbConnection = db;
+            _config = config;
         }
 
         public async Task<string> GetSalt(string username)
@@ -63,17 +65,19 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<ActionResult> AddUser(Users user)
+        public async Task<IActionResult> AddUser(Users user)
         {
             try
             {
-                string sql = "exec AddUser @UserName, @HashedPassword, @Salt";
+                string sql = "exec AddUser @UserName, @HashedPassword, @Salt, @ProfileName, @ProfilePicture";
 
                 await _dbConnection.ExecuteAsync(sql, new Users
                 {
                     UserName = user.UserName,
+                    ProfileName = user.UserName,
                     HashedPassword = user.HashedPassword,
-                    Salt = user.Salt
+                    Salt = user.Salt,
+                    ProfilePicture = _config["DefaultPicture:UserProfile"]
                 });
 
                 return new OkObjectResult(new { Messsage = "Registration successful!" });
@@ -82,6 +86,18 @@ namespace ChatroomB_Backend.Repository
             {
                 return new BadRequestObjectResult(new { Error = "Failed to register user" });
             }
+        }
+
+        public async Task<bool> ChangePassword(int userId, string newHashedPassword)
+        {
+            string sql = "exec ChangePassword @UserId, @NewHashedPassword";
+
+            var result = await _dbConnection.ExecuteAsync(
+                sql,
+                new { UserId = userId, NewHashedPassword = newHashedPassword }
+            );
+
+            return true; // Return true if the password was successfully changed
         }
 
     }

@@ -14,12 +14,13 @@ namespace ChatroomB_Backend.Repository
         Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                                    //Get user by user profile name and filter friend request
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                 // Get All Friend request
         Task<Users> GetUserById(int userId);
-        Task<int> UpdateUserProfile(Users userProfile);
-        Task<int> DeleteUserProfile(int userId);
-        Task<int> ChangePassword(int userId, string newPassword);
+        Task<int> UpdateProfileName(int userId, string newProfileName);
+        Task<int> UpdateProfilePicture(int userId, string newProfilePicture);
+        Task<int> DeleteUserProfile(int userId);       
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
+        Task<string> GetUserName(int userId);
     }   
 
     public interface IFriendRepo
@@ -31,7 +32,8 @@ namespace ChatroomB_Backend.Repository
 
     public interface IChatRoomRepo
     {
-        Task<int> AddChatRoom(FriendRequest request); // add new ChatRoom and user chat room with private user
+        Task <IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId); // add new ChatRoom and user chat room with private user
+        Task<int> UpdateGroupPicture(int ChatRoomId, string newGroupPicture);
         Task <ChatlistVM> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
     }
 
@@ -54,14 +56,16 @@ namespace ChatroomB_Backend.Repository
     {
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
-        Task<ActionResult> AddUser(Users user);
+        Task<IActionResult> AddUser(Users user);
+        Task<bool> ChangePassword(int userId, string newHashedPassword);
     }
 
     public interface ITokenRepo
     {
-        Task<ActionResult> StoreRefreshToken(RefreshToken token);
-        Task<ActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
+        Task<bool> IsRefreshTokenValid(RefreshToken token);
+        Task<IActionResult> StoreRefreshToken(RefreshToken token);
+        Task<IActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IRedisRepo 

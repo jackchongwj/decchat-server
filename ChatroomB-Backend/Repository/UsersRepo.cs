@@ -44,14 +44,24 @@ namespace ChatroomB_Backend.Repository
             return users;
         }
 
-        public async Task<int> UpdateUserProfile(Users userProfile)
+        public async Task<int> UpdateProfileName(int userId, string newProfileName)
         {
-            string sql = "exec UpdateUserProfile @UserId, @NewProfileName, @NewProfilePicture";
+            string sql = "exec UpdateUserProfileName @UserId, @NewProfileName";
             int result = await _dbConnection.ExecuteAsync(sql, new
             {
-                UserId = userProfile.UserId,
-                NewProfileName = userProfile.ProfileName,
-                NewProfilePicture = userProfile.ProfilePicture
+                userId,
+                newProfileName
+            });
+            return result;
+        }
+
+        public async Task<int> UpdateProfilePicture(int userId, string newProfilePicture)
+        {
+            string sql = "exec UpdateUserProfilePicture @UserId, @NewProfilePicture";
+            int result = await _dbConnection.ExecuteAsync(sql, new
+            {
+                userId,
+                newProfilePicture
             });
             return result;
         }
@@ -95,12 +105,7 @@ namespace ChatroomB_Backend.Repository
             }
 
         }
-        public async Task<int> ChangePassword(int userId, string newPassword)
-        {
-            string sql = "exec ChangePassword @UserId, @NewPassword";
-            int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId, NewPassword = newPassword });
-            return result;
-        }
+        
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
@@ -112,6 +117,22 @@ namespace ChatroomB_Backend.Repository
             IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, parameter);
 
             return chatList.AsList();
+        }
+
+        public async Task<string> GetUserName(int userId)
+        {
+            try
+            {
+                string sql = "exec GetUserNameByUserId @UserId";
+
+                string result = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserId = userId });
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An unexpected error occurred", ex);
+            }
         }
     }
 }
