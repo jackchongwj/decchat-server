@@ -9,12 +9,14 @@ namespace ChatroomB_Backend.Repository
 {
     public class AuthRepo : IAuthRepo
     {
-
         private readonly IDbConnection _dbConnection;
+        private readonly IConfiguration _config;
 
-        public AuthRepo(IDbConnection db) 
+
+        public AuthRepo(IDbConnection db, IConfiguration config) 
         { 
             _dbConnection = db;
+            _config = config;
         }
 
         public async Task<string> GetSalt(string username)
@@ -67,14 +69,15 @@ namespace ChatroomB_Backend.Repository
         {
             try
             {
-                string sql = "exec AddUser @UserName, @HashedPassword, @Salt, @ProfileName";
+                string sql = "exec AddUser @UserName, @HashedPassword, @Salt, @ProfileName, @ProfilePicture";
 
                 await _dbConnection.ExecuteAsync(sql, new Users
                 {
                     UserName = user.UserName,
                     ProfileName = user.UserName,
                     HashedPassword = user.HashedPassword,
-                    Salt = user.Salt  
+                    Salt = user.Salt,
+                    ProfilePicture = _config["DefaultPicture:UserProfile"]
                 });
 
                 return new OkObjectResult(new { Messsage = "Registration successful!" });
