@@ -63,6 +63,28 @@ namespace ChatroomB_Backend.Service
 
             // Call CreateGroup method with the DataTable of selected users
            await _repo.CreateGroup(roomName, initiatedBy, selectedUsersTable);
-        }    
+        }
+
+        public async Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName)
+        {
+            try
+            {
+                // Upload the file to blob storage and get the URI
+                string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
+
+                // Update the user's profile picture URI in the database
+                int updateResult = await _repo.UpdateGroupPicture(ChatRoomId, blobUri);
+
+                // Assuming the updateResult is an int that signifies the number of records updated
+                // You might want to check if it actually succeeded based on your repository implementation
+                return updateResult != 0;
+            }
+            catch (Exception ex)
+            {
+                // Depending on your logging framework, log the exception
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
+        }
     }
 }
