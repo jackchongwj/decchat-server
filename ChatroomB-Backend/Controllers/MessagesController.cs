@@ -77,9 +77,11 @@ namespace ChatroomB_Backend.Controllers
         public async Task<IActionResult> RetrieveMessage(int ChatRoomId) 
         {
            IEnumerable<DTO.Message> message = await _MessageService.GetMessages(ChatRoomId);
+           IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId);
 
             return Ok(message);
         }
+
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
         {
             using (MemoryStream memoryStream = new MemoryStream())

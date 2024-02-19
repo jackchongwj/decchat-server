@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.Utils;
 using ChatroomB_Backend.DTO;
-using Microsoft.AspNetCore.Cors;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -36,7 +34,7 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult> Register([FromBody] AuthRequest request)
+        public async Task<IActionResult> Register([FromBody] AuthRequest request)
         {
             // Check if request data valid
             if (!ModelState.IsValid)
@@ -68,7 +66,7 @@ namespace ChatroomB_Backend.Controllers
                 };
 
                 // Store the user object
-                ActionResult result = await _authService.AddUser(user);
+                IActionResult result = await _authService.AddUser(user);
 
                 return result;
             }
@@ -79,7 +77,7 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] AuthRequest request)
+        public async Task<IActionResult> Login([FromBody] AuthRequest request)
         {
             if(!ModelState.IsValid)
             {
@@ -114,7 +112,7 @@ namespace ChatroomB_Backend.Controllers
                 int userId = await _userService.GetUserId(request.Username);
 
                 // Generate access token
-                string accessToken = _tokenUtils.GenerateAccessToken(request.Username);
+                string accessToken = _tokenUtils.GenerateAccessToken(userId, request.Username);
 
                 // Generate refresh token
                 string refreshToken = _tokenUtils.GenerateRefreshToken();
@@ -156,8 +154,7 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("logout")]
-        [Authorize]
-        public async Task<ActionResult> Logout()
+        public async Task<IActionResult> Logout()
         {
             try
             {

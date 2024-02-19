@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChatroomB_Backend.DTO
 {
-    public class Message
+    public class ChatRoomMessage
     {
         public int? MessageId { get; set; }
 
@@ -22,5 +22,8 @@ namespace ChatroomB_Backend.DTO
         public int? ChatRoomId { get; set; }
 
         public int? UserId { get; set; }
+
+        public string? ProfileName { get; set; }
+        public string? ProfilePicture { get; set; }
     }
 }

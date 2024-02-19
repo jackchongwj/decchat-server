@@ -40,10 +40,10 @@ namespace ChatroomB_Backend.Middleware
                         code = HttpStatusCode.Forbidden;
                         break;
 
-                    default: 
-                        code = HttpStatusCode.InternalServerError; 
-                        await context.Response.WriteAsync("An unexpected error occurred.");
-                        break;
+                    //default: 
+                    //    code = HttpStatusCode.InternalServerError; 
+                    //    await context.Response.WriteAsync("An unexpected error occurred.");
+                    //    break;
                 }
             }
 
@@ -54,14 +54,6 @@ namespace ChatroomB_Backend.Middleware
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Not found.");
             }
-        }
-    }
-
-    public static class ErrorHandlingMiddlewareExtensions
-    {
-        public static IApplicationBuilder UseErrorHandlingMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<ExecptionHandlingMiddleware>();
         }
     }
 }

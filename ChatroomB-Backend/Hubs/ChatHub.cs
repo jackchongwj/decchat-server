@@ -14,12 +14,14 @@ namespace ChatroomB_Backend.Hubs
         private readonly IUserService _Uservices;
         private readonly IMessageService _MServices;
         private readonly IRedisServcie _RServices;
+        private readonly IChatRoomService _ChatRoomService;
 
-        public ChatHub(IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
+        public ChatHub(IChatRoomService ChatRoomService, IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
         {
             _Uservices = _UserService;
             _RServices = _RedisServices;
             _MServices = _MessageService;
+            _ChatRoomService = ChatRoomService;
         }
 
         //SignalR start and destroy connection
@@ -178,3 +180,4 @@ namespace ChatroomB_Backend.Hubs
         //}
     }
 }
+
