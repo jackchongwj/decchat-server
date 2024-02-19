@@ -20,7 +20,7 @@ namespace ChatroomB_Backend.Repository
             _logger = logger;
         }
 
-        public async Task <DTO.Message> AddMessages(Messages message)
+        public async Task <ChatRoomMessage> AddMessages(Messages message)
         {
             var param = new
             {
@@ -39,7 +39,7 @@ namespace ChatroomB_Backend.Repository
                     await connection.OpenAsync(); // Ensure the connection is open
                     string StoredProcedure = "AddMessage";
 
-                    DTO.Message result = await connection.QueryFirstAsync<DTO.Message>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
+                    ChatRoomMessage result = await connection.QueryFirstAsync<ChatRoomMessage>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
 
                     Console.WriteLine($"Message  {result}");
                     return result;

@@ -6,6 +6,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Text.RegularExpressions;
 
