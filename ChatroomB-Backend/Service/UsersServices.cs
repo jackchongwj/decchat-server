@@ -1,4 +1,5 @@
 ﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Hubs;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 using Microsoft.AspNetCore.SignalR;
@@ -10,11 +11,15 @@ namespace ChatroomB_Backend.Service
     {
         private readonly IUserRepo _repo;
         private readonly IBlobService _blobService;
+        private readonly IRedisServcie _RServices;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public UsersServices(IUserRepo reponsitory, IBlobService blobService)
+        public UsersServices(IUserRepo reponsitory, IBlobService blobService, IRedisServcie rServices, IHubContext<ChatHub> hubContext)
         {
             _repo = reponsitory;
             _blobService = blobService;
+            _RServices = rServices;
+            _hubContext = hubContext;
         }
 
         public async Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId)
@@ -50,7 +55,16 @@ namespace ChatroomB_Backend.Service
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
-            return await _repo.GetChatListByUserId(userId);
+            IEnumerable<ChatlistVM> chatlist = await _repo.GetChatListByUserId(userId);
+
+            if (chatlist != null)
+            {
+                // add chalist to signalR group for send message
+                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+
+                await _hubContext.Groups.AddToGroupAsync(connectionId, chatlist.Select(list => list.ChatRoomId).ToList().ToString());
+            }
+            return chatlist; 
         }
 
         public async Task<bool> DoesUsernameExist(string username)

@@ -24,8 +24,9 @@ namespace ChatroomB_Backend.Service
 
     public interface IFriendService
     {
-        Task<int> AddFriends(Friends friends);                                                              // add new friend
-        Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request                                                                      // 
+        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                              // add new friend
+        Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request 
+        Task<int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
 
     }
 

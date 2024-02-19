@@ -17,13 +17,13 @@ namespace ChatroomB_Backend.Service
             this._hubContext = hubContext;
         }
 
-        public async Task<DTO.Message> AddMessages(Messages message)
+        public async Task <DTO.Message> AddMessages(Messages message)
         {
             message.TimeStamp = DateTime.Now;
 
-           DTO.Message newMessage =  await _MessageRepo.AddMessages(message);
+            DTO.Message newMessage =  await _MessageRepo.AddMessages(message);
 
-            await _hubContext.Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
+            await _hubContext.Clients.Group("PR"+ newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
             return newMessage;
         }
 

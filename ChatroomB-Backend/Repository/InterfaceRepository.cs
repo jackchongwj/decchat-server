@@ -24,8 +24,9 @@ namespace ChatroomB_Backend.Repository
 
     public interface IFriendRepo
     {
-        Task<int> AddFriends(Friends friends);                                                                                     // Add new friend 
+        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
+        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
        
     }
 
@@ -40,7 +41,7 @@ namespace ChatroomB_Backend.Repository
         Task <DTO.Message> AddMessages(Messages message);                                                                               
         Task<IEnumerable<DTO.Message>> GetMessages(int ChatRoomId);
     }
-
+    
     public interface IBlobRepo
     {
         Task<string> UploadImageFiles(byte[] imgByte, string filename, string folderPath);

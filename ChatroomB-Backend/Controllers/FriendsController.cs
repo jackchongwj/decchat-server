@@ -193,8 +193,8 @@ namespace ChatroomB_Backend.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    int result = await _FriendService.AddFriends(friends);
-                    return Ok(friends);
+                    await _FriendService.AddFriends(friends);
+                    return Ok(1);
                 }
                 else
                 {
@@ -246,7 +246,33 @@ namespace ChatroomB_Backend.Controllers
         }
 
 
-       
+        [HttpPost("DeleteFriend")]
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult<int>> DeleteFriend([FromBody] DeleteFriendRequest request)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1, request.UserId2);
+
+
+                    return Ok(result);
+                }
+                else
+                {
+                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in DeleteFriend method: {ex.ToString()}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+
         //[HttpGet]
         //public IActionResult Get()
         //{
