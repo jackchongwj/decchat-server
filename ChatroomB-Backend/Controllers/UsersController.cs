@@ -118,6 +118,14 @@ namespace ChatroomB_Backend.Controllers
             else { return Ok(); }
         }
 
+        [HttpGet("DoesUsernameExist")]
+        public async Task<IActionResult> DoesUsernameExist(string username)
+        {
+            bool isUnique = await _UserService.DoesUsernameExist(username);
+
+            return Ok(new { IsUnique = isUnique });
+        }
+
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
         {
             using (MemoryStream memoryStream = new MemoryStream())

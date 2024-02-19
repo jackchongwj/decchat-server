@@ -1,6 +1,7 @@
 ﻿using ChatroomB_Backend.Service;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using ChatroomB_Backend.Models;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -15,26 +16,41 @@ namespace ChatroomB_Backend.Controllers
             _tokenService = tokenService;
         }
 
-        //[HttpGet("RenewToken")]
-        //public async Task<IActionResult> RenewToken()
-        //{
-        //    // Extract the refresh token from the request, e.g., from a cookie
-        //    var refreshToken = Request.Cookies["refreshToken"];
+        [HttpPost("RenewToken")]
+        [Authorize]
+        public async Task<IActionResult> RenewToken()
+        {
+            // Extract the refresh token from the request cookie
+            var refreshToken = Request.Cookies["refreshToken"];
+            
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return new UnauthorizedObjectResult(new { Error = "Refresh token is missing" });
+            }
 
-        //    if (string.IsNullOrEmpty(refreshToken))
-        //    {
-        //        return new UnauthorizedObjectResult(new { Error = "Refresh token is missing" });
-        //    }
+            // Extract the refresh token from httpcontext (middleware)
+            var userId = HttpContext.Items["UserId"] as int?;
 
-        //    // Validate the refresh token and generate a new access token
-        //    var newAccessToken = await _tokenService.RenewAccessToken(refreshToken);
+            if (!userId.HasValue)
+            {
+                return new UnauthorizedObjectResult(new { Error = "User ID is missing" });
+            }
 
-        //    if (newAccessToken == null)
-        //    {
-        //        return new UnauthorizedObjectResult(new { Error = "Invalid or expired refresh token" });
-        //    }
+            // Create refresh token object
+            RefreshToken token = new RefreshToken
+            {
+                Token = refreshToken,
+            };
 
-        //    return Ok(new { AccessToken = newAccessToken });
-        //}
-    }
+            // Validate the refresh token and generate a new access token
+            var newAccessToken = await _tokenService.RenewAccessToken(token, userId.Value);
+
+            if (newAccessToken == null)
+            {
+                return new UnauthorizedObjectResult(new { Error = "Invalid or expired refresh token" });
+            }
+            
+            return new OkObjectResult(new { AccessToken = newAccessToken });
+        }
+    } 
 }
