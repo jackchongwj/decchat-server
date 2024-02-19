@@ -36,7 +36,7 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId);
 
 
-        Task CreateGroupWithSelectedUsers(string roomName, int initiatedBy, List<int> SelectedUsers);
+        Task<ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM);
         Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName);
     }
 

@@ -67,6 +67,7 @@ builder.Services.AddScoped<IAuthService, AuthServices>();
 builder.Services.AddScoped<ITokenService, TokenServices>();
 builder.Services.AddScoped<IMessageService, MessagesServices>();
 
+builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();  

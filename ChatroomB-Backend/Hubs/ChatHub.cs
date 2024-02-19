@@ -14,12 +14,14 @@ namespace ChatroomB_Backend.Hubs
         private readonly IUserService _Uservices;
         private readonly IMessageService _MServices;
         private readonly IRedisServcie _RServices;
+        private readonly IChatRoomService _ChatRoomService;
 
-        public ChatHub(IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
+        public ChatHub(IChatRoomService ChatRoomService, IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
         {
             _Uservices = _UserService;
             _RServices = _RedisServices;
             _MServices = _MessageService;
+            _ChatRoomService = ChatRoomService;
         }
 
         //SignalR start and destroy connection
@@ -145,8 +147,16 @@ namespace ChatroomB_Backend.Hubs
             } 
         }
 
-        public async Task RemoveFromGroup(string groupName)
+        public async Task RemoveFromGroup(string groupName, int initiatedBy)
         {
+            // Check if the user initiating the removal is the same as the one who created the group
+            if (Context.UserIdentifier != initiatedBy.ToString())
+            {
+                await Clients.Caller.SendAsync("Error", "You are not authorized to remove users from this chat room.");
+                return;
+            }
+
+            // Remove the user from the group
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
 
             await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
@@ -177,3 +187,4 @@ namespace ChatroomB_Backend.Hubs
         }
     }
 }
+
