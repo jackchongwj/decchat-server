@@ -75,6 +75,14 @@ namespace ChatroomB_Backend.Hubs
         }
 
 
+        public async Task CheckUserTyping(int ChatRoomId, bool typing)
+        {
+
+            await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing);
+            Console.WriteLine($"{Context.ConnectionId} has sending active status to the group {ChatRoomId}.");
+        }
+
+
         //Friend request SignalR
         //public async Task SendFriendRequestNotification(int receiverId, int senderId)
         //{
