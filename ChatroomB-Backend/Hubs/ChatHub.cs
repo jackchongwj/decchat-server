@@ -39,7 +39,11 @@ namespace ChatroomB_Backend.Hubs
                 await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
 
                 //add user to a group to easy call them
-                await Groups.AddToGroupAsync(Context.ConnectionId, "FR"+ userId);
+                string groupName = "User" + userId.ToString();
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+                Console.WriteLine($"{connectionId} has joined the group {groupName}");
+
+
 
                 await base.OnConnectedAsync();
 

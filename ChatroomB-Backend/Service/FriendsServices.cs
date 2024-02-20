@@ -31,9 +31,9 @@ namespace ChatroomB_Backend.Service
             {
                 try
                 {
-                    await _hubContext.Clients.Group("FR"+friends.ReceiverId.ToString()).SendAsync("UpdateSearchResults", friends.SenderId);
-                    await _hubContext.Clients.Group("FR" + friends.SenderId.ToString()).SendAsync("UpdateSearchResults", friends.ReceiverId);
-                    await _hubContext.Clients.Group("FR" + friends.ReceiverId.ToString()).SendAsync("UpdateFriendRequest", result);
+                    await _hubContext.Clients.Group("User"+ friends.ReceiverId.ToString()).SendAsync("UpdateSearchResults", friends.SenderId);
+                    await _hubContext.Clients.Group("User" + friends.SenderId.ToString()).SendAsync("UpdateSearchResults", friends.ReceiverId);
+                    await _hubContext.Clients.Group("User" + friends.ReceiverId.ToString()).SendAsync("UpdateFriendRequest", result);
                 }
                 catch (Exception ex)
                 {
@@ -53,7 +53,7 @@ namespace ChatroomB_Backend.Service
             {
                 try
                 {
-                    string groupName = "FR" + request.SenderId.ToString();
+                    string groupName = "User" + request.SenderId.ToString();
                     string methodName = "";
 
                     if (request.Status == 2)
@@ -89,8 +89,8 @@ namespace ChatroomB_Backend.Service
                 await _hubContext.Groups.RemoveFromGroupAsync(connectionIdUser2, chatRoomId.ToString());
 
 
-                await _hubContext.Clients.Group("FR"+ userId1).SendAsync("DeleteFriend", userId2);
-                await _hubContext.Clients.Group("FR"+ userId2).SendAsync("DeleteFriend", userId1);
+                await _hubContext.Clients.Group("User"+ userId1).SendAsync("DeleteFriend", userId2);
+                await _hubContext.Clients.Group("User"+ userId2).SendAsync("DeleteFriend", userId1);
 
             }
            return result;

@@ -78,7 +78,13 @@ namespace ChatroomB_Backend.Service
                 // add chalist to signalR group for send message
                 string connectionId = await _RServices.SelectUserIdFromRedis(userId);
 
-                await _hubContext.Groups.AddToGroupAsync(connectionId, chatlist.Select(list => list.ChatRoomId).ToList().ToString());
+                foreach (var list in chatlist) 
+                {
+                    await _hubContext.Groups.AddToGroupAsync(connectionId, list.ChatRoomId.ToString());
+
+                    Console.WriteLine($"{connectionId} has joined the group {list.ChatRoomId}");
+                }
+                  
             }
             return chatlist; 
         }
