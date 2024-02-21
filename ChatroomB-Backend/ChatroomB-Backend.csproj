@@ -7,11 +7,7 @@
     <InvariantGlobalization>False</InvariantGlobalization>
     <RootNamespace>ChatroomB_Backend</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Remove="web1.config" />
-  </ItemGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageReference Include="Dapper" Version="2.1.28" />
