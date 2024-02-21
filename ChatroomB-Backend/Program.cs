@@ -98,7 +98,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options => 
 {
     options.AddPolicy("AngularApp", policy => 
-            policy.WithOrigins("http://localhost:4200")
+            policy.WithOrigins("http://localhost:4200", "https://chatroomfe-dec.azurewebsites.net")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials());
