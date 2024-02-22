@@ -26,24 +26,6 @@ namespace ChatroomB_Backend.Controllers
         }
 
 
-        [HttpPost("createNewGroup")]
-        public async Task<IActionResult> CreateGroup([FromBody] CreateGroupVM createGroupVM)
-        {
-            try
-            {
-                ChatlistVM chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
-                await _hubContext.Clients.All.SendAsync("NewGroupCreated", chatinfo);
-                return Ok(new { Message = "Group created successfully" });
-
-
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
         [HttpPost("UpdateGroupPicture")]
         public async Task<IActionResult> UpdateGroupPicture([FromForm] IFormFile file, [FromForm(Name = "id")] string ChatRoomId)
         {
@@ -71,5 +53,88 @@ namespace ChatroomB_Backend.Controllers
                 return memoryStream.ToArray();
             }
         }
-    } 
+
+        [HttpGet("groupMembers")]
+        public async Task<IActionResult> GetGroupMembers(int chatRoomId, int userId)
+        {
+            try
+            {
+                var groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
+                return Ok(groupMembers);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("createNewGroup")]
+        public async Task<IActionResult> CreateGroup([FromBody] CreateGroupVM createGroupVM)
+        {
+            try
+            {
+                ChatlistVM chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
+                await _hubContext.Clients.All.SendAsync("NewGroupCreated", chatinfo);
+                return Ok(new { Message = "Group created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("RemoveFromGroup")]
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    //int result = await _ChatRoomService.RemoveUserFromGroup(groupMember.ChatRoomId, groupMember.UserId);
+                    int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
+                   
+
+                    return Ok(new { Message = "User removed successfully" });
+                }
+                else
+                {
+                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in RemoveUserFromGroup method: {ex.ToString()}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        [HttpPost("QuitGroup")]
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult<int>> QuitGroup([FromQuery] int chatRoomId, [FromQuery] int userId)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    int result = await _ChatRoomService.QuitGroup(chatRoomId, userId);
+
+                    return Ok(new { Message = "Quit group successfully" });
+                }
+                else
+                {
+                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in QuitGroup method: {ex.ToString()}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+
+    }
 }

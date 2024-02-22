@@ -6,6 +6,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Text.RegularExpressions;
 
@@ -16,12 +17,13 @@ namespace ChatroomB_Backend.Service
         private readonly IChatRoomRepo _repo;
         private readonly IBlobService _blobService;
         private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IRedisServcie _RServices;
 
-        public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService)
+        public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices)
         {
             _repo = _repository;
             _hubContext = hubContext;
-
+            _RServices = rServices;
             _blobService = blobService;
         }
 
@@ -53,6 +55,36 @@ namespace ChatroomB_Backend.Service
         }
 
 
+        public async Task <int> RemoveUserFromGroup(int chatRoomId, int userId)
+        {
+            int result = await _repo.RemoveUserFromGroup(chatRoomId, userId);
+
+            if (result == 1)
+            {
+                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+
+                if (!connectionId.IsNullOrEmpty())
+                {
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
+                    // return result;
+                }
+
+                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("UserRemoved", chatRoomId, userId);
+                await _hubContext.Clients.Group("FR" + userId).SendAsync("UserRemoved", chatRoomId, userId);
+
+                return result;
+            }
+            return result;
+        }
+
+
+        /*      public async Task RemoveUserFromGroup(int userId, int chatRoomId, int initiatedBy)
+              {
+                  var groupName = chatRoomId.ToString();
+                  await _hubContext.Clients.Group(groupName).SendAsync("RemoveFromGroup", groupName, userId, initiatedBy);
+              }*/
+
+
         public async Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName)
         {
             try
@@ -74,10 +106,31 @@ namespace ChatroomB_Backend.Service
                 return false;
             }
         }
-        public async Task RemoveUserFromGroup(int userId, int chatRoomId, int initiatedBy)
+
+
+        public async Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId)
         {
-            var groupName = chatRoomId.ToString();
-            await _hubContext.Clients.Group(groupName).SendAsync("RemoveFromGroup", groupName, userId, initiatedBy);
+            return await _repo.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
+        }
+
+        public async Task<int> QuitGroup(int chatRoomId, int userId)
+        {
+            int result = await _repo.QuitGroup(chatRoomId, userId);
+
+            if (result == 1)
+            {
+                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+
+                if (connectionId != null)
+                {
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
+                    //return result;
+                }
+                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("QuitGroup", chatRoomId, userId);
+                await _hubContext.Clients.Group("FR" + userId).SendAsync("QuitGroup", chatRoomId, userId);
+                return result;
+            }
+            return result;
         }
     }
 }
