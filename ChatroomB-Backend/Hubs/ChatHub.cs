@@ -37,6 +37,7 @@ namespace ChatroomB_Backend.Hubs
                 Console.WriteLine($"Connection ID {connectionId} connected.");
 
                 // call redis to add userId and Connection id to redis
+                await Task.Delay(500);
                 await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
 
                 //add user to a group to easy call them

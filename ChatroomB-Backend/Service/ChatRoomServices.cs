@@ -44,8 +44,8 @@ namespace ChatroomB_Backend.Service
                     await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
                     await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
 
-                    await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
-                    await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                    await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                    await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
                 } 
                 catch (Exception ex) 
                 {
