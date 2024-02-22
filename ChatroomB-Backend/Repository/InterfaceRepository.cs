@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 
 namespace ChatroomB_Backend.Repository
@@ -25,8 +26,9 @@ namespace ChatroomB_Backend.Repository
 
     public interface IFriendRepo
     {
-        Task<int> AddFriends(Friends friends);                                                                                     // Add new friend 
+        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
+        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
        
     }
 
@@ -39,10 +41,10 @@ namespace ChatroomB_Backend.Repository
 
     public interface IMessageRepo
     {
-        Task<int> AddMessages(Messages message);                                                                               
+        Task<ChatRoomMessage> AddMessages(Messages message);                                                                               
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
     }
-
+    
     public interface IBlobRepo
     {
         Task<string> UploadImageFiles(byte[] imgByte, string filename, string folderPath);
@@ -73,5 +75,10 @@ namespace ChatroomB_Backend.Repository
         Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);
         Task<int> DeleteUserIdFromRedis(string userId);
         Task<string> SelectUserIdFromRedis(int? userId);
+    }
+
+    public interface IErrorHandleRepo
+    {
+        Task LogError(string controllerName, string errorMessage);
     }
 }
