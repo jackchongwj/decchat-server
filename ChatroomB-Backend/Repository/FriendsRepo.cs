@@ -18,7 +18,7 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        public async Task<int> AddFriends(Friends friends)
+        public async Task <IEnumerable<Users>> AddFriends(Friends friends)
         {
             var param = new
             {
@@ -27,11 +27,10 @@ namespace ChatroomB_Backend.Repository
             };
             string sql = "exec AddFriend @SenderId, @ReceiverId";
 
-            int result =  await _dbConnection.ExecuteAsync(sql, param);
+            IEnumerable<Users> result =  await _dbConnection.QueryAsync<Users>(sql, param);
 
             return result;
         }
-
 
         public async Task<int> UpdateFriendRequest(FriendRequest request)
         {
@@ -48,6 +47,22 @@ namespace ChatroomB_Backend.Repository
 
             return result;
 
+        }
+
+        public async Task<int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@ChatRoomId",chatRoomId);
+            parameters.Add("@User1", userId1);
+            parameters.Add("@User2", userId2);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _dbConnection.ExecuteAsync("DeleteFriend", parameters, commandType: CommandType.StoredProcedure);
+
+            // 获取输出参数的值
+            int isSuccess = parameters.Get<int>("@Result");
+
+            return isSuccess;
         }
     }
 }
