@@ -7,7 +7,7 @@
     <InvariantGlobalization>False</InvariantGlobalization>
     <RootNamespace>ChatroomB_Backend</RootNamespace>
   </PropertyGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageReference Include="Dapper" Version="2.1.28" />
@@ -34,5 +34,4 @@
     <PackageReference Include="SixLabors.ImageSharp.Web" Version="3.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
-
 </Project>

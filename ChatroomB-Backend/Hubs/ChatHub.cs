@@ -1,6 +1,7 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using NuGet.Protocol.Plugins;
 using System.Collections;
@@ -74,12 +75,11 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
-
         public async Task CheckUserTyping(int ChatRoomId, bool typing)
         {
 
             await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing);
-            Console.WriteLine($"{Context.ConnectionId} has sending active status to the group {ChatRoomId}.");
+            Console.WriteLine($"{Context.ConnectionId} has sending {typing} status to the group {ChatRoomId}.");
         }
 
 
