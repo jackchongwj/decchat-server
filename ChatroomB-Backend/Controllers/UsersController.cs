@@ -48,11 +48,12 @@ namespace ChatroomB_Backend.Controllers
             }
         }
 
+
         [HttpGet("RetrieveChatListByUser")]
         public async Task<IActionResult> GetChatListByUserId([FromQuery] int userId)
         {
-            var friendList = await _UserService.GetChatListByUserId(userId);
-            return Ok(friendList); //HTTP 200 OK indicates that the request was successful, and the server is returning the requested data.
+            var chatList = await _UserService.GetChatListByUserId(userId);
+            return Ok(chatList); //HTTP 200 OK indicates that the request was successful, and the server is returning the requested data.
         }
 
         [HttpGet("FriendRequest")]
@@ -116,6 +117,14 @@ namespace ChatroomB_Backend.Controllers
             int result = await _UserService.DeleteUser(id);
             if (result == 0) { return BadRequest(); }
             else { return Ok(); }
+        }
+
+        [HttpGet("DoesUsernameExist")]
+        public async Task<IActionResult> DoesUsernameExist(string username)
+        {
+            bool isUnique = await _UserService.DoesUsernameExist(username);
+
+            return Ok(new { IsUnique = isUnique });
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)

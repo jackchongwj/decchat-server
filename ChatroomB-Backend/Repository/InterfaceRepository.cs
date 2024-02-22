@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 
 namespace ChatroomB_Backend.Repository
@@ -20,12 +21,14 @@ namespace ChatroomB_Backend.Repository
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
+        Task<string> GetUserName(int userId);
     }   
 
     public interface IFriendRepo
     {
-        Task<int> AddFriends(Friends friends);                                                                                     // Add new friend 
+        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
+        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
        
     }
 
@@ -35,14 +38,16 @@ namespace ChatroomB_Backend.Repository
         Task CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
         Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
         Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture);
+
+        Task <ChatlistVM> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
     }
 
     public interface IMessageRepo
     {
-        Task<int> AddMessages(Messages message);                                                                               
-        Task<IEnumerable<Messages>> GetMessages(int ChatRoomId);
+        Task<ChatRoomMessage> AddMessages(Messages message);                                                                               
+        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
     }
-
+    
     public interface IBlobRepo
     {
         Task<string> UploadImageFiles(byte[] imgByte, string filename, string folderPath);
@@ -56,15 +61,16 @@ namespace ChatroomB_Backend.Repository
     {
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
-        Task<ActionResult> AddUser(Users user);
+        Task<IActionResult> AddUser(Users user);
         Task<bool> ChangePassword(int userId, string newHashedPassword);
     }
 
     public interface ITokenRepo
     {
-        Task<ActionResult> StoreRefreshToken(RefreshToken token);
-        Task<ActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<ActionResult> ValidateRefreshToken(RefreshToken token);
+        Task<bool> IsRefreshTokenValid(RefreshToken token);
+        Task<IActionResult> StoreRefreshToken(RefreshToken token);
+        Task<IActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IRedisRepo 
@@ -72,5 +78,10 @@ namespace ChatroomB_Backend.Repository
         Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);
         Task<int> DeleteUserIdFromRedis(string userId);
         Task<string> SelectUserIdFromRedis(int? userId);
+    }
+
+    public interface IErrorHandleRepo
+    {
+        Task LogError(string controllerName, string errorMessage);
     }
 }

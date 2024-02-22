@@ -11,12 +11,14 @@ namespace ChatroomB_Backend.Service
     {
         private readonly IUserRepo _repo;
         private readonly IBlobService _blobService;
+        private readonly IRedisServcie _RServices;
         private readonly IHubContext<ChatHub> _hubContext;
 
-        public UsersServices(IUserRepo reponsitory, IBlobService blobService, IHubContext<ChatHub> hubContext)
+        public UsersServices(IUserRepo reponsitory, IBlobService blobService, IRedisServcie rServices, IHubContext<ChatHub> hubContext)
         {
             _repo = reponsitory;
             _blobService = blobService;
+            _RServices = rServices;
             _hubContext = hubContext;
         }
 
@@ -88,7 +90,22 @@ namespace ChatroomB_Backend.Service
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
-            return await _repo.GetChatListByUserId(userId);
+            IEnumerable<ChatlistVM> chatlist = await _repo.GetChatListByUserId(userId);
+
+            if (chatlist != null)
+            {
+                // add chalist to signalR group for send message
+                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+
+                foreach (var list in chatlist) 
+                {
+                    await _hubContext.Groups.AddToGroupAsync(connectionId, list.ChatRoomId.ToString());
+
+                    Console.WriteLine($"{connectionId} has joined the group {list.ChatRoomId}");
+                }
+                  
+            }
+            return chatlist; 
         }
 
         public async Task<bool> DoesUsernameExist(string username)
@@ -99,6 +116,11 @@ namespace ChatroomB_Backend.Service
         public async Task<int> GetUserId(string username)
         {
             return await _repo.GetUserId(username);
+        }
+
+        public async Task<string> GetUserName(int userId)
+        {
+            return await _repo.GetUserName(userId);
         }
 
         public async Task<string> GetProfilePictureUrl(byte[] fileByte, string filename)

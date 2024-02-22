@@ -61,7 +61,11 @@ namespace ChatroomB_Backend.Repository
             // Upload the video file
             using (MemoryStream ms = new MemoryStream(vidByte))
             {
-                await blobClient.UploadAsync(ms);
+                await blobClient.UploadAsync(ms, new BlobHttpHeaders
+                {
+                    ContentType = "video/mp4",
+                    ContentDisposition = "inline; filename=\"" + blobName + "\""
+                });
             }
 
             return blobClient.Uri.AbsoluteUri;

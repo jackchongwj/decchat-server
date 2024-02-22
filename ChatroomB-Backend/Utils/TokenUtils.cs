@@ -17,16 +17,23 @@ namespace ChatroomB_Backend.Utils
 
         }
 
-        public string GenerateAccessToken(string username)
+        public string GenerateAccessToken(int userId, string username)
         {
             DateTime expiryDateTime = DateTime.Now.AddMinutes(Convert.ToInt32(_config["JwtSettings:ExpirationMinutes"]));
             SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]));
             SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            // Create a list of claims with both userId and username
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Name, username)
+            };
+
             JwtSecurityToken token = new JwtSecurityToken(
                 issuer: _config["JwtSettings:Issuer"],
                 audience: _config["JwtSettings:Audience"],
-                claims: new[] { new Claim(ClaimTypes.Name, username) },
+                claims: claims,
                 expires: expiryDateTime,
                 signingCredentials: creds
             );

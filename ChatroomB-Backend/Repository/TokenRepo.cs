@@ -18,19 +18,30 @@ namespace ChatroomB_Backend.Repository
             _dbConnection = db;
         }
 
-        //public async Task<bool> IsRefreshTokenValid(RefreshToken token)
-        //{
-        //    try
-        //    {
+        public async Task<bool> IsRefreshTokenValid(RefreshToken token)
+        {
+            Console.WriteLine(token.Token);
+            try
+            {
+                string sql = "exec CheckRefreshTokenValidity @Token";
 
-        //    }
-        //    catch
-        //    {
+                int result = await _dbConnection.ExecuteScalarAsync<int>(sql, new { Token = token.Token });
 
-        //    }
-        //}
+                bool isValid = Convert.ToBoolean(result);
 
-        public async Task<ActionResult> StoreRefreshToken(RefreshToken token)
+                return isValid;
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("A database error occurred while validating the refresh token", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An unexpected error occurred", ex);
+            }
+        }
+
+        public async Task<IActionResult> StoreRefreshToken(RefreshToken token)
         {
             try
             {
@@ -51,7 +62,7 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<ActionResult> RemoveRefreshToken(RefreshToken token)
+        public async Task<IActionResult> RemoveRefreshToken(RefreshToken token)
         {
             try
             {
@@ -67,7 +78,7 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<ActionResult> ValidateRefreshToken(RefreshToken token)
+        public async Task<IActionResult> ValidateRefreshToken(RefreshToken token)
         {
             try
             {
