@@ -175,5 +175,6 @@ namespace ChatroomB_Backend.Hubs
                 throw;
             }
         }
+
     }
 }

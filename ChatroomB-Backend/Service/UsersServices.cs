@@ -1,4 +1,5 @@
 ﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Hubs;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 using Microsoft.AspNetCore.SignalR;
@@ -10,11 +11,13 @@ namespace ChatroomB_Backend.Service
     {
         private readonly IUserRepo _repo;
         private readonly IBlobService _blobService;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public UsersServices(IUserRepo reponsitory, IBlobService blobService)
+        public UsersServices(IUserRepo reponsitory, IBlobService blobService, IHubContext<ChatHub> hubContext)
         {
             _repo = reponsitory;
             _blobService = blobService;
+            _hubContext = hubContext;
         }
 
         public async Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId)
@@ -34,10 +37,17 @@ namespace ChatroomB_Backend.Service
 
         public async Task<int> UpdateProfileName(int userId, string newProfileName)
         {
-            return await _repo.UpdateProfileName(userId, newProfileName);
+            var updateResult = await _repo.UpdateProfileName(userId, newProfileName);
+            if (updateResult > 0 )
+            {
+                var chatList = await GetChatListByUserId(userId);
+                List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList(); // Use UserId as friend ID
+                await _hubContext.Clients.Groups(friendIds.Select(id => $"FR{id}").ToList()).SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfileName = newProfileName });
+            }
+            return updateResult;
         }
 
-        public async Task<bool> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName)
+        public async Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName)
         {
             try
             {
@@ -47,15 +57,27 @@ namespace ChatroomB_Backend.Service
                 // Update the user's profile picture URI in the database
                 int updateResult = await _repo.UpdateProfilePicture(userId, blobUri);
 
-                // Assuming the updateResult is an int that signifies the number of records updated
-                // You might want to check if it actually succeeded based on your repository implementation
-                return updateResult != 0;
+                // If the profile picture was successfully updated
+                if (updateResult > 0)
+                {
+                    // Fetch the list of chatrooms that includes the user's friends
+                    var chatList = await GetChatListByUserId(userId);
+
+                    // Extract friend IDs from the chat list
+                    List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList();
+
+                    // Broadcast the profile picture update to all friends
+                    await _hubContext.Clients.Groups(friendIds.Select(id => $"FR{id}").ToList())
+                        .SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfilePicture = blobUri });
+                }
+
+                return updateResult;
             }
             catch (Exception ex)
             {
-                // Depending on your logging framework, log the exception
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                return false;
+                // Return a value indicating failure, such as -1, to differentiate from successful updates
+                return -1;
             }
         }
 

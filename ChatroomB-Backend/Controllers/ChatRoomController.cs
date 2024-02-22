@@ -36,8 +36,22 @@ namespace ChatroomB_Backend.Controllers
             }
         }
 
+        [HttpPost("UpdateGroupName")]
+        public async Task<IActionResult> UpdateGroupName([FromBody] UpdateGroupName model)
+        {
+            if (model == null || !ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _ChatRoomService.UpdateGroupName(model.chatroomId, model.NewGroupName);
+            if (result == 0) return NotFound();
+
+            return Ok();
+        }
+
         [HttpPost("UpdateGroupPicture")]
-        public async Task<IActionResult> UpdateGroupPicture([FromForm] IFormFile file, [FromForm(Name = "id")] string ChatRoomId)
+        public async Task<IActionResult> UpdateGroupPicture([FromForm] IFormFile file, [FromForm(Name = "id")] string chatroomId)
         {
             byte[] filebyte = await ConvertToByteArrayAsync(file);
             if (file == null || file.Length == 0)
@@ -45,14 +59,14 @@ namespace ChatroomB_Backend.Controllers
                 return BadRequest("File is not provided or empty.");
             }
 
-            var success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(ChatRoomId), filebyte, file.FileName);
+            var success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(chatroomId), filebyte, file.FileName);
 
-            if (!success)
+            if ( success == 0 )
             {
                 return NotFound("Failed to update the group picture.");
             }
 
-            return Ok(new { Message = "Profile picture updated successfully." });
+            return Ok(new { Message = "Group picture updated successfully." });
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
