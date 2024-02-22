@@ -45,6 +45,13 @@ namespace ChatroomB_Backend.Hubs
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
                 Console.WriteLine($"{connectionId} has joined the group {groupName}");
 
+                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userId));
+                foreach (var list in chatlist)
+                {
+                    await Groups.AddToGroupAsync(connectionId, list.ChatRoomId.ToString());
+
+                    Console.WriteLine($"{connectionId} has joined the group {list.ChatRoomId}");
+                }
 
 
                 await base.OnConnectedAsync();
