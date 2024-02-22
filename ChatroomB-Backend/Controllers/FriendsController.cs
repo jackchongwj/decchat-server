@@ -21,12 +21,13 @@ namespace ChatroomB_Backend.Controllers
     {
         private readonly IFriendService _FriendService ;
         private readonly IChatRoomService _ChatRoomService;
+        private readonly IErrorHandleService _ErrorHandleService;
 
-
-        public FriendsController(IFriendService Fservice, IChatRoomService CService)
+        public FriendsController(IFriendService Fservice, IChatRoomService CService, IErrorHandleService errorHandleService)
         {
             _FriendService = Fservice;
             _ChatRoomService = CService;
+            _ErrorHandleService = errorHandleService;
         }
 
         //POST: Friends/Create
@@ -50,7 +51,7 @@ namespace ChatroomB_Backend.Controllers
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error in AddFriend method: {ex.ToString()}");
-
+                await _ErrorHandleService.LogError(ControllerContext.ActionDescriptor.ControllerName.ToString(),ex.ToString());
                 //return error message to client
                 return StatusCode(500, "An error occurred while processing your request.");
 

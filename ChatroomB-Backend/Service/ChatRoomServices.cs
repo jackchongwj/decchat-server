@@ -37,9 +37,12 @@ namespace ChatroomB_Backend.Service
                 try 
                 {
                     // add private list to signalR group for send message
-                    string connectionId = await _RServices.SelectUserIdFromRedis(userId);
-                    await _hubContext.Groups.AddToGroupAsync(connectionId, "PG"+ result.Select(list => list.ChatRoomId).First());
+                    string connectionIdS = await _RServices.SelectUserIdFromRedis(request.SenderId);
+                    string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
+                    string groupName = result.Select(list => list.ChatRoomId).First().ToString();
 
+                    await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
+                    await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
 
                     await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
                     await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));

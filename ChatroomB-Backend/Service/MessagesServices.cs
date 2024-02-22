@@ -23,7 +23,7 @@ namespace ChatroomB_Backend.Service
 
             ChatRoomMessage newMessage =  await _MessageRepo.AddMessages(message);
 
-            await _hubContext.Clients.Group("PR"+ newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
+            await _hubContext.Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
             return newMessage;
         }
 

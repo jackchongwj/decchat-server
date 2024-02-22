@@ -76,4 +76,9 @@ namespace ChatroomB_Backend.Repository
         Task<int> DeleteUserIdFromRedis(string userId);
         Task<string> SelectUserIdFromRedis(int? userId);
     }
+
+    public interface IErrorHandleRepo
+    {
+        Task LogError(string controllerName, string errorMessage);
+    }
 }
