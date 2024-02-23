@@ -69,7 +69,6 @@ namespace ChatroomB_Backend.Service
             }
             // Call CreateGroup method with the DataTable of selected users
             var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
-            /*return await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);*/
            
             // Call AddToGroup to add users to the chat room
             var groupName = createGroupVM.ChatRoomId.ToString();
@@ -102,14 +101,6 @@ namespace ChatroomB_Backend.Service
             }
             return result;
         }
-
-
-        /*      public async Task RemoveUserFromGroup(int userId, int chatRoomId, int initiatedBy)
-              {
-                  var groupName = chatRoomId.ToString();
-                  await _hubContext.Clients.Group(groupName).SendAsync("RemoveFromGroup", groupName, userId, initiatedBy);
-              }*/
-
 
         public async Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName)
         {

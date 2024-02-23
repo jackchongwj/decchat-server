@@ -91,7 +91,6 @@ namespace ChatroomB_Backend.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    //int result = await _ChatRoomService.RemoveUserFromGroup(groupMember.ChatRoomId, groupMember.UserId);
                     int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
                    
 
