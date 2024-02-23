@@ -37,7 +37,7 @@ namespace ChatroomB_Backend.Controllers
 
             var success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(ChatRoomId), filebyte, file.FileName);
 
-            if (!success)
+            if (success == 0)
             {
                 return NotFound("Failed to update the group picture.");
             }
@@ -132,6 +132,20 @@ namespace ChatroomB_Backend.Controllers
                 Console.Error.WriteLine($"Error in QuitGroup method: {ex.ToString()}");
                 return StatusCode(500, "An error occurred while processing your request.");
             }
+        }
+
+        [HttpPost("UpdateGroupName")]
+        public async Task<IActionResult> UpdateGroupName([FromBody] UpdateGroupName model)
+        {
+            if (model == null || !ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _ChatRoomService.UpdateGroupName(model.chatroomId, model.NewGroupName);
+            if (result == 0) return NotFound();
+
+            return Ok();
         }
 
 

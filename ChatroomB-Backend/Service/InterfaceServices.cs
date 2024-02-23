@@ -15,7 +15,7 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                               //Get All Friend request
         Task<Users> GetUserById(int userId);
         Task<int> UpdateProfileName(int userId, string newProfileName);
-        Task<bool> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);
+        Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);
         Task<int> DeleteUser(int userId);
         
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
@@ -36,9 +36,12 @@ namespace ChatroomB_Backend.Service
     public interface IChatRoomService
     {
         Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId);
-        Task<int> RemoveUserFromGroup(int chatRoomId, int userId);
+        Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
+        Task<int> UpdateGroupPicture(int chatRoomId, byte[] fileBytes, string fileName);
         Task<ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM);
-        Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName);
+        Task<int> RemoveUserFromGroup(int chatRoomId, int userId);
+        
+        
         Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
         Task<int> QuitGroup(int chatRoomId, int userId); 
 
