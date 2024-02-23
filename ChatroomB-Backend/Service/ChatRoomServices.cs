@@ -96,7 +96,7 @@ namespace ChatroomB_Backend.Service
                 }
 
                 await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("UserRemoved", chatRoomId, userId);
-                await _hubContext.Clients.Group("FR" + userId).SendAsync("UserRemoved", chatRoomId, userId);
+                await _hubContext.Clients.Group("User" + userId).SendAsync("UserRemoved", chatRoomId, userId);
 
                 return result;
             }
@@ -153,7 +153,7 @@ namespace ChatroomB_Backend.Service
                     //return result;
                 }
                 await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("QuitGroup", chatRoomId, userId);
-                await _hubContext.Clients.Group("FR" + userId).SendAsync("QuitGroup", chatRoomId, userId);
+                await _hubContext.Clients.Group("User" + userId).SendAsync("QuitGroup", chatRoomId, userId);
                 return result;
             }
             return result;

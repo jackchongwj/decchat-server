@@ -90,9 +90,9 @@ namespace ChatroomB_Backend.Hubs
         //    {
         //        IEnumerable<Users> GetFriendRequest = await _Uservices.GetFriendRequest(receiverId);
 
-        //        await Clients.Group("FR"+ receiverId.ToString()).SendAsync("UpdateSearchResults", senderId);
-        //        await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResults", receiverId);
-        //        await Clients.Group("FR" + receiverId.ToString()).SendAsync("UpdateFriendRequest", GetFriendRequest);
+        //        await Clients.Group(User+ receiverId.ToString()).SendAsync("UpdateSearchResults", senderId);
+        //        await Clients.Group(User+ senderId.ToString()).SendAsync("UpdateSearchResults", receiverId);
+        //        await Clients.Group(User + receiverId.ToString()).SendAsync("UpdateFriendRequest", GetFriendRequest);
         //    }
         //    catch (Exception ex)
         //    {
@@ -107,7 +107,7 @@ namespace ChatroomB_Backend.Hubs
         //    {
         //        //await AddToGroup(null,chatroomId, senderId);
         //        //IEnumerable<ChatlistVM> newResult = await _Uservices.GetChatListByUserId(senderId);
-        //        await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterAccept", receiverId);
+        //        await Clients.Group(User+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterAccept", receiverId);
         //    }
         //    catch (Exception ex)
         //    {
@@ -120,7 +120,7 @@ namespace ChatroomB_Backend.Hubs
         //{
         //    try
         //    {
-        //        await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterReject", receiverId);
+        //        await Clients.Group(User+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterReject", receiverId);
         //    }
         //    catch (Exception ex)
         //    {
@@ -171,8 +171,8 @@ namespace ChatroomB_Backend.Hubs
         //update private chatlist signalR
         //public async Task NotifyUserUpdatePrivateChatlist(List<ChatlistVM> chatlist) 
         //{
-        //    await Clients.Group("FR"+ chatlist[1].UserId).SendAsync("UpdatePrivateChatlist", chatlist[1]);
-        //    await Clients.Group("FR"+ chatlist[0].UserId).SendAsync("UpdatePrivateChatlist", chatlist[0]);
+        //    await Clients.Group(User+ chatlist[1].UserId).SendAsync("UpdatePrivateChatlist", chatlist[1]);
+        //    await Clients.Group(User+ chatlist[0].UserId).SendAsync("UpdatePrivateChatlist", chatlist[0]);
         //    //await Clients.Group(chatlist[0].ChatRoomId.ToString()).SendAsync("UpdatePrivateChatlist", chatlist);
         //}
 
