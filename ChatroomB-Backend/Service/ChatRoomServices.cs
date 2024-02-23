@@ -22,14 +22,40 @@ namespace ChatroomB_Backend.Service
         public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices)
         {
             _repo = _repository;
+
+            _blobService = blobService;
             _hubContext = hubContext;
             _RServices = rServices;
-            _blobService = blobService;
         }
 
         public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
         {
-            return (await _repo.AddChatRoom(request, userId));
+            IEnumerable<ChatlistVM> result = await _repo.AddChatRoom(request, userId);
+
+            if(!result.IsNullOrEmpty()) 
+            {
+                try 
+                {
+                    // add private list to signalR group for send message
+                    string connectionIdS = await _RServices.SelectUserIdFromRedis(request.SenderId);
+                    string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
+                    string groupName = result.Select(list => list.ChatRoomId).First().ToString();
+
+                    await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
+                    await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
+
+                    await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                    await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                } 
+                catch (Exception ex) 
+                {
+
+                    Console.Error.WriteLine($"Error in UpdatePrivateChatlist: {ex.Message}");
+                    throw;
+                }
+            }
+
+            return result.ToList();
         }
 
         public async Task <ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM)

@@ -5,6 +5,7 @@ using NuGet.Protocol.Core.Types;
 using System.Data;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace ChatroomB_Backend.Service
 {
@@ -26,8 +27,9 @@ namespace ChatroomB_Backend.Service
 
     public interface IFriendService
     {
-        Task<int> AddFriends(Friends friends);                                                              // add new friend
-        Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request                                                                      // 
+        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                              // add new friend
+        Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request 
+        Task<int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
 
     }
 
@@ -45,8 +47,8 @@ namespace ChatroomB_Backend.Service
 
     public interface IMessageService
     {
-        Task<int> AddMessages(Messages message);                                                                                 // add new friend 
-        Task<IEnumerable<Messages>> GetMessages(int ChatRoomId);
+        Task<ChatRoomMessage> AddMessages(Messages message);                                                                                 // add new friend 
+        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
     }
 
     public interface IAuthService
@@ -82,6 +84,11 @@ namespace ChatroomB_Backend.Service
 
 
 
+    }
+
+    public interface IErrorHandleService 
+    {
+        Task LogError(string controllerName, string errorMessage);
     }
     
 }

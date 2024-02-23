@@ -14,7 +14,7 @@ namespace ChatroomB_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ChatRoomController: Controller 
+    public class ChatRoomController: ControllerBase
     {
         private readonly IChatRoomService _ChatRoomService;
         private readonly IHubContext<ChatHub> _hubContext;
