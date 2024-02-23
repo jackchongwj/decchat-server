@@ -36,10 +36,13 @@ namespace ChatroomB_Backend.Service
     public interface IChatRoomService
     {
         Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId);
-
-
+        Task<int> RemoveUserFromGroup(int chatRoomId, int userId);
         Task<ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM);
         Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName);
+        Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
+        Task<int> QuitGroup(int chatRoomId, int userId); 
+
+
     }
 
     public interface IMessageService
@@ -78,6 +81,9 @@ namespace ChatroomB_Backend.Service
         Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);                                                  // Add userId and connection id to redis
         Task<int> DeleteUserIdFromRedis(string userId);
         Task<string> SelectUserIdFromRedis(int? userId);
+
+
+
     }
 
     public interface IErrorHandleService 

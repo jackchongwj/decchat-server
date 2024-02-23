@@ -11,6 +11,8 @@ using System.Text.RegularExpressions;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Reflection.Metadata;
+using System.Data.Common;
+using System.Security.Cryptography;
 
 
 namespace ChatroomB_Backend.Repository
@@ -75,6 +77,41 @@ namespace ChatroomB_Backend.Repository
                 newGroupPicture
             });
             return result;
+        }
+
+        public async Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId)
+        {
+            string sql = "RetrieveGroupMemberByChatroomId";
+            var parameters = new { ChatRoomID = chatRoomId, userId = userId };
+
+            return await _dbConnection.QueryAsync<GroupMember>(sql, parameters);
+        }
+
+        public async Task<int> RemoveUserFromGroup (int chatRoomId, int userId)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@ChatRoomID", chatRoomId);
+            parameters.Add("@UserID", userId);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _dbConnection.ExecuteAsync("RemoveUserFromGroup", parameters, commandType: CommandType.StoredProcedure);
+
+            int isSuccess = parameters.Get<int>("@Result");
+
+            return isSuccess;
+        }
+        public async Task<int> QuitGroup(int chatRoomId, int userId)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@ChatRoomID", chatRoomId);
+            parameters.Add("@UserID", userId);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _dbConnection.ExecuteAsync("QuitGroup", parameters, commandType: CommandType.StoredProcedure);
+
+            int isSuccess = parameters.Get<int>("@Result");
+
+            return isSuccess;
         }
     }
 }

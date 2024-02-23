@@ -37,6 +37,10 @@ namespace ChatroomB_Backend.Repository
         Task <IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId); // add new ChatRoom and user chat room with private user
         Task<int> UpdateGroupPicture(int ChatRoomId, string newGroupPicture);
         Task <ChatlistVM> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
+        Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
+        Task<int> RemoveUserFromGroup (int chatRoomId, int userId);
+        Task<int> QuitGroup(int chatRoomId, int userId);
+
     }
 
     public interface IMessageRepo
