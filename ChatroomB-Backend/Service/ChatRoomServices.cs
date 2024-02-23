@@ -48,8 +48,8 @@ namespace ChatroomB_Backend.Service
                     await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
                     await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
 
-                    await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
-                    await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                    await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                    await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
                 } 
                 catch (Exception ex) 
                 {
@@ -73,7 +73,6 @@ namespace ChatroomB_Backend.Service
             }
             // Call CreateGroup method with the DataTable of selected users
             var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
-            /*return await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);*/
            
             // Call AddToGroup to add users to the chat room
             var groupName = createGroupVM.ChatRoomId.ToString();
@@ -84,6 +83,28 @@ namespace ChatroomB_Backend.Service
             return chatList;             
         }
 
+
+        public async Task <int> RemoveUserFromGroup(int chatRoomId, int userId)
+        {
+            int result = await _repo.RemoveUserFromGroup(chatRoomId, userId);
+
+            if (result == 1)
+            {
+                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+
+                if (!connectionId.IsNullOrEmpty())
+                {
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
+                    // return result;
+                }
+
+                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("UserRemoved", chatRoomId, userId);
+                await _hubContext.Clients.Group("User" + userId).SendAsync("UserRemoved", chatRoomId, userId);
+
+                return result;
+            }
+            return result;
+        }
         public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
         {
             var updateResult = await _repo.UpdateGroupName(chatRoomId, newGroupName);
@@ -121,10 +142,31 @@ namespace ChatroomB_Backend.Service
                 return -1;
             }
         }
-        public async Task RemoveUserFromGroup(int userId, int chatRoomId, int initiatedBy)
+
+
+        public async Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId)
         {
-            var groupName = chatRoomId.ToString();
-            await _hubContext.Clients.Group(groupName).SendAsync("RemoveFromGroup", groupName, userId, initiatedBy);
+            return await _repo.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
+        }
+
+        public async Task<int> QuitGroup(int chatRoomId, int userId)
+        {
+            int result = await _repo.QuitGroup(chatRoomId, userId);
+
+            if (result == 1)
+            {
+                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+
+                if (connectionId != null)
+                {
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
+                    //return result;
+                }
+                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("QuitGroup", chatRoomId, userId);
+                await _hubContext.Clients.Group("User" + userId).SendAsync("QuitGroup", chatRoomId, userId);
+                return result;
+            }
+            return result;
         }
 
     }

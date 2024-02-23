@@ -92,19 +92,19 @@ namespace ChatroomB_Backend.Service
         {
             IEnumerable<ChatlistVM> chatlist = await _repo.GetChatListByUserId(userId);
 
-            if (chatlist != null)
-            {
-                // add chalist to signalR group for send message
-                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+            //if (chatlist != null)
+            //{
+            //    // add chalist to signalR group for send message
+            //    string connectionId = await _RServices.SelectUserIdFromRedis(userId);
 
-                foreach (var list in chatlist) 
-                {
-                    await _hubContext.Groups.AddToGroupAsync(connectionId, list.ChatRoomId.ToString());
+            //    foreach (var list in chatlist) 
+            //    {
+            //        await _hubContext.Groups.AddToGroupAsync(connectionId, list.ChatRoomId.ToString());
 
-                    Console.WriteLine($"{connectionId} has joined the group {list.ChatRoomId}");
-                }
+            //        Console.WriteLine($"{connectionId} has joined the group {list.ChatRoomId}");
+            //    }
                   
-            }
+            //}
             return chatlist; 
         }
 
