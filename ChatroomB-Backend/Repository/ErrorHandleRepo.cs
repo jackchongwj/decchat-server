@@ -20,7 +20,7 @@ namespace ChatroomB_Backend.Repository
             {
                 ErrorMessage = errorMessage,
                 ControlelrName = controllerName,
-                Timestamp = Convert.ToDateTime(DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss")),
+                Timestamp = DateTime.Now,
         };
 
             await _collection.InsertOneAsync(errorHandle);
