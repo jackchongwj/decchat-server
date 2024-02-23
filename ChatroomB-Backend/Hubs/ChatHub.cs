@@ -3,6 +3,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using MongoDB.Driver.Core.Connections;
 using NuGet.Protocol.Plugins;
 using System.Collections;
 using System.Collections.Generic;
@@ -45,13 +46,8 @@ namespace ChatroomB_Backend.Hubs
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
                 Console.WriteLine($"{connectionId} has joined the group {groupName}");
 
-                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userId));
-                foreach (var list in chatlist)
-                {
-                    await Groups.AddToGroupAsync(connectionId, list.ChatRoomId.ToString());
-
-                    Console.WriteLine($"{connectionId} has joined the group {list.ChatRoomId}");
-                }
+                // add list to group 
+                await AddToGroup(Convert.ToInt32(userId));
 
 
                 await base.OnConnectedAsync();
@@ -90,6 +86,26 @@ namespace ChatroomB_Backend.Hubs
             Console.WriteLine($"{Context.ConnectionId} has sending {typing} status to the group {ChatRoomId}.");
         }
 
+        public async Task AddToGroup(int userId) 
+        {
+            try
+            {
+                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userId));
+                foreach (var list in chatlist)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, list.ChatRoomId.ToString());
+
+                    Console.WriteLine($"{Context.ConnectionId} has joined the group {list.ChatRoomId}");
+                }
+
+                await Clients.Group("User" + userId).SendAsync("Chatlist", chatlist);
+
+            } catch (Exception ex) 
+            {
+                Console.Error.WriteLine($"Error in Redis Connection method: {ex.ToString()}");
+                throw;
+            }
+        }
 
         //Friend request SignalR
         //public async Task SendFriendRequestNotification(int receiverId, int senderId)
