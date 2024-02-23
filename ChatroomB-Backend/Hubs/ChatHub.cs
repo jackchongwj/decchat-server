@@ -45,8 +45,6 @@ namespace ChatroomB_Backend.Hubs
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
                 Console.WriteLine($"{connectionId} has joined the group {groupName}");
 
-
-
                 await base.OnConnectedAsync();
 
             }
@@ -76,11 +74,11 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
-        public async Task CheckUserTyping(int ChatRoomId, bool typing)
+        public async Task CheckUserTyping(int ChatRoomId, bool typing, string profilename)
         {
 
-            await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing);
-            Console.WriteLine($"{Context.ConnectionId} has sending {typing} status to the group {ChatRoomId}.");
+            await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing, profilename);
+            Console.WriteLine($"{Context.ConnectionId} - {profilename} has sending {typing} status to the group {ChatRoomId}.");
         }
 
 

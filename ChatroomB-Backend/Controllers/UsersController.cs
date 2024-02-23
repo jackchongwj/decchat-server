@@ -22,21 +22,6 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                //if (string.IsNullOrEmpty(profileName))
-                //{
-                //    return BadRequest("Profile name cannot be empty");
-                //}
-                //else if (userId == null) 
-                //{
-                //    return BadRequest("User ID cannot be null");
-                //}
-                //else
-                //{
-                //    IEnumerable<UserSearch> GetUserByName = await _UserService.GetByName(profileName, userId);
-
-                //    return Ok(GetUserByName);
-                //}
-
                 IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userId);
 
                 return Ok(GetUserByName);
@@ -67,7 +52,7 @@ namespace ChatroomB_Backend.Controllers
         [HttpGet("UserDetails")]
         public async Task<ActionResult<Users>> GetUserById(int id)
         {
-            var user = await _UserService.GetUserById(id);
+            Users user = await _UserService.GetUserById(id);
             if (user == null)
             {
                 return NotFound();
