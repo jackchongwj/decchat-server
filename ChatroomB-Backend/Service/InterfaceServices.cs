@@ -36,13 +36,9 @@ namespace ChatroomB_Backend.Service
     public interface IChatRoomService
     {
         Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId);
-        
         Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
         Task<int> UpdateGroupPicture(int chatRoomId, byte[] fileBytes, string fileName);
-
-
         Task<ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM);
-        Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName);
     }
 
     public interface IMessageService

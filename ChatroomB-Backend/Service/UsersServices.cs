@@ -44,7 +44,7 @@ namespace ChatroomB_Backend.Service
             {
                 var chatList = await GetChatListByUserId(userId);
                 List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList(); // Use UserId as friend ID
-                await _hubContext.Clients.Groups(friendIds.Select(id => $"FR{id}").ToList()).SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfileName = newProfileName });
+                await _hubContext.Clients.Groups(friendIds.Select(id => $"User{id}").ToList()).SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfileName = newProfileName });
             }
             return updateResult;
         }
@@ -69,7 +69,7 @@ namespace ChatroomB_Backend.Service
                     List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList();
 
                     // Broadcast the profile picture update to all friends
-                    await _hubContext.Clients.Groups(friendIds.Select(id => $"FR{id}").ToList())
+                    await _hubContext.Clients.Groups(friendIds.Select(id => $"User{id}").ToList())
                         .SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfilePicture = blobUri });
                 }
 

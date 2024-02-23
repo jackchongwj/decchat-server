@@ -21,7 +21,7 @@ namespace ChatroomB_Backend.Service
         private readonly IUserService _userService;
 
 
-        public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices)
+        public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices, IUserService userService)
         {
             _repo = _repository;
 
