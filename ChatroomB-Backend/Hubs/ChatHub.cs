@@ -79,11 +79,11 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
-        public async Task CheckUserTyping(int ChatRoomId, bool typing)
+        public async Task CheckUserTyping(int ChatRoomId, bool typing, string profilename)
         {
 
-            await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing);
-            Console.WriteLine($"{Context.ConnectionId} has sending {typing} status to the group {ChatRoomId}.");
+            await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing, profilename);
+            Console.WriteLine($"{Context.ConnectionId} - {profilename} has sending {typing} status to the group {ChatRoomId}.");
         }
 
         public async Task AddToGroup(int userId) 
@@ -107,113 +107,7 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
-        //Friend request SignalR
-        //public async Task SendFriendRequestNotification(int receiverId, int senderId)
-        //{
-        //    try
-        //    {
-        //        IEnumerable<Users> GetFriendRequest = await _Uservices.GetFriendRequest(receiverId);
 
-        //        await Clients.Group("FR"+ receiverId.ToString()).SendAsync("UpdateSearchResults", senderId);
-        //        await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResults", receiverId);
-        //        await Clients.Group("FR" + receiverId.ToString()).SendAsync("UpdateFriendRequest", GetFriendRequest);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
-        //        throw;
-        //    }
-        //}
-
-        //public async Task acceptFriendRequest(int chatroomId, int senderId,int receiverId) 
-        //{
-        //    try
-        //    {
-        //        //await AddToGroup(null,chatroomId, senderId);
-        //        //IEnumerable<ChatlistVM> newResult = await _Uservices.GetChatListByUserId(senderId);
-        //        await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterAccept", receiverId);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
-        //        throw;
-        //    }
-        //}
-
-        //public async Task rejectFriendRequest(int senderId, int receiverId)
-        //{
-        //    try
-        //    {
-        //        await Clients.Group("FR"+ senderId.ToString()).SendAsync("UpdateSearchResultsAfterReject", receiverId);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
-        //        throw;
-        //    }
-        //}
-
-        //Add chatlist to SignalR group
-        //public async Task AddToGroup(List<ChatlistVM>? chatlists, int? chatRoomId, int? userId)
-        //{
-        //    if (chatlists!= null)
-        //    {
-        //        foreach (var list in chatlists)
-        //        {
-        //            string groupName = list.ChatRoomId.ToString();
-        //            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-
-        //            await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("Send", $"{Context.ConnectionId} has joined the group {groupName}.");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        string connectionId = await _RServices.SelectUserIdFromRedis(userId);
-        //        string groupName = chatRoomId.ToString();
-
-        //        if (connectionId != "")
-        //        { 
-        //            await Groups.AddToGroupAsync(connectionId, groupName);
-        //            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-        //            await Clients.GroupExcept(groupName, connectionId).SendAsync("Send", $"{connectionId} has joined the group {groupName}.");
-        //        }
-        //        else 
-        //        {
-        //            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-        //        }
-        //    } 
-        //}
-
-        //public async Task RemoveFromGroup(string groupName)
-        //{
-        //    await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-
-        //    await Clients.Group(groupName).SendAsync("Send", $"{Context.ConnectionId} has left the group {groupName}.");
-        //}
-
-
-        //update private chatlist signalR
-        //public async Task NotifyUserUpdatePrivateChatlist(List<ChatlistVM> chatlist) 
-        //{
-        //    await Clients.Group("FR"+ chatlist[1].UserId).SendAsync("UpdatePrivateChatlist", chatlist[1]);
-        //    await Clients.Group("FR"+ chatlist[0].UserId).SendAsync("UpdatePrivateChatlist", chatlist[0]);
-        //    //await Clients.Group(chatlist[0].ChatRoomId.ToString()).SendAsync("UpdatePrivateChatlist", chatlist);
-        //}
-
-        //send message signalR
-        //public async Task SendMessageNotification(DTO.Message newMessage)
-        //{
-        //    try
-        //    {
-        //        await Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
-        //        Console.WriteLine($"message has send to {newMessage.ChatRoomId}.");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.Error.WriteLine($"Error in SendFriendRequestNotification: {ex.Message}");
-        //        throw;
-        //    }
-        //}
     }
 }
 
