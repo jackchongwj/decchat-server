@@ -19,7 +19,7 @@ namespace ChatroomB_Backend.Service
 
         public async Task <ChatRoomMessage> AddMessages(Messages message)
         {
-            message.TimeStamp = DateTime.Now;
+            message.TimeStamp = DateTime.UtcNow;
 
             ChatRoomMessage newMessage =  await _MessageRepo.AddMessages(message);
 
