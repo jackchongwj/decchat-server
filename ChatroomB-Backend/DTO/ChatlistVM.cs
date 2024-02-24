@@ -17,7 +17,7 @@ namespace ChatroomB_Backend.DTO
         public bool RoomType { get; set; }
         public DataTable SelectedUsers { get; set; }
         public int InitiatedBy {  get; set; }
-
+        public string? InitiatorProfileName { get; set; }
 
     }
 }

@@ -68,12 +68,23 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<int> UpdateGroupPicture(int ChatRoomId, string newGroupPicture)
+        public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
         {
-            string sql = "exec UpdateGroupProfilePicture @ChatRoomId, @NewGroupProfilePic";
+            string sql = "exec UpdateGroupName @ChatRoomId, @NewGroupName";
             int result = await _dbConnection.ExecuteAsync(sql, new
             {
-                ChatRoomId,
+                chatRoomId,
+                newGroupName
+            });
+            return result;
+        }
+
+        public async Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture)
+        {
+            string sql = "exec UpdateGroupPicture @ChatRoomId, @NewGroupPicture";
+            int result = await _dbConnection.ExecuteAsync(sql, new
+            {
+                chatRoomId,
                 newGroupPicture
             });
             return result;

@@ -87,7 +87,7 @@ namespace ChatroomB_Backend.Controllers
 
             var success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId) , filebyte, file.FileName);
 
-            if (!success)
+            if ( success == 0 )
             {
                 return NotFound("Failed to update the profile picture.");
             }

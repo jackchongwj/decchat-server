@@ -18,14 +18,18 @@ namespace ChatroomB_Backend.Service
         private readonly IBlobService _blobService;
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IRedisServcie _RServices;
+        private readonly IUserService _userService;
 
-        public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices)
+
+        public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices, IUserService userService)
         {
             _repo = _repository;
 
             _blobService = blobService;
             _hubContext = hubContext;
             _RServices = rServices;
+            _userService = userService;
+     
         }
 
         public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
@@ -109,8 +113,18 @@ namespace ChatroomB_Backend.Service
             }
             return result;
         }
+        public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
+        {
+            var updateResult = await _repo.UpdateGroupName(chatRoomId, newGroupName);
+            if (updateResult > 0)
+            { 
+                await _hubContext.Clients.Groups(chatRoomId.ToString())
+                    .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupName = newGroupName });
+            }
+            return updateResult;
+        }
 
-        public async Task<bool> UpdateGroupPicture(int ChatRoomId, byte[] fileBytes, string fileName)
+        public async Task<int> UpdateGroupPicture(int chatRoomId, byte[] fileBytes, string fileName)
         {
             try
             {
@@ -118,17 +132,22 @@ namespace ChatroomB_Backend.Service
                 string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
 
                 // Update the user's profile picture URI in the database
-                int updateResult = await _repo.UpdateGroupPicture(ChatRoomId, blobUri);
+                int updateResult = await _repo.UpdateGroupPicture(chatRoomId, blobUri);
 
-                // Assuming the updateResult is an int that signifies the number of records updated
-                // You might want to check if it actually succeeded based on your repository implementation
-                return updateResult != 0;
+                // If the profile picture was successfully updated
+                if (updateResult > 0)
+                {
+                    await _hubContext.Clients.Groups(chatRoomId.ToString())
+                        .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupPicture = blobUri });
+                }
+
+                return updateResult;
             }
             catch (Exception ex)
             {
-                // Depending on your logging framework, log the exception
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                return false;
+                // Return a value indicating failure, such as -1, to differentiate from successful updates
+                return -1;
             }
         }
 
@@ -157,5 +176,6 @@ namespace ChatroomB_Backend.Service
             }
             return result;
         }
+
     }
 }
