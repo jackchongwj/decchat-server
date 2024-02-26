@@ -18,7 +18,6 @@ namespace ChatroomB_Backend.Service
         private readonly IBlobService _blobService;
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IRedisServcie _RServices;
-        private readonly IUserService _userService;
 
 
         public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices, IUserService userService)
@@ -28,8 +27,6 @@ namespace ChatroomB_Backend.Service
             _blobService = blobService;
             _hubContext = hubContext;
             _RServices = rServices;
-            _userService = userService;
-     
         }
 
         public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
@@ -79,16 +76,28 @@ namespace ChatroomB_Backend.Service
             {
                 selectedUsersTable.Rows.Add(userId);
             }
+
             // Call CreateGroup method with the DataTable of selected users
             var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
-           
-            // Call AddToGroup to add users to the chat room
-            var groupName = createGroupVM.ChatRoomId.ToString();
-            foreach (var userId in createGroupVM.SelectedUsers)
+            var groupName = chatList.ChatRoomId.ToString();
+
+            foreach (var grouplist in createGroupVM.SelectedUsers)
             {
-                await _hubContext.Clients.Group(groupName).SendAsync("AddToGroup", groupName, userId);
+                // Retrieve the connection ID for the current user ID from Redis
+                string userConnectionId = await _RServices.SelectUserIdFromRedis(grouplist);
+                // Check if the connection ID is not null or empty
+                if (userConnectionId != "Hash entry not found or empty.")
+                {
+                    await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);                
+                }
             }
-            return chatList;             
+            string connectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy); //get admin connectionid 
+            await _hubContext.Groups.AddToGroupAsync(connectionId, groupName); //get admin connectionid to grp
+
+            // Send SignalR message to the user's group using their connection ID
+            await _hubContext.Clients.Group(createGroupVM.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
+
+            return chatList;
         }
 
 
@@ -117,7 +126,7 @@ namespace ChatroomB_Backend.Service
         {
             var updateResult = await _repo.UpdateGroupName(chatRoomId, newGroupName);
             if (updateResult > 0)
-            { 
+            {
                 await _hubContext.Clients.Groups(chatRoomId.ToString())
                     .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupName = newGroupName });
             }
@@ -176,6 +185,5 @@ namespace ChatroomB_Backend.Service
             }
             return result;
         }
-
     }
 }
