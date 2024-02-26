@@ -18,6 +18,9 @@ using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using ChatroomB_Backend.Middleware;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.SignalR;
+using MongoDB.Driver;
+using ChatroomB_Backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +38,26 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
     ConfigurationOptions configuration = ConfigurationOptions.Parse(builder.Configuration.GetSection("RedisConnection")["RedisConnectionString"]);
     return ConnectionMultiplexer.Connect(configuration);
 });
+
+//MongoDB set up
+builder.Services.AddSingleton<IMongoClient>(provider =>
+{
+    string connectionString = builder.Configuration.GetSection("MongoDBConnection")["MongoDBConnectionString"];
+    return new MongoClient(connectionString);
+});
+
+builder.Services.AddSingleton(provider =>
+{
+    var mongoClient = provider.GetRequiredService<IMongoClient>();
+    var defaultDatabaseName = builder.Configuration.GetSection("MongoDBConnection")["DatabaseName"];
+    var defaultCollectionName = builder.Configuration.GetSection("MongoDBConnection")["CollectionName"];
+
+    var database = mongoClient.GetDatabase(defaultDatabaseName);
+    var collection = database.GetCollection<ErrorHandle>(defaultCollectionName);
+    return collection;
+});
+
+
 
 // Add Cookie Policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -57,7 +80,9 @@ builder.Services.AddSignalR()
     .AddJsonProtocol(options =>
     {
         options.PayloadSerializerOptions.PropertyNamingPolicy = null;
-    });
+        
+    }) ;
+
 
 // service repository utils
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
@@ -66,6 +91,7 @@ builder.Services.AddScoped<IFriendService, FriendsServices>();
 builder.Services.AddScoped<IAuthService, AuthServices>();
 builder.Services.AddScoped<ITokenService, TokenServices>();
 builder.Services.AddScoped<IMessageService, MessagesServices>();
+builder.Services.AddScoped<IErrorHandleService, ErrorHanldeServices>();
 
 builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
@@ -73,6 +99,8 @@ builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();  
 builder.Services.AddScoped<ITokenRepo, TokenRepo>();
 builder.Services.AddScoped<IMessageRepo, MessagesRepo>();
+builder.Services.AddScoped<IErrorHandleRepo, ErrorHandleRepo>();
+
 
 builder.Services.AddScoped<IAuthUtils, AuthUtils>();
 builder.Services.AddScoped<ITokenUtils, TokenUtils>();
@@ -94,11 +122,13 @@ builder.Services.AddScoped<IRedisRepo, RedisRepo>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+
 // add policy
 builder.Services.AddCors(options => 
 {
     options.AddPolicy("AngularApp", policy => 
-            policy.WithOrigins("http://localhost:4200")
+            policy.WithOrigins("http://localhost:4200", "https://chatroomfe-dec.azurewebsites.net")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials());

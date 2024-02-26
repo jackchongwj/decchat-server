@@ -1,6 +1,7 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,6 +26,7 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("AddMessage")]
+        [Authorize]
         public async Task<IActionResult> AddMessage([FromForm] IFormFile? file)
         {
             string? messageJson = Request.Form["message"];
@@ -67,13 +69,8 @@ namespace ChatroomB_Backend.Controllers
             return Ok(1);
         }
 
-        [HttpPost("ClearMessage")]
-        public IActionResult ClearQueueMessage()
-        {
-            return Ok(0);
-        }
-
         [HttpGet("GetMessage")]
+        [Authorize]
         public async Task<IActionResult> RetrieveMessage(int ChatRoomId) 
         {
            IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId);

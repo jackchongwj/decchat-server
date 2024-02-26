@@ -11,6 +11,8 @@ using System.Text.RegularExpressions;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Reflection.Metadata;
+using System.Data.Common;
+using System.Security.Cryptography;
 
 
 namespace ChatroomB_Backend.Repository
@@ -66,15 +68,61 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<int> UpdateGroupPicture(int ChatRoomId, string newGroupPicture)
+        public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
         {
-            string sql = "exec UpdateGroupProfilePicture @ChatRoomId, @NewGroupProfilePic";
+            string sql = "exec UpdateGroupName @ChatRoomId, @NewGroupName";
             int result = await _dbConnection.ExecuteAsync(sql, new
             {
-                ChatRoomId,
+                chatRoomId,
+                newGroupName
+            });
+            return result;
+        }
+
+        public async Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture)
+        {
+            string sql = "exec UpdateGroupPicture @ChatRoomId, @NewGroupPicture";
+            int result = await _dbConnection.ExecuteAsync(sql, new
+            {
+                chatRoomId,
                 newGroupPicture
             });
             return result;
+        }
+
+        public async Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId)
+        {
+            string sql = "RetrieveGroupMemberByChatroomId";
+            var parameters = new { ChatRoomID = chatRoomId, userId = userId };
+
+            return await _dbConnection.QueryAsync<GroupMember>(sql, parameters);
+        }
+
+        public async Task<int> RemoveUserFromGroup (int chatRoomId, int userId)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@ChatRoomID", chatRoomId);
+            parameters.Add("@UserID", userId);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _dbConnection.ExecuteAsync("RemoveUserFromGroup", parameters, commandType: CommandType.StoredProcedure);
+
+            int isSuccess = parameters.Get<int>("@Result");
+
+            return isSuccess;
+        }
+        public async Task<int> QuitGroup(int chatRoomId, int userId)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@ChatRoomID", chatRoomId);
+            parameters.Add("@UserID", userId);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _dbConnection.ExecuteAsync("QuitGroup", parameters, commandType: CommandType.StoredProcedure);
+
+            int isSuccess = parameters.Get<int>("@Result");
+
+            return isSuccess;
         }
     }
 }
