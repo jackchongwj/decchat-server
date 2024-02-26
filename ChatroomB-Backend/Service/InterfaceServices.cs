@@ -56,10 +56,9 @@ namespace ChatroomB_Backend.Service
 
     public interface ITokenService
     {
-        Task<string> RenewAccessToken(RefreshToken token, int userId);
+        Task<string> RenewAccessToken(RefreshToken token, int userId, string username);
         Task<IActionResult> StoreRefreshToken(RefreshToken token);
         Task<IActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IBlobService
