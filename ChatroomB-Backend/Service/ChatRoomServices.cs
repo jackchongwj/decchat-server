@@ -45,11 +45,19 @@ namespace ChatroomB_Backend.Service
                     string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
                     string groupName = result.Select(list => list.ChatRoomId).First().ToString();
 
-                    await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
-                    await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
+                    if (connectionIdS!= null)
+                    {
+                        await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
+                        await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
 
-                    await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
-                    await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                        await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                    }
+                    else 
+                    {
+                        await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
+                        await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                    }
                 } 
                 catch (Exception ex) 
                 {
