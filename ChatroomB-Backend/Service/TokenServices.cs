@@ -18,7 +18,7 @@ namespace ChatroomB_Backend.Service
             _userService = userService;
         }
 
-        public async Task<string> RenewAccessToken(RefreshToken refreshToken, int userId)
+        public async Task<string> RenewAccessToken(RefreshToken refreshToken, int userId, string username)
         {
             bool isValid = await _repo.IsRefreshTokenValid(refreshToken);
 
@@ -27,9 +27,6 @@ namespace ChatroomB_Backend.Service
                 throw new UnauthorizedAccessException("Invalid or expired refresh token.");
             }
 
-            string username = await _userService.GetUserName(userId);
-
-            // If valid, generate a new access token
             string newAccessToken = _tokenUtils.GenerateAccessToken(userId, username);
 
             return newAccessToken;
@@ -45,9 +42,5 @@ namespace ChatroomB_Backend.Service
             return await _repo.RemoveRefreshToken(token);
         }
 
-        public async Task<IActionResult> ValidateRefreshToken(RefreshToken token)
-        {
-            return await _repo.ValidateRefreshToken(token);
-        }
     }
 }
