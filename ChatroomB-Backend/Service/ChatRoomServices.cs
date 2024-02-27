@@ -81,18 +81,19 @@ namespace ChatroomB_Backend.Service
             var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
             string groupName = chatList.ChatRoomId.ToString();
 
-            foreach (var grouplist in createGroupVM.SelectedUsers)
-            {
-                // Retrieve the connection ID for the current user ID from Redis
-                string userConnectionId = await _RServices.SelectUserIdFromRedis(grouplist);
-                // Check if the connection ID is not null or empty
-                if (userConnectionId != "Hash entry not found or empty.")
-                {
-                    await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);                
-                }
-            }
-            string connectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy); //get admin connectionid 
-            await _hubContext.Groups.AddToGroupAsync(connectionId, groupName); //get admin connectionid to grp
+             foreach (var groupListUserId in createGroupVM.SelectedUsers)
+             {
+                 // Retrieve the connection ID for the current user ID from Redis
+                 string userConnectionId = await _RServices.SelectUserIdFromRedis(groupListUserId);
+                 // Check if the connection ID is not null or empty
+                 if (userConnectionId != "Hash entry not found or empty.")
+                 {
+                     await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);                
+                 }
+             }
+            // Add the admin to the group
+            string adminConnectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy); //get admin connectionid 
+            await _hubContext.Groups.AddToGroupAsync(adminConnectionId, groupName); //get admin connectionid to grp
 
             // Send SignalR message to the user's group using their connection ID
             await _hubContext.Clients.Group(chatList.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
