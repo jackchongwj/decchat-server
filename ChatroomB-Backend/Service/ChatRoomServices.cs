@@ -47,8 +47,8 @@ namespace ChatroomB_Backend.Service
                         await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
                         await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
 
-                        await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
-                        await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
                     }
                     else 
                     {
@@ -79,7 +79,7 @@ namespace ChatroomB_Backend.Service
 
             // Call CreateGroup method with the DataTable of selected users
             var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
-            var groupName = chatList.ChatRoomId.ToString();
+            string groupName = chatList.ChatRoomId.ToString();
 
             foreach (var grouplist in createGroupVM.SelectedUsers)
             {
@@ -95,7 +95,7 @@ namespace ChatroomB_Backend.Service
             await _hubContext.Groups.AddToGroupAsync(connectionId, groupName); //get admin connectionid to grp
 
             // Send SignalR message to the user's group using their connection ID
-            await _hubContext.Clients.Group(createGroupVM.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
+            await _hubContext.Clients.Group(chatList.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
 
             return chatList;
         }
