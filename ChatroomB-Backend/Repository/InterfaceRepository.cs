@@ -49,6 +49,8 @@ namespace ChatroomB_Backend.Repository
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                               
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
+        Task<int> EditMessage(ChatRoomMessage NewMessage);
+        Task<int> DeleteMessage(int MessageId);
     }
     
     public interface IBlobRepo

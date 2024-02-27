@@ -91,14 +91,18 @@ namespace ChatroomB_Backend.Hubs
             try
             {
                 IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userId));
-                foreach (var list in chatlist)
+
+                if (chatlist.Any())
                 {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, list.ChatRoomId.ToString());
+                    foreach (var list in chatlist)
+                    {
+                        await Groups.AddToGroupAsync(Context.ConnectionId, list.ChatRoomId.ToString());
 
-                    Console.WriteLine($"{Context.ConnectionId} has joined the group {list.ChatRoomId}");
+                        Console.WriteLine($"{Context.ConnectionId} has joined the group {list.ChatRoomId}");
+                    }
+
+                    await Clients.Group("User" + userId).SendAsync("Chatlist", chatlist);
                 }
-
-                await Clients.Group("User" + userId).SendAsync("Chatlist", chatlist);
 
             } catch (Exception ex) 
             {
