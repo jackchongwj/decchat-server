@@ -46,6 +46,8 @@ namespace ChatroomB_Backend.Service
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                                 // add new friend 
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
+        Task<int> EditMessage(ChatRoomMessage NewMessage);
+        Task<int> DeleteMessage(int MessageId, int ChatRoomId);
     }
 
     public interface IAuthService
