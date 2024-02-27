@@ -78,26 +78,51 @@ namespace ChatroomB_Backend.Service
             }
 
             // Call CreateGroup method with the DataTable of selected users
-            var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
-            var groupName = chatList.ChatRoomId.ToString();
+             var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
+             var groupName = chatList.ChatRoomId.ToString();
 
-            foreach (var grouplist in createGroupVM.SelectedUsers)
+             foreach (var groupListUserId in createGroupVM.SelectedUsers)
+             {
+                 // Retrieve the connection ID for the current user ID from Redis
+                 string userConnectionId = await _RServices.SelectUserIdFromRedis(groupListUserId);
+                 // Check if the connection ID is not null or empty
+                 if (userConnectionId != "Hash entry not found or empty.")
+                 {
+                     await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);                
+                 }
+             }
+            // Add the admin to the group
+            string adminConnectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy); //get admin connectionid 
+            await _hubContext.Groups.AddToGroupAsync(adminConnectionId, groupName); //get admin connectionid to grp
+
+            // Send SignalR message to the user's group using their connection ID
+            await _hubContext.Clients.Group(chatList.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
+
+            return chatList;
+
+       
+
+            /*foreach (var userId in createGroupVM.SelectedUsers)
             {
                 // Retrieve the connection ID for the current user ID from Redis
-                string userConnectionId = await _RServices.SelectUserIdFromRedis(grouplist);
+                string userConnectionId = await _RServices.SelectUserIdFromRedis(userId);
                 // Check if the connection ID is not null or empty
                 if (userConnectionId != "Hash entry not found or empty.")
                 {
-                    await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);                
+                    await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);
+
+                    // Send SignalR message to the user's group using their connection ID
+                    await _hubContext.Clients.Group(userConnectionId).SendAsync("NewGroupCreated", chatList);
                 }
             }
-            string connectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy); //get admin connectionid 
-            await _hubContext.Groups.AddToGroupAsync(connectionId, groupName); //get admin connectionid to grp
 
-            // Send SignalR message to the user's group using their connection ID
-            await _hubContext.Clients.Group(createGroupVM.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
-
-            return chatList;
+            // Add the admin to the group
+            string adminConnectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy);
+            if (adminConnectionId != null)
+            {
+                await _hubContext.Groups.AddToGroupAsync(adminConnectionId, groupName);
+            }
+            return chatList;*/
         }
 
 
