@@ -87,7 +87,7 @@ namespace ChatroomB_Backend.Controllers
 
             var success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId) , filebyte, file.FileName);
 
-            if (!success)
+            if ( success == 0 )
             {
                 return NotFound("Failed to update the profile picture.");
             }
@@ -107,9 +107,9 @@ namespace ChatroomB_Backend.Controllers
         [HttpGet("DoesUsernameExist")]
         public async Task<IActionResult> DoesUsernameExist(string username)
         {
-            bool isUnique = await _UserService.DoesUsernameExist(username);
+            bool isExist = await _UserService.DoesUsernameExist(username);
 
-            return Ok(new { IsUnique = isUnique });
+            return Ok(new { isExist = isExist });
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)

@@ -35,8 +35,14 @@ namespace ChatroomB_Backend.Repository
     public interface IChatRoomRepo
     {
         Task <IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId); // add new ChatRoom and user chat room with private user
-        Task<int> UpdateGroupPicture(int ChatRoomId, string newGroupPicture);
+        Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
+        Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture);
+
         Task <ChatlistVM> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
+        Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
+        Task<int> RemoveUserFromGroup (int chatRoomId, int userId);
+        Task<int> QuitGroup(int chatRoomId, int userId);
+
     }
 
     public interface IMessageRepo
@@ -69,7 +75,6 @@ namespace ChatroomB_Backend.Repository
         Task<bool> IsRefreshTokenValid(RefreshToken token);
         Task<IActionResult> StoreRefreshToken(RefreshToken token);
         Task<IActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IRedisRepo 

@@ -85,12 +85,21 @@ namespace ChatroomB_Backend.Service
                 //remove member from signalR group
                 string connectionIdUser1 = await _RServices.SelectUserIdFromRedis(userId1);
                 string connectionIdUser2 = await _RServices.SelectUserIdFromRedis(userId2);
-                await _hubContext.Groups.RemoveFromGroupAsync(connectionIdUser1, chatRoomId.ToString());
-                await _hubContext.Groups.RemoveFromGroupAsync(connectionIdUser2, chatRoomId.ToString());
+
+                if (connectionIdUser2 != null)
+                {
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionIdUser1, chatRoomId.ToString());
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionIdUser2, chatRoomId.ToString());
 
 
-                await _hubContext.Clients.Group("User"+ userId1).SendAsync("DeleteFriend", userId2);
-                await _hubContext.Clients.Group("User"+ userId2).SendAsync("DeleteFriend", userId1);
+                    await _hubContext.Clients.Group("User"+ userId1).SendAsync("DeleteFriend", userId2);
+                    await _hubContext.Clients.Group("User"+ userId2).SendAsync("DeleteFriend", userId1);
+                }
+                else 
+                {
+                    await _hubContext.Groups.RemoveFromGroupAsync(connectionIdUser1, chatRoomId.ToString());
+                    await _hubContext.Clients.Group("User"+ userId1).SendAsync("DeleteFriend", userId2);
+                }
 
             }
            return result;

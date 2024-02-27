@@ -21,13 +21,11 @@ namespace ChatroomB_Backend.Controllers
     {
         private readonly IFriendService _FriendService ;
         private readonly IChatRoomService _ChatRoomService;
-        private readonly IErrorHandleService _ErrorHandleService;
 
-        public FriendsController(IFriendService Fservice, IChatRoomService CService, IErrorHandleService errorHandleService)
+        public FriendsController(IFriendService Fservice, IChatRoomService CService)
         {
             _FriendService = Fservice;
             _ChatRoomService = CService;
-            _ErrorHandleService = errorHandleService;
         }
 
         //POST: Friends/Create
@@ -35,8 +33,7 @@ namespace ChatroomB_Backend.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> AddFriend([FromBody] Friends friends)
         {
-            try
-            {
+
                 if (ModelState.IsValid)
                 {
                     await _FriendService.AddFriends(friends);
@@ -44,19 +41,11 @@ namespace ChatroomB_Backend.Controllers
                 }
                 else
                 {
-                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
+
+                    BadRequest(new { ErrorMessage = "Invalid model. Please check the provided data." });
                 }
 
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error in AddFriend method: {ex.ToString()}");
-                await _ErrorHandleService.LogError(ControllerContext.ActionDescriptor.ControllerName.ToString(),ex.ToString());
-                //return error message to client
-                return StatusCode(500, "An error occurred while processing your request.");
-
-                //return StatusCode(500, new { ErrorMessage = ex.Message, StackTrace = ex.StackTrace });
-            }
+                return Ok(1);
         }
 
         [HttpPost("UpdateFriendRequest")]

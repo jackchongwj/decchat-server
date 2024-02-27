@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ChatroomB_Backend.Service;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace ChatroomB_Backend.Middleware
@@ -23,37 +24,16 @@ namespace ChatroomB_Backend.Middleware
             }
             catch (Exception ex)
             {
-                //logger.LogError(ex, "Exception occurred: {ex.Message}");
-
-                //context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                //context.Response.ContentType = "text/plain";
-                //await context.Response.WriteAsync("An internal server error occurred.");
-
-                HttpStatusCode code;
-                switch (ex) 
-                {
-                    case UnauthorizedAccessException:
-                        code = HttpStatusCode.Unauthorized;
-                        break;
-
-                    case ValidationException:
-                        code = HttpStatusCode.Forbidden;
-                        break;
-
-                    //default: 
-                    //    code = HttpStatusCode.InternalServerError; 
-                    //    await context.Response.WriteAsync("An unexpected error occurred.");
-                    //    break;
-                }
-            }
-
-
-            //404 no found
-            if (context.Response.StatusCode == (int)HttpStatusCode.NotFound)
-            {
-                context.Response.ContentType = "text/plain";
-                await context.Response.WriteAsync("Not found.");
+                await LogErrorMessage(context, ex.Message);
             }
         }
+
+        private async Task LogErrorMessage(HttpContext context, string  errorMessage)
+        {
+            string controllerName = context.Request.RouteValues["controller"]?.ToString();
+            IErrorHandleService errorHandleService = context.RequestServices.GetRequiredService<IErrorHandleService>();
+            await errorHandleService.LogError(controllerName, errorMessage);
+        }
+
     }
 }
