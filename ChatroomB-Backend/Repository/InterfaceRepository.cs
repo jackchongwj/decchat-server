@@ -38,7 +38,7 @@ namespace ChatroomB_Backend.Repository
         Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
         Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture);
 
-        Task <ChatlistVM> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
+        Task <IEnumerable<ChatlistVM>> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
         Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
         Task<int> RemoveUserFromGroup (int chatRoomId, int userId);
         Task<int> QuitGroup(int chatRoomId, int userId);

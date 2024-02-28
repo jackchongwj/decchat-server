@@ -2,6 +2,7 @@
 using Azure.Storage.Blobs;
 using ChatroomB_Backend.Repository;
 using Microsoft.Extensions.Configuration;
+using System.Net;
 
 namespace ChatroomB_Backend.Service
 {
@@ -32,7 +33,8 @@ namespace ChatroomB_Backend.Service
             string folderpath = "Messages/Documents";
             string newFileName = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + "-" + docName;
             string blobUri = await _blobRepo.UploadDocuments(docByte, newFileName, folderpath);
-            return blobUri;
+            string decodedUrl = WebUtility.UrlDecode(blobUri);
+            return decodedUrl;
         }
 
         public async Task<string> UploadImageFiles(byte[] fileByte, string filename, int CaseImageFile)
@@ -68,7 +70,8 @@ namespace ChatroomB_Backend.Service
             string folderpath = "Messages/Videos";
             string newFileName = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss") + "-" + vidName;
             string blobUri = await _blobRepo.UploadVideoFiles(vidByte, newFileName, folderpath);
-            return blobUri;
+            string decodedUrl = WebUtility.UrlDecode(blobUri);
+            return decodedUrl;
         }
     }
 }
