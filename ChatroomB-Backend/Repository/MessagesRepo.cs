@@ -29,7 +29,6 @@ namespace ChatroomB_Backend.Repository
                 UserChatRoomId = message.UserChatRoomId,
                 TimeStamp = message.TimeStamp,
                 ResourceUrl = message.ResourceUrl,
-                MessageType = message.MessageType,
                 IsDeleted = message.IsDeleted,
             };
 

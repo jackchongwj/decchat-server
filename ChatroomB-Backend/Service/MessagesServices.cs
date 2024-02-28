@@ -20,7 +20,9 @@ namespace ChatroomB_Backend.Service
 
         public async Task <ChatRoomMessage> AddMessages(Messages message)
         {
-            message.TimeStamp = DateTime.UtcNow;
+            TimeZoneInfo singaporeTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
+
+            message.TimeStamp = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, singaporeTimeZone);
 
             ChatRoomMessage newMessage =  await _MessageRepo.AddMessages(message);
 
