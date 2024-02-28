@@ -104,5 +104,10 @@ namespace ChatroomB_Backend.Service
             }
            return result;
         }
+
+        public async Task<int> CheckFriendExit(Friends friends)
+        { 
+            return await _repo.CheckFriendExit(friends);
+        }
     }
 }
