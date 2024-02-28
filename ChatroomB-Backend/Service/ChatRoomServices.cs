@@ -99,30 +99,6 @@ namespace ChatroomB_Backend.Service
             await _hubContext.Clients.Group(chatList.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
 
             return chatList;
-
-       
-
-            /*foreach (var userId in createGroupVM.SelectedUsers)
-            {
-                // Retrieve the connection ID for the current user ID from Redis
-                string userConnectionId = await _RServices.SelectUserIdFromRedis(userId);
-                // Check if the connection ID is not null or empty
-                if (userConnectionId != "Hash entry not found or empty.")
-                {
-                    await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);
-
-                    // Send SignalR message to the user's group using their connection ID
-                    await _hubContext.Clients.Group(userConnectionId).SendAsync("NewGroupCreated", chatList);
-                }
-            }
-
-            // Add the admin to the group
-            string adminConnectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy);
-            if (adminConnectionId != null)
-            {
-                await _hubContext.Groups.AddToGroupAsync(adminConnectionId, groupName);
-            }
-            return chatList;*/
         }
 
 
