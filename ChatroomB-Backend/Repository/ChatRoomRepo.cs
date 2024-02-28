@@ -57,7 +57,7 @@ namespace ChatroomB_Backend.Repository
                 dynamicParam.Add("@InitiatedBy", initiatedBy);
                 dynamicParam.Add("@SelectedUsers", selectedUsers.AsTableValuedParameter("IntListTableType"));
 
-                var chatinfo = await _dbConnection.QuerySingleAsync<ChatlistVM>("CreateGroup", dynamicParam, commandType: CommandType.StoredProcedure);
+                ChatlistVM chatinfo = await _dbConnection.QuerySingleAsync<ChatlistVM>("CreateGroup", dynamicParam, commandType: CommandType.StoredProcedure);
                 return chatinfo;
             }
             catch (Exception ex)
