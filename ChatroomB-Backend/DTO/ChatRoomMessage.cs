@@ -15,8 +15,6 @@ namespace ChatroomB_Backend.DTO
 
         public string? ResourceUrl { get; set; }
 
-        public int MessageType { get; set; }
-
         public bool IsDeleted { get; set; }
 
         public int? ChatRoomId { get; set; }

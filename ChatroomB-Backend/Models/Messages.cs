@@ -18,11 +18,8 @@ namespace ChatroomB_Backend.Models
 
         public DateTime? TimeStamp { get; set; }
 
-        [Column(TypeName = "varchar(256)")]
+        [Column(TypeName = "nvarchar(256)")]
         public string? ResourceUrl { get; set; }
-
-        [Required]
-        public int MessageType { get; set; }
 
         public bool IsDeleted { get; set; }
     }
