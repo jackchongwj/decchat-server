@@ -67,7 +67,7 @@ namespace ChatroomB_Backend.Service
             return result.ToList();
         }
 
-        public async Task <ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM)
+        public async Task<IEnumerable<ChatlistVM>> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM)
         {
             // Create a DataTable to store the selected user IDs
             DataTable selectedUsersTable = new DataTable();
@@ -78,8 +78,8 @@ namespace ChatroomB_Backend.Service
             }
 
             // Call CreateGroup method with the DataTable of selected users
-             var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
-             var groupName = chatList.ChatRoomId.ToString();
+            IEnumerable<ChatlistVM> chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
+            string groupName = chatList.ToList()[0].ChatRoomId.ToString();
 
              foreach (var groupListUserId in createGroupVM.SelectedUsers)
              {
@@ -96,7 +96,7 @@ namespace ChatroomB_Backend.Service
             await _hubContext.Groups.AddToGroupAsync(adminConnectionId, groupName); //get admin connectionid to grp
 
             // Send SignalR message to the user's group using their connection ID
-            await _hubContext.Clients.Group(chatList.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
+            await _hubContext.Clients.Group(chatList.ToList()[0].ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
 
             return chatList;
         }

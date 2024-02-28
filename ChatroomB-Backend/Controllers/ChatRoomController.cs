@@ -71,22 +71,15 @@ namespace ChatroomB_Backend.Controllers
         [HttpPost("createNewGroup")]
         public async Task<IActionResult> CreateGroup([FromBody] CreateGroupVM createGroupVM)
         {
-            ChatlistVM chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
-            // await _hubContext.Groups.SendAsync("NewGroupCreated", chatinfo);
-
-            return Ok(new { Message = "Group created successfully" });
-
-            //try
-            //{
-            //    ChatlistVM chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
-            //    // await _hubContext.Groups.SendAsync("NewGroupCreated", chatinfo);
-
-            //    return Ok(new { Message = "Group created successfully" });
-            //}
-            //catch (Exception ex)
-            //{
-            //    return StatusCode(500, ex.Message);
-            //}
+            try
+            {
+                IEnumerable<ChatlistVM> chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
+                return Ok(new { Message = "Group created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPost("RemoveFromGroup")]
@@ -98,7 +91,8 @@ namespace ChatroomB_Backend.Controllers
                 if (ModelState.IsValid)
                 {
                     int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
-                    /*_ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);*/
+                   
+
                     return Ok(new { Message = "User removed successfully" });
                 }
                 else

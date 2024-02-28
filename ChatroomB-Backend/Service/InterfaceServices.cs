@@ -28,6 +28,7 @@ namespace ChatroomB_Backend.Service
     public interface IFriendService
     {
         Task<IEnumerable<Users>> AddFriends(Friends friends);                                                              // add new friend
+        Task<int> CheckFriendExit(Friends friends);
         Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request 
         Task<int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
 
@@ -38,7 +39,7 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId);
         Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
         Task<int> UpdateGroupPicture(int chatRoomId, byte[] fileBytes, string fileName);
-        Task<ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM);
+        Task<IEnumerable<ChatlistVM>> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM);
         Task<int> RemoveUserFromGroup(int chatRoomId, int userId);
         
         
@@ -52,6 +53,8 @@ namespace ChatroomB_Backend.Service
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                                 // add new friend 
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
+        Task<int> EditMessage(ChatRoomMessage NewMessage);
+        Task<int> DeleteMessage(int MessageId, int ChatRoomId);
     }
 
     public interface IAuthService
@@ -64,10 +67,9 @@ namespace ChatroomB_Backend.Service
 
     public interface ITokenService
     {
-        Task<string> RenewAccessToken(RefreshToken token, int userId);
+        Task<string> RenewAccessToken(RefreshToken token, int userId, string username);
         Task<IActionResult> StoreRefreshToken(RefreshToken token);
         Task<IActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IBlobService

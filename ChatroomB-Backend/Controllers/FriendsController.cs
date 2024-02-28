@@ -19,7 +19,7 @@ namespace ChatroomB_Backend.Controllers
     [ApiController]
     public class FriendsController : ControllerBase
     {
-        private readonly IFriendService _FriendService ;
+        private readonly IFriendService _FriendService;
         private readonly IChatRoomService _ChatRoomService;
 
         public FriendsController(IFriendService Fservice, IChatRoomService CService)
@@ -34,23 +34,33 @@ namespace ChatroomB_Backend.Controllers
         public async Task<IActionResult> AddFriend([FromBody] Friends friends)
         {
 
-                if (ModelState.IsValid)
+            if (ModelState.IsValid)
+            {
+                int result = await _FriendService.CheckFriendExit(friends);
+
+                if (result == 0)
                 {
+
                     await _FriendService.AddFriends(friends);
-                    return Ok(1);
+                    return Ok(new { Message = "Friend Request send successfully" });
                 }
-                else
+                else 
                 {
-
-                    BadRequest(new { ErrorMessage = "Invalid model. Please check the provided data." });
+                    return BadRequest(new { ErrorMessage = "Friend Has Added Before" });
                 }
 
-                return Ok(1);
+            }
+            else
+            {
+
+               return BadRequest(new { ErrorMessage = "Invalid model. Please check the provided data." });
+            }
+
         }
 
         [HttpPost("UpdateFriendRequest")]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody]FriendRequest request, [FromQuery]int userId)
+        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody] FriendRequest request, [FromQuery] int userId)
         {
             try
             {
@@ -61,19 +71,20 @@ namespace ChatroomB_Backend.Controllers
                     if (request.Status == 2)
                     {
                         IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userId);
-                        
+
 
                         return Ok(PrivateChatlist);
                     }
 
                     return Ok(0);
                 }
-                else 
+                else
                 {
                     return BadRequest(new { Message = "Invalid model. Please check the provided data." });
                 }
 
-            }catch(Exception ex) 
+            }
+            catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error in UpdateFriendRequest method: {ex.ToString()}");
                 return StatusCode(500, "An error occurred while processing your request.");
@@ -107,19 +118,5 @@ namespace ChatroomB_Backend.Controllers
             }
         }
 
-
-        //[HttpGet]
-        //public IActionResult Get()
-        //{
-        //    // 模拟抛出一个异常
-        //    throw new ApplicationException("This is a simulated exception.");
-        //}
-
-        //[HttpGet("404")]
-        //public IActionResult Geterror()
-        //{
-        //    // 此处不会抛出异常，但返回 404 Not Found
-        //    return NotFound("Resource not found.");
-        //}
     }
 }

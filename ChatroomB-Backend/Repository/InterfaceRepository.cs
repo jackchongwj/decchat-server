@@ -27,6 +27,7 @@ namespace ChatroomB_Backend.Repository
     public interface IFriendRepo
     {
         Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
+        Task<int> CheckFriendExit(Friends friends);
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
         Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
        
@@ -38,7 +39,7 @@ namespace ChatroomB_Backend.Repository
         Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
         Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture);
 
-        Task <ChatlistVM> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
+        Task <IEnumerable<ChatlistVM>> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers);
         Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
         Task<int> RemoveUserFromGroup (int chatRoomId, int userId);
         Task<int> QuitGroup(int chatRoomId, int userId);
@@ -49,6 +50,8 @@ namespace ChatroomB_Backend.Repository
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                               
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
+        Task<int> EditMessage(ChatRoomMessage NewMessage);
+        Task<int> DeleteMessage(int MessageId);
     }
     
     public interface IBlobRepo
@@ -73,7 +76,6 @@ namespace ChatroomB_Backend.Repository
         Task<bool> IsRefreshTokenValid(RefreshToken token);
         Task<IActionResult> StoreRefreshToken(RefreshToken token);
         Task<IActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<IActionResult> ValidateRefreshToken(RefreshToken token);
     }
 
     public interface IRedisRepo 

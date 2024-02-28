@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.DTO;
+﻿using Azure.Core;
+using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
@@ -59,7 +60,20 @@ namespace ChatroomB_Backend.Repository
 
             await _dbConnection.ExecuteAsync("DeleteFriend", parameters, commandType: CommandType.StoredProcedure);
 
-            // 获取输出参数的值
+            int isSuccess = parameters.Get<int>("@Result");
+
+            return isSuccess;
+        }
+
+        public async Task<int> CheckFriendExit(Friends friends)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@SenderId", friends.SenderId);
+            parameters.Add("@ReceiverId", friends.ReceiverId);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _dbConnection.ExecuteAsync("CheckFriendExit", parameters, commandType: CommandType.StoredProcedure);
+
             int isSuccess = parameters.Get<int>("@Result");
 
             return isSuccess;

@@ -78,30 +78,5 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<IActionResult> ValidateRefreshToken(RefreshToken token)
-        {
-            try
-            {
-                string sql = "exec ValidateRefreshToken @Token";
-
-                RefreshToken refreshToken = await _dbConnection.QueryFirstOrDefaultAsync<RefreshToken>(sql, new { token.Token });
-
-                if (refreshToken == null)
-                {
-                    return new BadRequestObjectResult(new { Error = "Invalid refresh token" });
-                }
-
-                if (refreshToken.ExpiredDateTime < DateTime.UtcNow)
-                {
-                    return new BadRequestObjectResult(new { Error = "Refresh token has expired" });
-                }
-
-                return new OkObjectResult(new { Message = "Refresh token is valid", RefreshToken = refreshToken });
-            }
-            catch
-            {
-                return new BadRequestObjectResult(new { Error = "Failed to validate refresh token" });
-            }
-        }
     }
 }

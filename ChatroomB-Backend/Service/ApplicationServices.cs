@@ -28,26 +28,64 @@ namespace ChatroomB_Backend.Service
 
         private async Task ProcessMessage(string message)
         {
-            try
+            using (JsonDocument doc = JsonDocument.Parse(message))
             {
-                FileMessage? fm = JsonSerializer.Deserialize<FileMessage>(message);
-                if (fm != null)
+                JsonElement root = doc.RootElement;
+
+                if (root.TryGetProperty("Message", out JsonElement inmessage))
                 {
-                    Console.WriteLine(fm);
-                    if (fm.FileByte != null)
+                    // If "Message" exists, try to get "MessageId" from within it
+                    if (inmessage.TryGetProperty("MessageId", out JsonElement nestedMessageIdElement))
                     {
-                        await StoreMessageWithAttachment(fm);
+                        try
+                        {
+                            FileMessage? fm = JsonSerializer.Deserialize<FileMessage>(message);
+                            if (fm != null)
+                            {
+                                Console.WriteLine(fm);
+                                if (fm.FileByte != null)
+                                {
+                                    await StoreMessageWithAttachment(fm);
+                                }
+                                else
+                                {
+                                    await StoreDatabase(fm);
+                                }
+                            }
+                        }
+                        catch (JsonException ex)
+                        {
+                            Console.WriteLine($"JSON deserialization error: {ex.Message}");
+                        }
                     }
                     else
                     {
-                        await StoreDatabase(fm);
+                        // Handle the case where "MessageId" does not exist within "Message"
+                        Console.WriteLine("MessageId within Message object not found.");
+                        return;
                     }
-                    //await Task.Delay(100);
                 }
-            }
-            catch (JsonException ex)
-            {
-                Console.WriteLine("Error during JSON deserialization: " + ex.Message);
+                else if (root.TryGetProperty("MessageId", out JsonElement directMessageIdElement))
+                {
+                    try
+                    {
+                        ChatRoomMessage? chatRoomMessage = JsonSerializer.Deserialize<ChatRoomMessage>(message);
+                        if (chatRoomMessage != null)
+                        {
+                            await _messageService.EditMessage(chatRoomMessage);
+                        }
+                    }
+                    catch (JsonException ex)
+                    {
+                        Console.WriteLine($"JSON deserialization error: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    // Handle the case where neither "Message" nor direct "MessageId" exists
+                    Console.WriteLine("Neither Message object nor direct MessageId found.");
+                    return;
+                }
             }
         }
 

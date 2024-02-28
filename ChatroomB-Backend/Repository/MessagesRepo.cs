@@ -1,6 +1,7 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using Dapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using NuGet.Packaging.Signing;
 using System.Data;
@@ -28,7 +29,6 @@ namespace ChatroomB_Backend.Repository
                 UserChatRoomId = message.UserChatRoomId,
                 TimeStamp = message.TimeStamp,
                 ResourceUrl = message.ResourceUrl,
-                MessageType = message.MessageType,
                 IsDeleted = message.IsDeleted,
             };
 
@@ -57,6 +57,39 @@ namespace ChatroomB_Backend.Repository
                 throw;
             }
 
+        }
+
+        public async Task<int> DeleteMessage(int MessageId)
+        {
+            string sql = "exec DeleteMessage @MessageId";
+
+            return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
+        }
+
+        public async Task<int> EditMessage(ChatRoomMessage NewMessage)
+        {
+            try
+            {
+                var param = new
+                {
+                    MessageId = NewMessage.MessageId,
+                    Content = NewMessage.Content
+                };
+
+                using (SqlConnection connection = new SqlConnection(_dbConnectionString))
+                {
+                    await connection.OpenAsync(); // Ensure the connection is open
+                    string StoredProcedure = "EditMessage";
+
+                    int result = await connection.QueryFirstOrDefaultAsync<int>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            return 1;
         }
 
         public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId)

@@ -44,6 +44,21 @@ namespace ChatroomB_Backend.Service
                 Console.WriteLine($"Error publishing message: {ex}");
             }
         }
+        public void PublishEditMessage(ChatRoomMessage editMsg)
+        {
+            try
+            {
+                byte[] serializedMessage = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(editMsg));
+
+                _channel.BasicPublish(exchange: "", routingKey: queueName, body: serializedMessage);
+
+                Console.WriteLine("Editted message published to RabbitMQ Queue");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error publishing message: {ex}");
+            }
+        }
 
         public void ConsumeMessage(Func<string, Task> onMessageReceived)
         {

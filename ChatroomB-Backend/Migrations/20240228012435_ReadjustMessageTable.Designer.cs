@@ -4,6 +4,7 @@ using ChatroomB_Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatroomB_Backend.Migrations
 {
     [DbContext(typeof(ChatroomB_BackendContext))]
-    partial class ChatroomB_BackendContextModelSnapshot : ModelSnapshot
+    [Migration("20240228012435_ReadjustMessageTable")]
+    partial class ReadjustMessageTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,10 +42,10 @@ namespace ChatroomB_Backend.Migrations
 
                     b.Property<string>("RoomName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoomProfilePic")
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("RoomType")
                         .HasColumnType("bit");
@@ -181,7 +184,7 @@ namespace ChatroomB_Backend.Migrations
                         .HasColumnType("nvarchar(15)");
 
                     b.Property<string>("ProfilePicture")
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("varchar(256)");
 
                     b.Property<string>("Salt")
                         .IsRequired()
