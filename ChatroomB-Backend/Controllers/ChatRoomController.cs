@@ -109,7 +109,6 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("QuitGroup")]
-        //[ValidateAntiForgeryToken]
         public async Task<ActionResult<int>> QuitGroup([FromQuery] int chatRoomId, [FromQuery] int userId)
         {
             try
