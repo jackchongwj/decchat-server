@@ -46,7 +46,7 @@ namespace ChatroomB_Backend.Service
                     string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
                     string groupName = result.Select(list => list.ChatRoomId).First().ToString();
 
-                    if (connectionIdS != null)
+                    if (connectionIdS!= "Hash entry not found or empty.")
                     {
                         await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
                         await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
