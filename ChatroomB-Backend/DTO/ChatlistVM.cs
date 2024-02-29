@@ -18,6 +18,6 @@ namespace ChatroomB_Backend.DTO
         public DataTable SelectedUsers { get; set; }
         public int InitiatedBy {  get; set; }
         public string? InitiatorProfileName { get; set; }
-
+        public bool IsOnline { get; set; } = false;
     }
 }

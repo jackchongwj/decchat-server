@@ -27,6 +27,7 @@ namespace ChatroomB_Backend.Repository
     public interface IFriendRepo
     {
         Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
+        Task<int> CheckFriendExit(Friends friends);
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
         Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
        
@@ -82,6 +83,8 @@ namespace ChatroomB_Backend.Repository
         Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);
         Task<int> DeleteUserIdFromRedis(string userId);
         Task<string> SelectUserIdFromRedis(int? userId);
+
+        Task<List<string>> GetAllUserIdsFromRedisSet();
     }
 
     public interface IErrorHandleRepo
