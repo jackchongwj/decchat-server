@@ -33,30 +33,46 @@ namespace ChatroomB_Backend.Service
         {
             IEnumerable<ChatlistVM> result = await _repo.AddChatRoom(request, userId);
 
-            if(!result.IsNullOrEmpty()) 
+            if (!result.IsNullOrEmpty())
             {
-                try 
+                try
                 {
                     // add private list to signalR group for send message
                     string connectionIdS = await _RServices.SelectUserIdFromRedis(request.SenderId);
                     string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
                     string groupName = result.Select(list => list.ChatRoomId).First().ToString();
 
-                    if (connectionIdS!= null)
+                    if (connectionIdS != "Hash entry not found or empty.")
                     {
                         await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
                         await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
 
-                        await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
-                        await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        if (request.ReceiverId == result.ElementAt(0).UserId)
+                        {
+                            await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                            await _hubContext.Clients.Group("User" + request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        }
+                        else
+                        {
+                            await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                            await _hubContext.Clients.Group("User" + request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                        }
                     }
-                    else 
+                    else
                     {
                         await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
-                        await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+
+                        if (request.ReceiverId == result.ElementAt(1).UserId)
+                        {
+                            await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        }
+                        else
+                        {
+                            await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                        }
                     }
-                } 
-                catch (Exception ex) 
+                }
+                catch (Exception ex)
                 {
 
                     Console.Error.WriteLine($"Error in UpdatePrivateChatlist: {ex.Message}");
