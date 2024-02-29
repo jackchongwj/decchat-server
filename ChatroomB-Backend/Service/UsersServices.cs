@@ -4,6 +4,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 using Microsoft.AspNetCore.SignalR;
 using NuGet.Protocol.Core.Types;
+using System.Reflection.Metadata.Ecma335;
 
 namespace ChatroomB_Backend.Service
 {
@@ -90,22 +91,18 @@ namespace ChatroomB_Backend.Service
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
+            List<string> onlineUserIds = await _RServices.GetAllUserIdsFromRedisSet();
+
             IEnumerable<ChatlistVM> chatlist = await _repo.GetChatListByUserId(userId);
 
-            //if (chatlist != null)
-            //{
-            //    // add chalist to signalR group for send message
-            //    string connectionId = await _RServices.SelectUserIdFromRedis(userId);
-
-            //    foreach (var list in chatlist) 
-            //    {
-            //        await _hubContext.Groups.AddToGroupAsync(connectionId, list.ChatRoomId.ToString());
-
-            //        Console.WriteLine($"{connectionId} has joined the group {list.ChatRoomId}");
-            //    }
-                  
-            //}
-            return chatlist; 
+            foreach (var chatItem in chatlist)
+            {
+                if (onlineUserIds.Contains(chatItem.UserId.ToString()))
+                {
+                    chatItem.IsOnline = true;
+                }
+            }
+            return chatlist;
         }
 
         public async Task<bool> DoesUsernameExist(string username)

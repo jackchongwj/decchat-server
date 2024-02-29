@@ -83,6 +83,8 @@ namespace ChatroomB_Backend.Repository
         Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);
         Task<int> DeleteUserIdFromRedis(string userId);
         Task<string> SelectUserIdFromRedis(int? userId);
+
+        Task<List<string>> GetAllUserIdsFromRedisSet();
     }
 
     public interface IErrorHandleRepo

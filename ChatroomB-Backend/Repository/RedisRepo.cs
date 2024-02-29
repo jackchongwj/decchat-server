@@ -92,5 +92,23 @@ namespace ChatroomB_Backend.Repository
                 return $"Error: {ex.Message}";
             }
         }
+
+        public async Task<List<string>> GetAllUserIdsFromRedisSet()
+        {
+            var server = _redisDatabase.Multiplexer.GetServer(_redisDatabase.Multiplexer.GetEndPoints().First());
+            List<string> userIds = new List<string>();
+
+            foreach (var key in server.Keys(pattern: "User:*:connection"))
+            {
+                var userId = await _redisDatabase.HashGetAsync(key, "UserId");
+                if (userId.HasValue)
+                {
+                    userIds.Add(userId.ToString());
+                }
+            }
+
+            return userIds;
+        }
+
     }
 }
