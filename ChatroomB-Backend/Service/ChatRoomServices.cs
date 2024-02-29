@@ -40,6 +40,11 @@ namespace ChatroomB_Backend.Service
             {
                 try 
                 {
+                    // Retrieve online user IDs from Redis
+                    List<string> onlineUserIds = await _RServices.GetAllUserIdsFromRedisSet();
+                    // Determine if the sender is online
+                    bool isSenderOnline = onlineUserIds.Contains(request.SenderId.ToString());
+
                     // add private list to signalR group for send message
                     string connectionIdS = await _RServices.SelectUserIdFromRedis(request.SenderId);
                     string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
@@ -50,6 +55,12 @@ namespace ChatroomB_Backend.Service
 
                     await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
                     await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                    // Only send the online status update if the sender is actually online
+                    if (isSenderOnline)
+                    {
+                        await _hubContext.Clients.Group(groupName).SendAsync("UpdateUserOnlineStatus", request.SenderId, true);
+                    }
+                    await _hubContext.Clients.Group(groupName).SendAsync("UpdateUserOnlineStatus", request.ReceiverId, true);
                 } 
                 catch (Exception ex) 
                 {

@@ -3,6 +3,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using MongoDB.Driver.Core.Connections;
 using NuGet.Protocol.Plugins;
 using System.Collections;
@@ -41,6 +42,8 @@ namespace ChatroomB_Backend.Hubs
                 await Task.Delay(500);
                 await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
 
+                
+
                 //add user to a group to easy call them
                 string groupName = "User" + userId.ToString();
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
@@ -49,6 +52,7 @@ namespace ChatroomB_Backend.Hubs
                 // add list to group 
                 await AddToGroup(Convert.ToInt32(userId));
 
+                
 
                 await base.OnConnectedAsync();
 
@@ -68,6 +72,18 @@ namespace ChatroomB_Backend.Hubs
                 string userId = Context.GetHttpContext().Request.Query["userId"];
                 string connectionId = Context.ConnectionId;
 
+
+                // Notify other members in the user's groups that they have gone offline
+                // retrieve the list of groups or chat rooms the user is part of
+                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userId));
+                foreach (var list in chatlist)
+                {
+                    await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId, false);
+                    await Groups.RemoveFromGroupAsync(connectionId, list.ChatRoomId.ToString());
+                    Console.WriteLine($"{connectionId} has left the group {list.ChatRoomId}");
+
+                    // Broadcast user's offline status to the group
+                }
                 await _RServices.DeleteUserIdFromRedis(userId);
 
                 await base.OnDisconnectedAsync(exception);
@@ -94,19 +110,19 @@ namespace ChatroomB_Backend.Hubs
                 foreach (var list in chatlist)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, list.ChatRoomId.ToString());
-
                     Console.WriteLine($"{Context.ConnectionId} has joined the group {list.ChatRoomId}");
+                    await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId, true);
                 }
 
                 await Clients.Group("User" + userId).SendAsync("Chatlist", chatlist);
 
-            } catch (Exception ex) 
+            }
+            catch (Exception ex) 
             {
                 Console.Error.WriteLine($"Error in Redis Connection method: {ex.ToString()}");
                 throw;
             }
         }
-
 
     }
 }
