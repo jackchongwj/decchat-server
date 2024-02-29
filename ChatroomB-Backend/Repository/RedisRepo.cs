@@ -95,12 +95,12 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<List<string>> GetAllUserIdsFromRedisSet()
         {
-            var server = _redisDatabase.Multiplexer.GetServer(_redisDatabase.Multiplexer.GetEndPoints().First());
+            StackExchange.Redis.IServer server = _redisDatabase.Multiplexer.GetServer(_redisDatabase.Multiplexer.GetEndPoints().First());
             List<string> userIds = new List<string>();
 
-            foreach (var key in server.Keys(pattern: "User:*:connection"))
+            foreach (StackExchange.Redis.RedisKey key in server.Keys(pattern: "User:*:connection"))
             {
-                var userId = await _redisDatabase.HashGetAsync(key, "UserId");
+                StackExchange.Redis.RedisValue userId = await _redisDatabase.HashGetAsync(key, "UserId");
                 if (userId.HasValue)
                 {
                     userIds.Add(userId.ToString());

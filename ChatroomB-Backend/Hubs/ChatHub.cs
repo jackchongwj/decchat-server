@@ -115,14 +115,8 @@ namespace ChatroomB_Backend.Hubs
                         await Groups.AddToGroupAsync(Context.ConnectionId, list.ChatRoomId.ToString());
 
                         Console.WriteLine($"{Context.ConnectionId} has joined the group {list.ChatRoomId}");
+                        await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId, true);
                     }
-                foreach (var list in chatlist)
-                {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, list.ChatRoomId.ToString());
-                    Console.WriteLine($"{Context.ConnectionId} has joined the group {list.ChatRoomId}");
-                    await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId, true);
-                }
-
                     await Clients.Group("User" + userId).SendAsync("Chatlist", chatlist);
                 }
 
