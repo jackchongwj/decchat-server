@@ -44,7 +44,7 @@ namespace ChatroomB_Backend.Controllers
             // Check if username exists
             bool isUnique = await _userService.DoesUsernameExist(request.Username);
 
-            if (!isUnique)
+            if (isUnique)
             {
                 return Conflict("Duplicate username detected");
             }
