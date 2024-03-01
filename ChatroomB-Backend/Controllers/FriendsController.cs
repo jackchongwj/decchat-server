@@ -39,16 +39,28 @@ namespace ChatroomB_Backend.Controllers
                 return BadRequest("Invalid request data");
             }
 
-            try
+            if (ModelState.IsValid)
             {
-                await _FriendService.AddFriends(friends);
+                int result = await _FriendService.CheckFriendExit(friends);
 
-                return Ok(1);
+                if (result == 0)
+                {
+
+                    await _FriendService.AddFriends(friends);
+                    return Ok(new { Message = "Friend Request send successfully" });
+                }
+                else 
+                {
+                    return BadRequest(new { ErrorMessage = "Friend Has Added Before" });
+                }
+
             }
-            catch (Exception ex)
+            else
             {
-                return StatusCode(500, ex.Message);
+
+               return BadRequest(new { ErrorMessage = "Invalid model. Please check the provided data." });
             }
+
         }
 
         [HttpPost("UpdateFriendRequest")]
@@ -100,19 +112,5 @@ namespace ChatroomB_Backend.Controllers
             }
         }
 
-
-        //[HttpGet]
-        //public IActionResult Get()
-        //{
-        //    // 模拟抛出一个异常
-        //    throw new ApplicationException("This is a simulated exception.");
-        //}
-
-        //[HttpGet("404")]
-        //public IActionResult Geterror()
-        //{
-        //    // 此处不会抛出异常，但返回 404 Not Found
-        //    return NotFound("Resource not found.");
-        //}
     }
 }

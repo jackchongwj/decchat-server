@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
 using ChatroomB_Backend.Models;
 using System;
+using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,13 @@ builder.Services.AddDbContext<ChatroomB_BackendContext>(options =>
 builder.Services.AddTransient<IDbConnection>((sp) =>
            new SqlConnection(builder.Configuration.GetConnectionString("ChatroomB_BackendContext")));
 
+// Add Cache
+builder.Services.AddMemoryCache();
+
+// Add Rate Limiting
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 //redis set up
 builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
@@ -179,6 +187,10 @@ app.UseAuthorization();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 //app.UseMiddleware<TokenValidationMiddleware>();
+
+// Use IP rate limiting middleware
+app.UseIpRateLimiting();
+app.UseMiddleware<RateLimitMiddleware>();
 
 app.MapControllers();
 

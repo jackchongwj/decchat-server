@@ -29,7 +29,7 @@ namespace ChatroomB_Backend.Models
         [Column(TypeName = "varchar(256)")]
         public string Salt { get; set; } = null!;
 
-        [Column(TypeName = "varchar(256)")]
+        [Column(TypeName = "nvarchar(256)")]
         public string? ProfilePicture { get; set; }
 
         public bool IsDeleted { get; set; }

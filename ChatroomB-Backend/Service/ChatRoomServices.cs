@@ -33,30 +33,57 @@ namespace ChatroomB_Backend.Service
         {
             IEnumerable<ChatlistVM> result = await _repo.AddChatRoom(request, userId);
 
-            if(!result.IsNullOrEmpty()) 
+            if (!result.IsNullOrEmpty())
             {
-                try 
+                try
                 {
+                    // Retrieve online user IDs from Redis
+                    List<string> onlineUserIds = await _RServices.GetAllUserIdsFromRedisSet();
+                    // Determine if the sender is online
+                    bool isSenderOnline = onlineUserIds.Contains(request.SenderId.ToString());
                     // add private list to signalR group for send message
                     string connectionIdS = await _RServices.SelectUserIdFromRedis(request.SenderId);
                     string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
                     string groupName = result.Select(list => list.ChatRoomId).First().ToString();
 
-                    if (connectionIdS!= null)
+                    if (connectionIdS!= "Hash entry not found or empty.")
                     {
                         await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
                         await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
 
-                        await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
-                        await _hubContext.Clients.Group("User"+ request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        if (request.ReceiverId == result.ElementAt(0).UserId)
+                        {
+                            await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                            await _hubContext.Clients.Group("User" + request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        }
+                        else
+                        {
+                            await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                            await _hubContext.Clients.Group("User" + request.SenderId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                        }
                     }
-                    else 
+                    else
                     {
                         await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
-                        await _hubContext.Clients.Group("User"+ request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+
+                        if (request.ReceiverId == result.ElementAt(1).UserId)
+                        {
+                            await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(0));
+                        }
+                        else
+                        {
+                            await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdatePrivateChatlist", result.ElementAt(1));
+                        }
                     }
-                } 
-                catch (Exception ex) 
+
+
+                    if (isSenderOnline)
+                    {
+                        await _hubContext.Clients.Group(groupName).SendAsync("UpdateUserOnlineStatus", request.SenderId, true);
+                    }
+                    await _hubContext.Clients.Group(groupName).SendAsync("UpdateUserOnlineStatus", request.ReceiverId, true);
+                }
+                catch (Exception ex)
                 {
 
                     Console.Error.WriteLine($"Error in UpdatePrivateChatlist: {ex.Message}");
@@ -67,7 +94,7 @@ namespace ChatroomB_Backend.Service
             return result.ToList();
         }
 
-        public async Task <ChatlistVM> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM)
+        public async Task<IEnumerable<ChatlistVM>> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM)
         {
             // Create a DataTable to store the selected user IDs
             DataTable selectedUsersTable = new DataTable();
@@ -78,24 +105,25 @@ namespace ChatroomB_Backend.Service
             }
 
             // Call CreateGroup method with the DataTable of selected users
-            var chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
-            var groupName = chatList.ChatRoomId.ToString();
+            IEnumerable<ChatlistVM> chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
+            string groupName = chatList.ToList()[0].ChatRoomId.ToString();
 
-            foreach (var grouplist in createGroupVM.SelectedUsers)
-            {
-                // Retrieve the connection ID for the current user ID from Redis
-                string userConnectionId = await _RServices.SelectUserIdFromRedis(grouplist);
-                // Check if the connection ID is not null or empty
-                if (userConnectionId != "Hash entry not found or empty.")
-                {
-                    await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);                
-                }
-            }
-            string connectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy); //get admin connectionid 
-            await _hubContext.Groups.AddToGroupAsync(connectionId, groupName); //get admin connectionid to grp
+             foreach (var groupListUserId in createGroupVM.SelectedUsers)
+             {
+                 // Retrieve the connection ID for the current user ID from Redis
+                 string userConnectionId = await _RServices.SelectUserIdFromRedis(groupListUserId);
+                 // Check if the connection ID is not null or empty
+                 if (userConnectionId != "Hash entry not found or empty.")
+                 {
+                     await _hubContext.Groups.AddToGroupAsync(userConnectionId, groupName);                
+                 }
+             }
+            // Add the admin to the group
+            string adminConnectionId = await _RServices.SelectUserIdFromRedis(createGroupVM.InitiatedBy); //get admin connectionid 
+            await _hubContext.Groups.AddToGroupAsync(adminConnectionId, groupName); //get admin connectionid to grp
 
             // Send SignalR message to the user's group using their connection ID
-            await _hubContext.Clients.Group(createGroupVM.ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
+            await _hubContext.Clients.Group(chatList.ToList()[0].ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
 
             return chatList;
         }
@@ -169,19 +197,18 @@ namespace ChatroomB_Backend.Service
         public async Task<int> QuitGroup(int chatRoomId, int userId)
         {
             int result = await _repo.QuitGroup(chatRoomId, userId);
+            string connectionId = await _RServices.SelectUserIdFromRedis(userId);
 
-            if (result == 1)
+            if (connectionId != "Hash entry not found or empty.")
             {
-                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+                await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
+            }
+            await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("QuitGroup", chatRoomId, userId);
+            await _hubContext.Clients.Group("User" + userId).SendAsync("QuitGroup", chatRoomId, userId);
 
-                if (connectionId != null)
-                {
-                    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
-                    //return result;
-                }
-                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("QuitGroup", chatRoomId, userId);
-                await _hubContext.Clients.Group("User" + userId).SendAsync("QuitGroup", chatRoomId, userId);
-                return result;
+            if (result != 0) //change initiator = 1
+            {
+                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("UpdateInitiatedBy", chatRoomId, result);
             }
             return result;
         }

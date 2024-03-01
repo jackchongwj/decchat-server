@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Controller;
 using Newtonsoft.Json;
 
 namespace ChatroomB_Backend.Controllers
@@ -70,11 +71,29 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("GetMessage")]
         [Authorize]
-        public async Task<IActionResult> RetrieveMessage(int ChatRoomId) 
+        public async Task<IActionResult> RetrieveMessage(int ChatRoomId, int MessageId) 
         {
-            IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId);
+           IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId, MessageId);
 
             return Ok(message);
+        }
+
+        [HttpPost("EditMessage")]
+        [Authorize]
+        public IActionResult EditMessage([FromBody] ChatRoomMessage edittedMessage)
+        {
+            _RabbitMQService.PublishEditMessage(edittedMessage);
+
+            return Ok();
+        }
+
+        [HttpPost("DeleteMessage")]
+        [Authorize]
+        public async Task<IActionResult> DeleteMessage([FromQuery] int MessageId, [FromQuery] int ChatRoomId)
+        {
+            int result = await _MessageService.DeleteMessage(MessageId, ChatRoomId);
+
+            return Ok(result);
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)

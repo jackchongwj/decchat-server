@@ -1,6 +1,7 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using Dapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using NuGet.Packaging.Signing;
 using System.Data;
@@ -28,7 +29,6 @@ namespace ChatroomB_Backend.Repository
                 UserChatRoomId = message.UserChatRoomId,
                 TimeStamp = message.TimeStamp,
                 ResourceUrl = message.ResourceUrl,
-                MessageType = message.MessageType,
                 IsDeleted = message.IsDeleted,
             };
 
@@ -59,11 +59,50 @@ namespace ChatroomB_Backend.Repository
 
         }
 
-        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId)
+        public async Task<int> DeleteMessage(int MessageId)
         {
-            string sql = "exec RetrieveMessage @ChatRoomId";
+            string sql = "exec DeleteMessage @MessageId";
 
-            IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, new { ChatRoomId });
+            return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
+        }
+
+        public async Task<int> EditMessage(ChatRoomMessage NewMessage)
+        {
+            try
+            {
+                var param = new
+                {
+                    MessageId = NewMessage.MessageId,
+                    Content = NewMessage.Content
+                };
+
+                using (SqlConnection connection = new SqlConnection(_dbConnectionString))
+                {
+                    await connection.OpenAsync(); // Ensure the connection is open
+                    string StoredProcedure = "EditMessage";
+
+                    int result = await connection.QueryFirstOrDefaultAsync<int>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            return 1;
+        }
+
+        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId)
+        {
+            var param = new
+            {
+                ChatRoomId = ChatRoomId,
+                MessageId = MessageId
+            };
+
+            string sql = "exec RetrieveMessageByPagination @ChatRoomId, @MessageId ";
+
+            IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
 
             return result;
         }
