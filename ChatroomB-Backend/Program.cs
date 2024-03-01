@@ -176,9 +176,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseMiddleware<ExecptionHandlingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-app.UseMiddleware<TokenValidationMiddleware>();
+//app.UseMiddleware<TokenValidationMiddleware>();
 
 app.MapControllers();
 

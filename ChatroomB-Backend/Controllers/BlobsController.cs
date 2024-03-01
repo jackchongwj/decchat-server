@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using ChatroomB_Backend.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ namespace ChatroomB_Backend.Controllers
         }
        
         [HttpGet]
+        [Authorize]
         public IActionResult GetSasToken()
         {
             BlobContainerClient container = new BlobContainerClient(_storageConnectionString, _containerName);
@@ -48,6 +50,7 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public IActionResult UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)

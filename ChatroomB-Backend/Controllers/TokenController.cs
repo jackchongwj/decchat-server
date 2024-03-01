@@ -22,42 +22,43 @@ namespace ChatroomB_Backend.Controllers
         public async Task<IActionResult> RenewToken()
         {
             // Extract the expired access token from the Authorization header
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            string authHeader = Request.Headers["Authorization"].FirstOrDefault();
+
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                return new UnauthorizedObjectResult(new { Error = "Authorization header is missing or invalid" });
+                return Unauthorized("Authorization header is missing or invalid");
             }
 
             // Extract the refresh token from the request cookie
-            var refreshToken = Request.Cookies["refreshToken"];
+            string refreshToken = Request.Cookies["refreshToken"];
+
             if (string.IsNullOrEmpty(refreshToken))
             {
-                return new UnauthorizedObjectResult(new { Error = "Refresh token is missing" });
+                return Unauthorized("Refresh token is missing");
             }
 
             // Decode the token
-            var expiredToken = authHeader.Substring("Bearer ".Length).Trim();
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var jwtToken = tokenHandler.ReadJwtToken(expiredToken);
+            string expiredToken = authHeader.Substring("Bearer ".Length).Trim();
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            JwtSecurityToken jwtToken = tokenHandler.ReadJwtToken(expiredToken);
 
-            
             // Define the JWT claim type URIs
-            var userIdClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
-            var userNameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
+            string userIdClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
+            string userNameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
 
             // Retrieve the userId and username
-            var userIdString = jwtToken.Claims.FirstOrDefault(claim => claim.Type == userIdClaimType)?.Value;
-            var username = jwtToken.Claims.FirstOrDefault(claim => claim.Type == userNameClaimType)?.Value;
+            string userIdString = jwtToken.Claims.FirstOrDefault(claim => claim.Type == userIdClaimType)?.Value;
+            string username = jwtToken.Claims.FirstOrDefault(claim => claim.Type == userNameClaimType)?.Value;
 
             // Attempt to parse and null checking
-            if (!int.TryParse(userIdString, out var userId))
+            if (!int.TryParse(userIdString, out int userId))
             {
-                return new UnauthorizedObjectResult(new { Error = "Invalid user ID in token" });
+                return Unauthorized("Invalid user ID in token");
             }
 
             if (string.IsNullOrEmpty(username))
             {
-                return new UnauthorizedObjectResult(new { Error = "Invalid username in token" });
+                return Unauthorized("Invalid username in token");
             }
 
             // Create refresh token object
@@ -69,19 +70,15 @@ namespace ChatroomB_Backend.Controllers
             // Call token service to generate new access token after validating the refresh token
             try
             {
-                var newAccessToken = await _tokenService.RenewAccessToken(token, userId, username);
+                string newAccessToken = await _tokenService.RenewAccessToken(token, userId, username);
 
                 // Assuming GenerateAccessToken will throw an exception if it cannot generate a token
-                return new OkObjectResult(new { AccessToken = newAccessToken });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return new UnauthorizedObjectResult(new { Error = ex.Message });
+                return Ok(new { AccessToken = newAccessToken });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while renewing the access token." });
+                return StatusCode(500, ex.Message);
             }
         }
-    } 
+    }
 }

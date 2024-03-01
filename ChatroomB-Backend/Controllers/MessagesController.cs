@@ -65,7 +65,6 @@ namespace ChatroomB_Backend.Controllers
                 });
             }
 
-
             return Ok(1);
         }
 
@@ -73,7 +72,7 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> RetrieveMessage(int ChatRoomId) 
         {
-           IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId);
+            IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId);
 
             return Ok(message);
         }

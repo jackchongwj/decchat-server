@@ -4,13 +4,13 @@ using System.Net;
 
 namespace ChatroomB_Backend.Middleware
 {
-    public class ExecptionHandlingMiddleware
+    public class ExceptionHandlingMiddleware
     {
 
         private readonly RequestDelegate next;
-        private readonly ILogger<ExecptionHandlingMiddleware> logger;
+        private readonly ILogger<ExceptionHandlingMiddleware> logger;
 
-        public ExecptionHandlingMiddleware(RequestDelegate next, ILogger<ExecptionHandlingMiddleware> logger)
+        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
         {
             this.next = next;
             this.logger = logger;
