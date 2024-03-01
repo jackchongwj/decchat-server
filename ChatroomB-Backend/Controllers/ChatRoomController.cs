@@ -8,6 +8,7 @@ using Azure.Core;
 using Microsoft.AspNetCore.SignalR;
 using ChatroomB_Backend.Hubs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace ChatroomB_Backend.Controllers
@@ -25,41 +26,42 @@ namespace ChatroomB_Backend.Controllers
             _ChatRoomService = CService;
         }
 
-
         [HttpPost("UpdateGroupPicture")]
+        [Authorize]
         public async Task<IActionResult> UpdateGroupPicture([FromForm] IFormFile file, [FromForm(Name = "id")] string ChatRoomId)
         {
-            byte[] filebyte = await ConvertToByteArrayAsync(file);
-            if (file == null || file.Length == 0)
+            try
             {
-                return BadRequest("File is not provided or empty.");
+                byte[] filebyte = await ConvertToByteArrayAsync(file);
+
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("File is not provided or empty.");
+                }
+
+                var success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(ChatRoomId), filebyte, file.FileName);
+
+                if (success == 0)
+                {
+                    return NotFound("Failed to update the group picture.");
+                }
+
+                return Ok(new { Message = "Profile picture updated successfully." });
             }
-
-            var success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(ChatRoomId), filebyte, file.FileName);
-
-            if (success == 0)
+            catch (Exception ex)
             {
-                return NotFound("Failed to update the group picture.");
-            }
-
-            return Ok(new { Message = "Profile picture updated successfully." });
-        }
-
-        private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
-        {
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                await file.CopyToAsync(memoryStream);
-                return memoryStream.ToArray();
+                return StatusCode(500, ex.Message);
             }
         }
 
         [HttpGet("groupMembers")]
+        [Authorize]
         public async Task<IActionResult> GetGroupMembers(int chatRoomId, int userId)
         {
             try
             {
                 var groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
+
                 return Ok(groupMembers);
             }
             catch (Exception ex)
@@ -69,8 +71,14 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("createNewGroup")]
+        [Authorize]
         public async Task<IActionResult> CreateGroup([FromBody] CreateGroupVM createGroupVM)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid request data");
+            }
+
             try
             {
                 IEnumerable<ChatlistVM> chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
@@ -83,69 +91,66 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("RemoveFromGroup")]
-        //[ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy)
         {
             try
             {
-                if (ModelState.IsValid)
-                {
-                    int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
+                int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
                    
-
-                    return Ok(new { Message = "User removed successfully" });
-                }
-                else
-                {
-                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
-                }
-
+                return Ok(new { Message = "User removed successfully" });
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error in RemoveUserFromGroup method: {ex.ToString()}");
-                return StatusCode(500, "An error occurred while processing your request.");
+                return StatusCode(500, ex.Message);
             }
         }
 
         [HttpPost("QuitGroup")]
+        [Authorize]
         public async Task<ActionResult<int>> QuitGroup([FromQuery] int chatRoomId, [FromQuery] int userId)
         {
             try
             {
-                if (ModelState.IsValid)
-                {
-                    int result = await _ChatRoomService.QuitGroup(chatRoomId, userId);
+                int result = await _ChatRoomService.QuitGroup(chatRoomId, userId);
 
-                    return Ok(new { Message = "Quit group successfully" });
-                }
-                else
-                {
-                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
-                }
-
+                return Ok(new { Message = "Quit group successfully" });
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error in QuitGroup method: {ex.ToString()}");
-                return StatusCode(500, "An error occurred while processing your request.");
+                return StatusCode(500, ex.Message);
             }
         }
 
         [HttpPost("UpdateGroupName")]
+        [Authorize]
         public async Task<IActionResult> UpdateGroupName([FromBody] UpdateGroupName model)
         {
-            if (model == null || !ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Invalid request data");
             }
 
-            var result = await _ChatRoomService.UpdateGroupName(model.chatroomId, model.NewGroupName);
-            if (result == 0) return NotFound();
+            try
+            {
+                var result = await _ChatRoomService.UpdateGroupName(model.chatroomId, model.NewGroupName);
 
-            return Ok();
+                if (result == 0) return NotFound("Group invalid or not found");
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
-
-
+        private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                return memoryStream.ToArray();
+            }
+        }
     }
 }

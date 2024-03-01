@@ -66,15 +66,14 @@ namespace ChatroomB_Backend.Controllers
                 });
             }
 
-
             return Ok(1);
         }
 
         [HttpGet("GetMessage")]
         [Authorize]
-        public async Task<IActionResult> RetrieveMessage(int ChatRoomId) 
+        public async Task<IActionResult> RetrieveMessage(int ChatRoomId, int MessageId) 
         {
-           IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId);
+           IEnumerable<ChatRoomMessage> message = await _MessageService.GetMessages(ChatRoomId, MessageId);
 
             return Ok(message);
         }

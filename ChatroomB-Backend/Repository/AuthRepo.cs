@@ -21,28 +21,17 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<string> GetSalt(string username)
         {
-            try
+            string sql = "exec GetSaltByUserName @UserName";
+
+            string salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
+
+            if (salt == null)
+
             {
-                string sql = "exec GetSaltByUserName @UserName";
-
-                string salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
-
-                if (salt == null)
-
-                {
-                    throw new ArgumentNullException("Salt not found for the user");
-                }
-
-                return salt;
+                throw new ArgumentNullException("Salt not found for the user");
             }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("A database error occurred while fetching salt", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("An unexpected error occurred", ex);
-            }
+
+            return salt;
         }
 
         public async Task<bool> VerifyPassword(string username, string hashedPassword)
@@ -74,7 +63,7 @@ namespace ChatroomB_Backend.Repository
                 await _dbConnection.ExecuteAsync(sql, new Users
                 {
                     UserName = user.UserName,
-                    ProfileName = user.UserName,
+                    ProfileName = user.ProfileName,
                     HashedPassword = user.HashedPassword,
                     Salt = user.Salt,
                     ProfilePicture = _config["DefaultPicture:UserProfile"]
