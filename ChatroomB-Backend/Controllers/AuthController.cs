@@ -87,9 +87,9 @@ namespace ChatroomB_Backend.Controllers
             try
             {
                 // Check if username exists
-                bool doesNotExist = await _userService.DoesUsernameExist(request.Username);
+                bool doesExist = await _userService.DoesUsernameExist(request.Username);
 
-                if (doesNotExist)
+                if (!doesExist)
                 {
                     return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
                 }
