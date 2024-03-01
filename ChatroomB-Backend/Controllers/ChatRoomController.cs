@@ -116,14 +116,13 @@ namespace ChatroomB_Backend.Controllers
                 if (ModelState.IsValid)
                 {
                     int result = await _ChatRoomService.QuitGroup(chatRoomId, userId);
-
+ 
                     return Ok(new { Message = "Quit group successfully" });
                 }
                 else
                 {
                     return BadRequest(new { Message = "Invalid model. Please check the provided data." });
                 }
-
             }
             catch (Exception ex)
             {
