@@ -2,7 +2,7 @@
 
 namespace ChatroomB_Backend.DTO
 {
-    public class AuthRequest
+    public class LoginRequest
     {
         [Required(ErrorMessage = "Username is required")]
         public string Username { get; set; }
