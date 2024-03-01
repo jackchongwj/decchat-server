@@ -199,7 +199,7 @@ namespace ChatroomB_Backend.Service
             int result = await _repo.QuitGroup(chatRoomId, userId);
             string connectionId = await _RServices.SelectUserIdFromRedis(userId);
 
-            if (connectionId != null)
+            if (connectionId != "Hash entry not found or empty.")
             {
                 await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
             }
