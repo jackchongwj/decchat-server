@@ -50,23 +50,24 @@ namespace ChatroomB_Backend.Service
         {
             int result = await _repo.UpdateFriendRequest(request);
 
-            if (result == 1) 
+            if (result == 1)
             {
                 try
                 {
-                    string groupName = "User" + request.SenderId.ToString();
-                    string methodName = "";
-
                     if (request.Status == 2)
                     {
-                        methodName = "UpdateSearchResultsAfterAccept";
+                        await _hubContext.Clients.Group("User" + request.SenderId).SendAsync("UpdateSearchResultsAfterAccept", request.ReceiverId);
+                        await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdateSearchResultsAfterAccept", request.SenderId);
                     }
-                    else {
-                        methodName = "UpdateSearchResultsAfterReject";
+                    else
+                    {
+                        await _hubContext.Clients.Group("User" + request.SenderId).SendAsync("UpdateSearchResultsAfterReject", request.ReceiverId);
+                        await _hubContext.Clients.Group("User" + request.ReceiverId).SendAsync("UpdateSearchResultsAfterReject", request.SenderId);
                     }
 
-                    await _hubContext.Clients.Group(groupName).SendAsync(methodName, request.ReceiverId);
-                }catch (Exception ex) 
+
+                }
+                catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Error in UpdateFriendRequest: {ex.Message}");
                     throw;
