@@ -86,7 +86,7 @@ namespace ChatroomB_Backend.Service
 
         public async Task<int> DeleteUser(int userId)
         {
-            return await _repo.DeleteUserProfile(userId);
+            return await _repo.DeleteUser(userId);
         }
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)

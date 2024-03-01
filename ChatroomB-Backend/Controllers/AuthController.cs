@@ -210,13 +210,11 @@ namespace ChatroomB_Backend.Controllers
                     return BadRequest("Current password is incorrect or user not found.");
                 }
 
-                // If the password was successfully changed
                 return Ok(new { Message = "Password changed successfully." });
             }
             catch (Exception ex)
             {
                 // Log the exception details for debugging purposes
-                // Consider using a logging framework or service
                 Console.WriteLine(ex.Message);
 
                 // Return a generic error message to avoid exposing sensitive details

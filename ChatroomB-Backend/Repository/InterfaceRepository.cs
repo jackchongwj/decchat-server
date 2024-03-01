@@ -17,7 +17,7 @@ namespace ChatroomB_Backend.Repository
         Task<Users> GetUserById(int userId);
         Task<int> UpdateProfileName(int userId, string newProfileName);
         Task<int> UpdateProfilePicture(int userId, string newProfilePicture);
-        Task<int> DeleteUserProfile(int userId);       
+        Task<int> DeleteUser(int userId);       
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);

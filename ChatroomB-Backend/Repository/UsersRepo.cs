@@ -66,7 +66,7 @@ namespace ChatroomB_Backend.Repository
             return result;
         }
 
-        public async Task<int> DeleteUserProfile(int userId)
+        public async Task<int> DeleteUser(int userId)
         {
             string sql = "exec DeleteUserProfile @UserId";
             int result = await _dbConnection.ExecuteAsync(sql, new { UserId = userId });

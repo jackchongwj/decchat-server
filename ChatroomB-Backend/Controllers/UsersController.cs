@@ -70,8 +70,11 @@ namespace ChatroomB_Backend.Controllers
             }
 
             var result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
-            if (result == 0) return NotFound();
 
+            if (result == 0)
+            {
+                return NotFound();
+            }
             return Ok();
         }
 
