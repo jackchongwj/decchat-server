@@ -46,7 +46,7 @@ namespace ChatroomB_Backend.Service
                     string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
                     string groupName = result.Select(list => list.ChatRoomId).First().ToString();
 
-                    if (connectionIdS != null)
+                    if (connectionIdS!= "Hash entry not found or empty.")
                     {
                         await _hubContext.Groups.AddToGroupAsync(connectionIdS, groupName);
                         await _hubContext.Groups.AddToGroupAsync(connectionIdR, groupName);
@@ -197,19 +197,18 @@ namespace ChatroomB_Backend.Service
         public async Task<int> QuitGroup(int chatRoomId, int userId)
         {
             int result = await _repo.QuitGroup(chatRoomId, userId);
+            string connectionId = await _RServices.SelectUserIdFromRedis(userId);
 
-            if (result == 1)
+            if (connectionId != "Hash entry not found or empty.")
             {
-                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+                await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
+            }
+            await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("QuitGroup", chatRoomId, userId);
+            await _hubContext.Clients.Group("User" + userId).SendAsync("QuitGroup", chatRoomId, userId);
 
-                if (connectionId != null)
-                {
-                    await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
-                    //return result;
-                }
-                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("QuitGroup", chatRoomId, userId);
-                await _hubContext.Clients.Group("User" + userId).SendAsync("QuitGroup", chatRoomId, userId);
-                return result;
+            if (result != 0) //change initiator = 1
+            {
+                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("UpdateInitiatedBy", chatRoomId, result);
             }
             return result;
         }
