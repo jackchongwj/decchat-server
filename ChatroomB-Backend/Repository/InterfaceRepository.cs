@@ -49,7 +49,7 @@ namespace ChatroomB_Backend.Repository
     public interface IMessageRepo
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                               
-        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
+        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int CurrentPage);
         Task<int> EditMessage(ChatRoomMessage NewMessage);
         Task<int> DeleteMessage(int MessageId);
     }
