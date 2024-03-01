@@ -52,7 +52,7 @@ namespace ChatroomB_Backend.Service
     public interface IMessageService
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                                 // add new friend 
-        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
+        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId);
         Task<int> EditMessage(ChatRoomMessage NewMessage);
         Task<int> DeleteMessage(int MessageId, int ChatRoomId);
     }

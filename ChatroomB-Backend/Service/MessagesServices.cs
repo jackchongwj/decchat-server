@@ -52,9 +52,9 @@ namespace ChatroomB_Backend.Service
             return result;
         }
 
-        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId)
+        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId)
         {
-            return await _MessageRepo.GetMessages(ChatRoomId);
+            return await _MessageRepo.GetMessages(ChatRoomId, MessageId);
         }
     }
 }

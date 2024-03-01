@@ -92,11 +92,17 @@ namespace ChatroomB_Backend.Repository
             return 1;
         }
 
-        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId)
+        public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId)
         {
-            string sql = "exec RetrieveMessage @ChatRoomId";
+            var param = new
+            {
+                ChatRoomId = ChatRoomId,
+                MessageId = MessageId
+            };
 
-            IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, new { ChatRoomId });
+            string sql = "exec RetrieveMessageByPagination @ChatRoomId, @MessageId ";
+
+            IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
 
             return result;
         }
