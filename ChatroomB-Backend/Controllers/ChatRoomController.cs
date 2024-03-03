@@ -39,7 +39,7 @@ namespace ChatroomB_Backend.Controllers
                     return BadRequest("File is not provided or empty.");
                 }
 
-                var success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(ChatRoomId), filebyte, file.FileName);
+                int success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(ChatRoomId), filebyte, file.FileName);
 
                 if (success == 0)
                 {
@@ -60,7 +60,7 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                var groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
+                IEnumerable<GroupMember> groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
 
                 return Ok(groupMembers);
             }
@@ -133,7 +133,7 @@ namespace ChatroomB_Backend.Controllers
 
             try
             {
-                var result = await _ChatRoomService.UpdateGroupName(model.chatroomId, model.NewGroupName);
+                int result = await _ChatRoomService.UpdateGroupName(model.chatroomId, model.NewGroupName);
 
                 if (result == 0) return NotFound("Group invalid or not found");
 
