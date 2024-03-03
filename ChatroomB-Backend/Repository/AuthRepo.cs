@@ -13,8 +13,8 @@ namespace ChatroomB_Backend.Repository
         private readonly IConfiguration _config;
 
 
-        public AuthRepo(IDbConnection db, IConfiguration config) 
-        { 
+        public AuthRepo(IDbConnection db, IConfiguration config)
+        {
             _dbConnection = db;
             _config = config;
         }
@@ -71,7 +71,7 @@ namespace ChatroomB_Backend.Repository
 
                 return new OkObjectResult(new { Messsage = "Registration successful!" });
             }
-            catch 
+            catch
             {
                 return new BadRequestObjectResult(new { Error = "Failed to register user" });
             }
@@ -99,7 +99,6 @@ namespace ChatroomB_Backend.Repository
                 throw new InvalidOperationException("An unexpected error occurred", ex);
             }
         }
-        }
-
     }
 }
+
