@@ -38,7 +38,7 @@ namespace ChatroomB_Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid request data");
+                throw new ArgumentException("Invalid request data");
             }
 
             // Check if username exists
@@ -46,34 +46,26 @@ namespace ChatroomB_Backend.Controllers
 
             if (isUnique)
             {
-                return Conflict("Duplicate username detected");
+                throw new ArgumentException("Duplicate username detected");
             }
 
-            // Generate salt, hash password, and store user object
-            try
+            // Generate salt and hashed password
+            string salt = _authUtils.GenerateSalt();
+            string hashedPassword = _authUtils.HashPassword(request.Password, salt);
+
+            // Create a user object
+            Users user = new Users
             {
-                // Generate salt and hashed password
-                string salt = _authUtils.GenerateSalt();
-                string hashedPassword = _authUtils.HashPassword(request.Password, salt);
+                UserName = request.Username,
+                ProfileName = request.ProfileName,
+                HashedPassword = hashedPassword,
+                Salt = salt,
+            };
 
-                // Create a user object
-                Users user = new Users
-                {
-                    UserName = request.Username,
-                    ProfileName = request.ProfileName,
-                    HashedPassword = hashedPassword,
-                    Salt = salt,
-                };
+            // Store the user object
+            IActionResult result = await _authService.AddUser(user);
 
-                // Store the user object
-                IActionResult result = await _authService.AddUser(user);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return result;
         }
 
         [HttpPost("login")]
@@ -81,115 +73,100 @@ namespace ChatroomB_Backend.Controllers
         {
             if(!ModelState.IsValid)
             {
-                return BadRequest("Invalid request data");
+                throw new ArgumentException("Invalid request data");
             }
 
-            try
+            // Check if username exists
+            bool doesExist = await _userService.DoesUsernameExist(request.Username);
+
+            if (!doesExist)
             {
-                // Check if username exists
-                bool doesExist = await _userService.DoesUsernameExist(request.Username);
-
-                if (!doesExist)
-                {
-                    return Unauthorized("Invalid username or password");
-                }
-
-                // Get salt from user object in database
-                string salt = await _authService.GetSalt(request.Username);
-
-                // Hash the input password with salt
-                string hashedPassword = _authUtils.HashPassword(request.Password, salt);
-
-                // Authenticate user
-                bool isAuthenticated = await _authService.VerifyPassword(request.Username, hashedPassword);
-
-                if (!isAuthenticated)
-                {
-                    return Unauthorized("Invalid username or password");
-                }
-
-                // Get user Id
-                int userId = await _userService.GetUserId(request.Username);
-
-                // Generate access token
-                string accessToken = _tokenUtils.GenerateAccessToken(userId, request.Username);
-
-                // Generate refresh token
-                string refreshToken = _tokenUtils.GenerateRefreshToken();
-
-                // Set the refresh token in a cookie
-                CookieOptions cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Secure = true,
-                    SameSite = SameSiteMode.None
-                };
-
-                HttpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
-
-                // Store the refresh token in database
-                RefreshToken token = new RefreshToken
-                {
-                    UserId = userId,
-                    Token = refreshToken,
-                    ExpiredDateTime = DateTime.UtcNow.AddDays(7)
-                };
-
-                await _tokenService.StoreRefreshToken(token);
-
-                // Return access token and user Id in the response body
-                return Ok(new
-                {
-                    AccessToken = accessToken,
-                    UserId = userId,
-                    Message = "Login successful!"
-                });
+                throw new UnauthorizedAccessException("Invalid username or password");
             }
 
-            catch (Exception ex)
+            // Get salt from user object in database
+            string salt = await _authService.GetSalt(request.Username);
+
+            // Hash the input password with salt
+            string hashedPassword = _authUtils.HashPassword(request.Password, salt);
+
+            // Authenticate user
+            bool isAuthenticated = await _authService.VerifyPassword(request.Username, hashedPassword);
+
+            if (!isAuthenticated)
             {
-                return StatusCode(500, ex.Message);
+                throw new UnauthorizedAccessException("Invalid username or password");
             }
+
+            // Get user Id
+            int userId = await _userService.GetUserId(request.Username);
+
+            // Generate access token
+            string accessToken = _tokenUtils.GenerateAccessToken(userId, request.Username);
+
+            // Generate refresh token
+            string refreshToken = _tokenUtils.GenerateRefreshToken();
+
+            // Set the refresh token in a cookie
+            CookieOptions cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(7),
+                Secure = true,
+                SameSite = SameSiteMode.None
+            };
+
+            HttpContext.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+
+            // Store the refresh token in database
+            RefreshToken token = new RefreshToken
+            {
+                UserId = userId,
+                Token = refreshToken,
+                ExpiredDateTime = DateTime.UtcNow.AddDays(7)
+            };
+
+            await _tokenService.StoreRefreshToken(token);
+
+            // Return access token and user Id in the response body
+            return Ok(new
+            {
+                AccessToken = accessToken,
+                UserId = userId,
+                Message = "Login successful!"
+            });
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            try
+            // Retrieve the refresh token from the request
+            string refreshToken = Request.Cookies["refreshToken"];
+
+            if(!string.IsNullOrEmpty(refreshToken)) 
             {
-                // Retrieve the refresh token from the request
-                string refreshToken = Request.Cookies["refreshToken"];
-
-                if(!string.IsNullOrEmpty(refreshToken)) 
+                // Create a refresh token object
+                RefreshToken token = new RefreshToken
                 {
-                    // Create a refresh token object
-                    RefreshToken token = new RefreshToken
-                    {
-                        Token = refreshToken
-                    };
-
-                    // Delete refresh token from database
-                    await _tokenService.RemoveRefreshToken(token);
-                }
-
-                // Replicate the cookie options
-                CookieOptions cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None
+                    Token = refreshToken
                 };
 
-                // Delete refresh token from client (cookie)
-                HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
+                // Delete refresh token from database
+                await _tokenService.RemoveRefreshToken(token);
+            }
 
-                return Ok(new { Message = "Logout successful" });
-            }
-            catch (Exception ex)
+            // Replicate the cookie options
+            CookieOptions cookieOptions = new CookieOptions
             {
-                return StatusCode(500, ex.Message);
-            }
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            };
+
+            // Delete refresh token from client (cookie)
+            HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
+
+            return Ok(new { Message = "Logout successful" });
         }
         
         [HttpPost("PasswordChange")]
@@ -198,26 +175,20 @@ namespace ChatroomB_Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid request data");
+                throw new ArgumentException("Invalid request data");
             }
 
-            try
+            bool result = await _authService.ChangePassword(id, model.CurrentPassword, model.NewPassword);
+
+            if (!result)
             {
-                bool result = await _authService.ChangePassword(id, model.CurrentPassword, model.NewPassword);
+                // This means the current password did not match
+                throw new ArgumentException("Current password is incorrect or user not found.");
+            }   
 
-                if (!result)
-                {
-                    // This means the current password did not match
-                    return BadRequest("Current password is incorrect or user not found.");
-                }
+            // If the password was successfully changed
+            return Ok(new { Message = "Password changed successfully." });
 
-                // If the password was successfully changed
-                return Ok(new { Message = "Password changed successfully." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
         }
     }
 }

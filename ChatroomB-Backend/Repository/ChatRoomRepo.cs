@@ -30,21 +30,29 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
         {
-            var param = new
+            try
             {
-                RoomName = "",
-                RoomType = 0,
-                RoomProfilePic = "",
-                SenderId = request.SenderId,
-                ReceiverId = request.ReceiverId,
-                UserId = userId  // Adjust the parameter name
-            };
+                var param = new
+                {
+                    RoomName = "",
+                    RoomType = 0,
+                    RoomProfilePic = "",
+                    SenderId = request.SenderId,
+                    ReceiverId = request.ReceiverId,
+                    UserId = userId
+                };
 
-            string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @UserId";
+                string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @UserId";
 
-            IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, param);
+                IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, param);
 
-            return chatList;
+                return chatList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                throw new InvalidOperationException("Failed to add chat room", ex);
+            }
         }
 
         public async Task <IEnumerable<ChatlistVM>> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers)
@@ -58,71 +66,102 @@ namespace ChatroomB_Backend.Repository
                 dynamicParam.Add("@SelectedUsers", selectedUsers.AsTableValuedParameter("IntListTableType"));
 
                 IEnumerable<ChatlistVM> chatinfo = await _dbConnection.QueryAsync<ChatlistVM>("CreateGroup", dynamicParam, commandType: CommandType.StoredProcedure);
+
                 return chatinfo;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
-                throw;
+                throw new InvalidOperationException("Failed to create group", ex);
             }
         }
 
         public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
         {
-            string sql = "exec UpdateGroupName @ChatRoomId, @NewGroupName";
-            int result = await _dbConnection.ExecuteAsync(sql, new
+            try
             {
-                chatRoomId,
-                newGroupName
-            });
-            return result;
+                string sql = "exec UpdateGroupName @ChatRoomId, @NewGroupName";
+
+                int result = await _dbConnection.ExecuteAsync(sql, new { chatRoomId, newGroupName });
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to update group name", ex);
+            }
         }
 
         public async Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture)
         {
-            string sql = "exec UpdateGroupPicture @ChatRoomId, @NewGroupPicture";
-            int result = await _dbConnection.ExecuteAsync(sql, new
+            try
             {
-                chatRoomId,
-                newGroupPicture
-            });
-            return result;
+                string sql = "exec UpdateGroupPicture @ChatRoomId, @NewGroupPicture";
+
+                int result = await _dbConnection.ExecuteAsync(sql, new { chatRoomId, newGroupPicture });
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to update group picture", ex);
+            }
         }
 
         public async Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId)
         {
-            string sql = "RetrieveGroupMemberByChatroomId";
-            var parameters = new { ChatRoomID = chatRoomId, userId = userId };
+            try
+            {
+                string sql = "RetrieveGroupMemberByChatroomId";
 
-            return await _dbConnection.QueryAsync<GroupMember>(sql, parameters);
+                var parameters = new { ChatRoomID = chatRoomId, userId = userId };
+
+                return await _dbConnection.QueryAsync<GroupMember>(sql, parameters);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to retrieve group members", ex);
+            }
         }
 
         public async Task<int> RemoveUserFromGroup(int chatRoomId, int userId)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@ChatRoomID", chatRoomId);
-            parameters.Add("@UserID", userId);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@ChatRoomID", chatRoomId);
+                parameters.Add("@UserID", userId);
+                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await _dbConnection.ExecuteAsync("RemoveUserFromGroup", parameters, commandType: CommandType.StoredProcedure);
+                await _dbConnection.ExecuteAsync("RemoveUserFromGroup", parameters, commandType: CommandType.StoredProcedure);
 
-            int isSuccess = parameters.Get<int>("@Result");
+                int isSuccess = parameters.Get<int>("@Result");
 
-            return isSuccess;
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to remove user from group", ex);
+            }
         }
 
         public async Task<int> QuitGroup(int chatRoomId, int userId)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@ChatRoomID", chatRoomId);
-            parameters.Add("@UserID", userId);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@ChatRoomID", chatRoomId);
+                parameters.Add("@UserID", userId);
+                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await _dbConnection.ExecuteAsync("QuitGroup", parameters, commandType: CommandType.StoredProcedure);
-            int isSuccess = parameters.Get<int>("@Result");
+                await _dbConnection.ExecuteAsync("QuitGroup", parameters, commandType: CommandType.StoredProcedure);
+                int isSuccess = parameters.Get<int>("@Result");
 
-
-            return isSuccess;
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to quit group", ex);
+            }
         }
     }
 }

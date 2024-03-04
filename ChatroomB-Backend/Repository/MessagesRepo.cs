@@ -21,19 +21,19 @@ namespace ChatroomB_Backend.Repository
             _logger = logger;
         }
 
-        public async Task <ChatRoomMessage> AddMessages(Messages message)
+        public async Task<ChatRoomMessage> AddMessages(Messages message)
         {
-            var param = new
-            {
-                Content = message.Content,
-                UserChatRoomId = message.UserChatRoomId,
-                TimeStamp = message.TimeStamp,
-                ResourceUrl = message.ResourceUrl,
-                IsDeleted = message.IsDeleted,
-            };
-
             try
             {
+                var param = new
+                {
+                    Content = message.Content,
+                    UserChatRoomId = message.UserChatRoomId,
+                    TimeStamp = message.TimeStamp,
+                    ResourceUrl = message.ResourceUrl,
+                    IsDeleted = message.IsDeleted,
+                };
+
                 using (SqlConnection connection = new SqlConnection(_dbConnectionString))
                 {
                     await connection.OpenAsync(); // Ensure the connection is open
@@ -45,25 +45,25 @@ namespace ChatroomB_Backend.Repository
                     return result;
                 }
             }
-            catch (Microsoft.Data.SqlClient.SqlException sqlEx)
-            {
-                _logger.LogError(sqlEx, "An error occurred when calling AddMessages.");
-                throw;
-            }
             catch (Exception ex)
             {
-                // Handle other non-SQL exceptions
-                _logger.LogError(ex, "An unexpected error occurred in AddMessages.");
-                throw;
+                throw new InvalidOperationException("Failed to add messages", ex);
             }
 
         }
 
         public async Task<int> DeleteMessage(int MessageId)
         {
-            string sql = "exec DeleteMessage @MessageId";
+            try
+            {
+                string sql = "exec DeleteMessage @MessageId";
 
-            return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
+                return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to delete message", ex);
+            }
         }
 
         public async Task<int> EditMessage(ChatRoomMessage NewMessage)
@@ -82,29 +82,36 @@ namespace ChatroomB_Backend.Repository
                     string StoredProcedure = "EditMessage";
 
                     int result = await connection.QueryFirstOrDefaultAsync<int>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
+
                     return result;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                throw new InvalidOperationException("Failed to edit message", ex);
             }
-            return 1;
         }
 
         public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId)
         {
-            var param = new
+            try
             {
-                ChatRoomId = ChatRoomId,
-                MessageId = MessageId
-            };
+                var param = new
+                {
+                    ChatRoomId = ChatRoomId,
+                    MessageId = MessageId
+                };
 
-            string sql = "exec RetrieveMessageByPagination @ChatRoomId, @MessageId ";
+                string sql = "exec RetrieveMessageByPagination @ChatRoomId, @MessageId ";
 
-            IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
+                IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to retrieve messages", ex);
+            }
         }
     }
 }

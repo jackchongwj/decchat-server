@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using Azure.Core;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace ChatroomB_Backend.Middleware
 {
@@ -42,11 +43,13 @@ namespace ChatroomB_Backend.Middleware
         {
             try
             {
+                // Get and decode access token 
                 JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
                 JwtSecurityToken jwtToken = handler.ReadToken(token) as JwtSecurityToken;
 
                 if (jwtToken == null) return false ;
 
+                // Retrieve username and userId
                 string userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                 string usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
 
@@ -54,6 +57,8 @@ namespace ChatroomB_Backend.Middleware
 
                 int userId = int.Parse(userIdClaim);
                 string username = usernameClaim;
+
+                string refreshToken = context.Request.Cookies["refreshToken"];
 
                 //return await _userService.ValidateUserAsync(userId, username);
                 return true;

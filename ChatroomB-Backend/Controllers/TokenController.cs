@@ -26,7 +26,7 @@ namespace ChatroomB_Backend.Controllers
 
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                return Unauthorized("Authorization header is missing or invalid");
+                throw new UnauthorizedAccessException("Authorization header is missing or invalid");
             }
 
             // Extract the refresh token from the request cookie
@@ -34,7 +34,7 @@ namespace ChatroomB_Backend.Controllers
 
             if (string.IsNullOrEmpty(refreshToken))
             {
-                return Unauthorized("Refresh token is missing");
+                throw new UnauthorizedAccessException("Refresh token is missing");
             }
 
             // Decode the token
@@ -53,12 +53,12 @@ namespace ChatroomB_Backend.Controllers
             // Attempt to parse and null checking
             if (!int.TryParse(userIdString, out int userId))
             {
-                return Unauthorized("Invalid user ID in token");
+                throw new UnauthorizedAccessException("Invalid user ID in token");
             }
 
             if (string.IsNullOrEmpty(username))
             {
-                return Unauthorized("Invalid username in token");
+                throw new UnauthorizedAccessException("Invalid username in token");
             }
 
             // Create refresh token object
@@ -68,17 +68,10 @@ namespace ChatroomB_Backend.Controllers
             };
 
             // Call token service to generate new access token after validating the refresh token
-            try
-            {
-                string newAccessToken = await _tokenService.RenewAccessToken(token, userId, username);
+            string newAccessToken = await _tokenService.RenewAccessToken(token, userId, username);
 
-                // Assuming GenerateAccessToken will throw an exception if it cannot generate a token
-                return Ok(new { AccessToken = newAccessToken });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            // Assuming GenerateAccessToken will throw an exception if it cannot generate a token
+            return Ok(new { AccessToken = newAccessToken });
         }
     }
 }
