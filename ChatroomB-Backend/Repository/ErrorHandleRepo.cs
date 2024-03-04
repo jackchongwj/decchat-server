@@ -19,7 +19,7 @@ namespace ChatroomB_Backend.Repository
             var errorHandle = new ErrorHandle
             {
                 ErrorMessage = errorMessage,
-                ControlelrName = controllerName,
+                ControllerName = controllerName,
                 Timestamp = DateTime.Now,
         };
 

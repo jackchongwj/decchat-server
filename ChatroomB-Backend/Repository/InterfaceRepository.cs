@@ -12,13 +12,13 @@ namespace ChatroomB_Backend.Repository
 {
     public interface IUserRepo
     {
-        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                                    //Get user by user profile name and filter friend request
-        Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                 // Get All Friend request
+        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                                    
+        Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                 
         Task<Users> GetUserById(int userId);
         Task<int> UpdateProfileName(int userId, string newProfileName);
         Task<int> UpdateProfilePicture(int userId, string newProfilePicture);
         Task<int> DeleteUserProfile(int userId);       
-        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
+        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); 
         Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
         Task<string> GetUserName(int userId);
@@ -26,16 +26,16 @@ namespace ChatroomB_Backend.Repository
 
     public interface IFriendRepo
     {
-        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
-        Task<int> CheckFriendExit(Friends friends);
-        Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
+        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                    
+        Task<int> CheckFriendExist(Friends friends);
+        Task<int> UpdateFriendRequest (FriendRequest request);                                            
         Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
        
     }
 
     public interface IChatRoomRepo
     {
-        Task <IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId); // add new ChatRoom and user chat room with private user
+        Task <IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request); 
         Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
         Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture);
 

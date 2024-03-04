@@ -18,11 +18,10 @@ namespace ChatroomB_Backend.Controllers
     public class ChatRoomController: ControllerBase
     {
         private readonly IChatRoomService _ChatRoomService;
-        private readonly IHubContext<ChatHub> _hubContext;
 
-        public ChatRoomController(IHubContext<ChatHub> hubContext, IChatRoomService CService)
+
+        public ChatRoomController(IChatRoomService CService)
         {
-            _hubContext = hubContext;
             _ChatRoomService = CService;
         }
 
@@ -144,6 +143,8 @@ namespace ChatroomB_Backend.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
         {
             using (MemoryStream memoryStream = new MemoryStream())

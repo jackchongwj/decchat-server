@@ -86,7 +86,6 @@ namespace ChatroomB_Backend.Repository
             int result = await _dbConnection.ExecuteScalarAsync<int>(sql, new { UserName = username });
             return result;
         }
-        
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {

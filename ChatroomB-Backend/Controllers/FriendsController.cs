@@ -34,82 +34,51 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> AddFriend([FromBody] Friends friends)
         {
-            if (!ModelState.IsValid)
+            int result = await _FriendService.CheckFriendExist(friends);
+
+            if (result == 0)
             {
-                return BadRequest("Invalid request data");
+
+                await _FriendService.AddFriends(friends);
+                return Ok(new { Message = "Friend Request send successfully" });
+            }
+            else
+            {
+                return BadRequest(new { ErrorMessage = "Friend Has Added Before" });
             }
 
-            if (ModelState.IsValid)
+        }
+
+
+        [HttpPost("UpdateFriendRequest")]
+        [Authorize]
+        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody] FriendRequest request)
+        {
+            int result = await _FriendService.UpdateFriendRequest(request);
+
+            if (request.Status == 2)
             {
-                int result = await _FriendService.CheckFriendExit(friends);
+                IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request);
 
-                if (result == 0)
-                {
-
-                    await _FriendService.AddFriends(friends);
-                    return Ok(new { Message = "Friend Request send successfully" });
-                }
-                else 
-                {
-                    return BadRequest(new { ErrorMessage = "Friend Has Added Before" });
-                }
-
+                return Ok(PrivateChatlist);
             }
             else
             {
 
-               return BadRequest(new { ErrorMessage = "Invalid model. Please check the provided data." });
-            }
-
-        }
-
-        [HttpPost("UpdateFriendRequest")]
-        [Authorize]
-        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody]FriendRequest request, [FromQuery]int userId)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest("Invalid request data");
-            }
-
-            try
-            {
-                int result = await _FriendService.UpdateFriendRequest(request);
-
-                if (request.Status == 2)
-                {
-                    IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userId);
-                        
-                    return Ok(PrivateChatlist);
-                }
-
-                return Ok(0);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
+                return Ok(result);
             }
         }
+
 
         [HttpPost("DeleteFriend")]
         [Authorize]
         public async Task<ActionResult<int>> DeleteFriend([FromBody] DeleteFriendRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest("Invalid request data");
-            }
 
-            try
-            {
-                int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1, request.UserId2);
+            int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1, request.UserId2);
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(result);
+
         }
 
     }

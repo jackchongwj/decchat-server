@@ -65,7 +65,7 @@ namespace ChatroomB_Backend.Repository
             return isSuccess;
         }
 
-        public async Task<int> CheckFriendExit(Friends friends)
+        public async Task<int> CheckFriendExist(Friends friends)
         {
             var parameters = new DynamicParameters();
             parameters.Add("@SenderId", friends.SenderId);
@@ -78,5 +78,6 @@ namespace ChatroomB_Backend.Repository
 
             return isSuccess;
         }
+
     }
 }
