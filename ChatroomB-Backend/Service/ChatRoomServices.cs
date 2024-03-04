@@ -171,7 +171,6 @@ namespace ChatroomB_Backend.Service
                 // Update the user's profile picture URI in the database
                 int updateResult = await _repo.UpdateGroupPicture(chatRoomId, blobUri);
 
-                // If the profile picture was successfully updated
                 if (updateResult > 0)
                 {
                     await _hubContext.Clients.Groups(chatRoomId.ToString())
