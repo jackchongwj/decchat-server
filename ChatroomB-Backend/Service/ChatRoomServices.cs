@@ -108,7 +108,7 @@ namespace ChatroomB_Backend.Service
             IEnumerable<ChatlistVM> chatList = await _repo.CreateGroup(createGroupVM.RoomName, createGroupVM.InitiatedBy, selectedUsersTable);
             string groupName = chatList.ToList()[0].ChatRoomId.ToString();
 
-             foreach (var groupListUserId in createGroupVM.SelectedUsers)
+             foreach (int groupListUserId in createGroupVM.SelectedUsers)
              {
                  // Retrieve the connection ID for the current user ID from Redis
                  string userConnectionId = await _RServices.SelectUserIdFromRedis(groupListUserId);
