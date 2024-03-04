@@ -40,10 +40,10 @@ namespace ChatroomB_Backend.Service
 
         public async Task<int> UpdateProfileName(int userId, string newProfileName)
         {
-            var updateResult = await _repo.UpdateProfileName(userId, newProfileName);
+            int updateResult = await _repo.UpdateProfileName(userId, newProfileName);
             if (updateResult > 0 )
             {
-                var chatList = await GetChatListByUserId(userId);
+                IEnumerable<ChatlistVM> chatList = await GetChatListByUserId(userId);
                 List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList(); // Use UserId as friend ID
                 await _hubContext.Clients.Groups(friendIds.Select(id => $"User{id}").ToList()).SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfileName = newProfileName });
             }
@@ -64,7 +64,7 @@ namespace ChatroomB_Backend.Service
                 if (updateResult > 0)
                 {
                     // Fetch the list of chatrooms that includes the user's friends
-                    var chatList = await GetChatListByUserId(userId);
+                    IEnumerable<ChatlistVM> chatList = await GetChatListByUserId(userId);
 
                     // Extract friend IDs from the chat list
                     List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList();

@@ -11,14 +11,14 @@ namespace ChatroomB_Backend.Service
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                              //Get user by user profile name and filter friend request
-        Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                               //Get All Friend request
+        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);
+        Task<IEnumerable<Users>> GetFriendRequest(int userId);
         Task<Users> GetUserById(int userId);
         Task<int> UpdateProfileName(int userId, string newProfileName);
         Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);
         Task<int> DeleteUser(int userId);
         
-        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
+        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId);
         Task<bool> DoesUsernameExist(string username);
         Task<int> GetUserId(string username);
         Task<string> GetUserName(int userId);  
@@ -27,9 +27,9 @@ namespace ChatroomB_Backend.Service
 
     public interface IFriendService
     {
-        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                              // add new friend
+        Task<IEnumerable<Users>> AddFriends(Friends friends); 
         Task<int> CheckFriendExit(Friends friends);
-        Task<int> UpdateFriendRequest(FriendRequest request);                                              // update friend request 
+        Task<int> UpdateFriendRequest(FriendRequest request); 
         Task<int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
 
     }
@@ -51,8 +51,8 @@ namespace ChatroomB_Backend.Service
 
     public interface IMessageService
     {
-        Task<ChatRoomMessage> AddMessages(Messages message);                                                                                 // add new friend 
-        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
+        Task<ChatRoomMessage> AddMessages(Messages message); 
+        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId);
         Task<int> EditMessage(ChatRoomMessage NewMessage);
         Task<int> DeleteMessage(int MessageId, int ChatRoomId);
     }
@@ -70,6 +70,7 @@ namespace ChatroomB_Backend.Service
         Task<string> RenewAccessToken(RefreshToken token, int userId, string username);
         Task<IActionResult> StoreRefreshToken(RefreshToken token);
         Task<IActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<IActionResult> UpdateRefreshToken(RefreshToken token);
     }
 
     public interface IBlobService
@@ -83,7 +84,7 @@ namespace ChatroomB_Backend.Service
 
     public interface IRedisServcie 
     {
-        Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);                                                  // Add userId and connection id to redis
+        Task<int> AddUserIdAndConnetionIdToRedis(string userId, string connectionId);
         Task<int> DeleteUserIdFromRedis(string userId);
         Task<string> SelectUserIdFromRedis(int? userId);
         Task<List<string>> GetAllUserIdsFromRedisSet();

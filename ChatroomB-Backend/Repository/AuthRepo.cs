@@ -13,36 +13,25 @@ namespace ChatroomB_Backend.Repository
         private readonly IConfiguration _config;
 
 
-        public AuthRepo(IDbConnection db, IConfiguration config) 
-        { 
+        public AuthRepo(IDbConnection db, IConfiguration config)
+        {
             _dbConnection = db;
             _config = config;
         }
 
         public async Task<string> GetSalt(string username)
         {
-            try
+            string sql = "exec GetSaltByUserName @UserName";
+
+            string salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
+
+            if (salt == null)
+
             {
-                string sql = "exec GetSaltByUserName @UserName";
-
-                string salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
-
-                if (salt == null)
-
-                {
-                    throw new ArgumentNullException("Salt not found for the user");
-                }
-
-                return salt;
+                throw new ArgumentNullException("Salt not found for the user");
             }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("A database error occurred while fetching salt", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("An unexpected error occurred", ex);
-            }
+
+            return salt;
         }
 
         public async Task<bool> VerifyPassword(string username, string hashedPassword)
@@ -74,7 +63,7 @@ namespace ChatroomB_Backend.Repository
                 await _dbConnection.ExecuteAsync(sql, new Users
                 {
                     UserName = user.UserName,
-                    ProfileName = user.UserName,
+                    ProfileName = user.ProfileName,
                     HashedPassword = user.HashedPassword,
                     Salt = user.Salt,
                     ProfilePicture = _config["DefaultPicture:UserProfile"]
@@ -82,7 +71,7 @@ namespace ChatroomB_Backend.Repository
 
                 return new OkObjectResult(new { Messsage = "Registration successful!" });
             }
-            catch 
+            catch
             {
                 return new BadRequestObjectResult(new { Error = "Failed to register user" });
             }
@@ -90,15 +79,26 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<bool> ChangePassword(int userId, string newHashedPassword)
         {
-            string sql = "exec ChangePassword @UserId, @NewHashedPassword";
+            try
+            {
+                string sql = "exec ChangePassword @UserId, @NewHashedPassword";
 
-            var result = await _dbConnection.ExecuteAsync(
-                sql,
-                new { UserId = userId, NewHashedPassword = newHashedPassword }
-            );
+                await _dbConnection.ExecuteAsync(
+                    sql,
+                    new { UserId = userId, NewHashedPassword = newHashedPassword }
+                );
 
-            return true; // Return true if the password was successfully changed
+                return true; // Return true if the password was successfully changed
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("A database error occurred while changing password", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An unexpected error occurred", ex);
+            }
         }
-
     }
 }
+

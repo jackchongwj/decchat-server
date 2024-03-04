@@ -1,7 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using System.IdentityModel.Tokens.Jwt;
 
 namespace ChatroomB_Backend.Middleware
 {
@@ -25,39 +22,47 @@ namespace ChatroomB_Backend.Middleware
                 return;
             }
 
-            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            string token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             if (token != null)
-                AttachUserToContext(context, token);
+        {
+            bool userIsValid = await AttachUserToContext(context, token);
+            if (!userIsValid)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Invalid or inactive user.");
+                return;
+            }
+        }
 
             await _next(context);
         }
 
-        private void AttachUserToContext(HttpContext context, string token)
+        private async Task<bool> AttachUserToContext(HttpContext context, string token)
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                JwtSecurityToken jwtToken = handler.ReadToken(token) as JwtSecurityToken;
 
-                if (jwtToken == null) return;
+                if (jwtToken == null) return false ;
 
-                var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
-                if (userIdClaim != null)
-                {
-                    context.Items["UserId"] = int.Parse(userIdClaim);
-                }
+                string userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                string usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
 
-                var usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value;
-                if (usernameClaim != null)
-                {
-                    context.Items["Username"] = usernameClaim;
-                }
+                if (userIdClaim == null || usernameClaim == null) return false;
+
+                int userId = int.Parse(userIdClaim);
+                string username = usernameClaim;
+
+                //return await _userService.ValidateUserAsync(userId, username);
+                return true;
             }
             catch
             {
-                // Do nothing 
+                return false;
             }
         }
+
     }
 }

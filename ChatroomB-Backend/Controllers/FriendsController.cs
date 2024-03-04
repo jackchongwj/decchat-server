@@ -12,6 +12,7 @@ using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Cors;
 using StackExchange.Redis;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -30,9 +31,13 @@ namespace ChatroomB_Backend.Controllers
 
         //POST: Friends/Create
         [HttpPost("AddFriend")]
-        //[ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> AddFriend([FromBody] Friends friends)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid request data");
+            }
 
             if (ModelState.IsValid)
             {
@@ -59,62 +64,51 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("UpdateFriendRequest")]
-        //[ValidateAntiForgeryToken]
-        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody] FriendRequest request, [FromQuery] int userId)
+        [Authorize]
+        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody]FriendRequest request, [FromQuery]int userId)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid request data");
+            }
+
             try
             {
-                if (ModelState.IsValid)
+                int result = await _FriendService.UpdateFriendRequest(request);
+
+                if (request.Status == 2)
                 {
-                    int result = await _FriendService.UpdateFriendRequest(request);
-
-                    if (request.Status == 2)
-                    {
-                        IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userId);
-
-
-                        return Ok(PrivateChatlist);
-                    }
-
-                    return Ok(0);
-                }
-                else
-                {
-                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
+                    IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userId);
+                        
+                    return Ok(PrivateChatlist);
                 }
 
+                return Ok(0);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error in UpdateFriendRequest method: {ex.ToString()}");
-                return StatusCode(500, "An error occurred while processing your request.");
+                return StatusCode(500, ex.Message);
             }
         }
 
-
         [HttpPost("DeleteFriend")]
-        //[ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<ActionResult<int>> DeleteFriend([FromBody] DeleteFriendRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid request data");
+            }
+
             try
             {
-                if (ModelState.IsValid)
-                {
-                    int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1, request.UserId2);
+                int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1, request.UserId2);
 
-
-                    return Ok(result);
-                }
-                else
-                {
-                    return BadRequest(new { Message = "Invalid model. Please check the provided data." });
-                }
-
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error in DeleteFriend method: {ex.ToString()}");
-                return StatusCode(500, "An error occurred while processing your request.");
+                return StatusCode(500, ex.Message);
             }
         }
 

@@ -49,7 +49,7 @@ namespace ChatroomB_Backend.Repository
     public interface IMessageRepo
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                               
-        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId);
+        Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int CurrentPage);
         Task<int> EditMessage(ChatRoomMessage NewMessage);
         Task<int> DeleteMessage(int MessageId);
     }
@@ -73,9 +73,10 @@ namespace ChatroomB_Backend.Repository
 
     public interface ITokenRepo
     {
-        Task<bool> IsRefreshTokenValid(RefreshToken token);
+        Task<bool> IsRefreshTokenValid(RefreshToken token, int userId, string username);
         Task<IActionResult> StoreRefreshToken(RefreshToken token);
         Task<IActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<IActionResult> UpdateRefreshToken(RefreshToken token);
     }
 
     public interface IRedisRepo 

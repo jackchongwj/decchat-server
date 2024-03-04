@@ -34,20 +34,19 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] AuthRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            // Check if request data valid
             if (!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = "Invalid request data" });
+                return BadRequest("Invalid request data");
             }
 
             // Check if username exists
             bool isUnique = await _userService.DoesUsernameExist(request.Username);
 
-            if (!isUnique)
+            if (isUnique)
             {
-                return new ConflictObjectResult(new { Error = "Duplicate username detected" });
+                return Conflict("Duplicate username detected");
             }
 
             // Generate salt, hash password, and store user object
@@ -61,6 +60,7 @@ namespace ChatroomB_Backend.Controllers
                 Users user = new Users
                 {
                     UserName = request.Username,
+                    ProfileName = request.ProfileName,
                     HashedPassword = hashedPassword,
                     Salt = salt,
                 };
@@ -70,28 +70,28 @@ namespace ChatroomB_Backend.Controllers
 
                 return result;
             }
-            catch
+            catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "Internal Server Error" });
+                return StatusCode(500, ex.Message);
             }
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] AuthRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if(!ModelState.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = "Invalid request data" });
+                return BadRequest("Invalid request data");
             }
 
             try
             {
                 // Check if username exists
-                bool doesNotExist = await _userService.DoesUsernameExist(request.Username);
+                bool doesExist = await _userService.DoesUsernameExist(request.Username);
 
-                if (doesNotExist)
+                if (!doesExist)
                 {
-                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
+                    return Unauthorized("Invalid username or password");
                 }
 
                 // Get salt from user object in database
@@ -105,7 +105,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (!isAuthenticated)
                 {
-                    return new UnauthorizedObjectResult(new { Error = "Invalid username or password" });
+                    return Unauthorized("Invalid username or password");
                 }
 
                 // Get user Id
@@ -139,17 +139,17 @@ namespace ChatroomB_Backend.Controllers
                 await _tokenService.StoreRefreshToken(token);
 
                 // Return access token and user Id in the response body
-                return new OkObjectResult(new
+                return Ok(new
                 {
                     AccessToken = accessToken,
                     UserId = userId,
                     Message = "Login successful!"
                 });
             }
-            
-            catch
+
+            catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "Internal Server Error" });
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -184,26 +184,27 @@ namespace ChatroomB_Backend.Controllers
                 // Delete refresh token from client (cookie)
                 HttpContext.Response.Cookies.Delete("refreshToken", cookieOptions);
 
-                return new OkObjectResult (new { Message = "Logout successful" });
+                return Ok(new { Message = "Logout successful" });
             }
-            catch
+            catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "Internal Server Error" });
+                return StatusCode(500, ex.Message);
             }
         }
         
         [HttpPost("PasswordChange")]
+        [Authorize]
         public async Task<IActionResult> ChangePassword(int id, [FromBody] PasswordChange model)
         {
-            // Check if the model is valid
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Invalid request data");
             }
 
             try
             {
-                var result = await _authService.ChangePassword(id, model.CurrentPassword, model.NewPassword);
+                bool result = await _authService.ChangePassword(id, model.CurrentPassword, model.NewPassword);
+
                 if (!result)
                 {
                     // This means the current password did not match
@@ -215,12 +216,7 @@ namespace ChatroomB_Backend.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception details for debugging purposes
-                // Consider using a logging framework or service
-                Console.WriteLine(ex.Message);
-
-                // Return a generic error message to avoid exposing sensitive details
-                return StatusCode(500, new { Error = "An error occurred while changing the password." });
+                return StatusCode(500, ex.Message);
             }
         }
     }

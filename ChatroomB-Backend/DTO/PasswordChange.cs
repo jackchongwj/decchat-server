@@ -6,11 +6,12 @@ namespace ChatroomB_Backend.DTO
     public class PasswordChange
     {
 
-        [Required]
+        [Required(ErrorMessage = "Current password is required")]
         [Column(TypeName = "varchar(256)")]
         public string CurrentPassword { get; set; } = null!;
 
-        [Required]
+        [Required(ErrorMessage = "New password is required")]
+        [PasswordStrength(ErrorMessage = "Password does not meet strength requirements.")]
         [Column(TypeName = "varchar(256)")]
         public string NewPassword { get; set; } = null!;
     }
