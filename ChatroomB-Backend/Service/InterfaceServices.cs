@@ -11,6 +11,12 @@ namespace ChatroomB_Backend.Service
 {
     public interface IUserService
     {
+        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);
+        Task<IEnumerable<Users>> GetFriendRequest(int userId);
+        Task<Users> GetUserById(int userId);
+        Task<int> UpdateProfileName(int userId, string newProfileName);
+        Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);
+        Task<int> DeleteUser(int userId);
         Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                         // Get user data by profilename
         Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                  // Get all friend request by userid
         Task<Users> GetUserById(int userId);                                                                                    // Get user by userid
@@ -18,6 +24,11 @@ namespace ChatroomB_Backend.Service
         Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);                                          // Update profile's pic by user id
         Task<int> DeleteUser(int userId);                                                                                       // Update the user status by user id(Delete)
         
+        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId);
+        Task<bool> DoesUsernameExist(string username);
+        Task<int> GetUserId(string username);
+        Task<string> GetUserName(int userId);  
+        Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId);                                                          // Get group member details                                        
         Task<bool> DoesUsernameExist(string username);                                                                          // Check the user does exist             
         Task<int> GetUserId(string username);                                                                                   // Get user id by username
@@ -69,6 +80,7 @@ namespace ChatroomB_Backend.Service
         Task<string> RenewAccessToken(RefreshToken token, int userId, string username);
         Task<IActionResult> StoreRefreshToken(RefreshToken token);
         Task<IActionResult> RemoveRefreshToken(RefreshToken token);
+        Task<IActionResult> UpdateRefreshToken(RefreshToken token);
     }
 
     public interface IBlobService

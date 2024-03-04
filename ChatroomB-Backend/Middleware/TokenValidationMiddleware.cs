@@ -22,11 +22,11 @@ namespace ChatroomB_Backend.Middleware
                 return;
             }
 
-            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            string token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             if (token != null)
         {
-            var userIsValid = await AttachUserToContext(context, token);
+            bool userIsValid = await AttachUserToContext(context, token);
             if (!userIsValid)
             {
                 context.Response.StatusCode = 401;
@@ -42,13 +42,13 @@ namespace ChatroomB_Backend.Middleware
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                JwtSecurityToken jwtToken = handler.ReadToken(token) as JwtSecurityToken;
 
                 if (jwtToken == null) return false ;
 
-                var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-                var usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+                string userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                string usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
 
                 if (userIdClaim == null || usernameClaim == null) return false;
 

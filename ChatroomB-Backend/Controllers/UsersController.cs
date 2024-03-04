@@ -82,7 +82,7 @@ namespace ChatroomB_Backend.Controllers
 
             try
             {
-                var result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
+                int result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
 
                 if (result == 0) return NotFound("User ID not found or update failed.");
 
@@ -108,7 +108,7 @@ namespace ChatroomB_Backend.Controllers
 
             try
             {
-                var success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId), filebyte, file.FileName);
+                int success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId), filebyte, file.FileName);
 
                 if (success == 0)
                 {

@@ -154,7 +154,7 @@ namespace ChatroomB_Backend.Service
 
         public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
         {
-            var updateResult = await _repo.UpdateGroupName(chatRoomId, newGroupName);
+            int updateResult = await _repo.UpdateGroupName(chatRoomId, newGroupName);
             if (updateResult > 0)
             {
                 await _hubContext.Clients.Groups(chatRoomId.ToString())

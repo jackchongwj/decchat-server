@@ -13,8 +13,8 @@ namespace ChatroomB_Backend.Repository
         private readonly IConfiguration _config;
 
 
-        public AuthRepo(IDbConnection db, IConfiguration config) 
-        { 
+        public AuthRepo(IDbConnection db, IConfiguration config)
+        {
             _dbConnection = db;
             _config = config;
         }
@@ -71,7 +71,7 @@ namespace ChatroomB_Backend.Repository
 
                 return new OkObjectResult(new { Messsage = "Registration successful!" });
             }
-            catch 
+            catch
             {
                 return new BadRequestObjectResult(new { Error = "Failed to register user" });
             }
@@ -79,15 +79,26 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<bool> ChangePassword(int userId, string newHashedPassword)
         {
-            string sql = "exec ChangePassword @UserId, @NewHashedPassword";
+            try
+            {
+                string sql = "exec ChangePassword @UserId, @NewHashedPassword";
 
-            var result = await _dbConnection.ExecuteAsync(
-                sql,
-                new { UserId = userId, NewHashedPassword = newHashedPassword }
-            );
+                await _dbConnection.ExecuteAsync(
+                    sql,
+                    new { UserId = userId, NewHashedPassword = newHashedPassword }
+                );
 
-            return true; // Return true if the password was successfully changed
+                return true; // Return true if the password was successfully changed
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("A database error occurred while changing password", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An unexpected error occurred", ex);
+            }
         }
-
     }
 }
+

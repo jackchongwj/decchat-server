@@ -38,7 +38,7 @@ namespace ChatroomB_Backend.Service
 
         public async Task<bool> ChangePassword(int userId, string currentPassword, string newPassword)
         {
-            var user = await _userService.GetUserById(userId);
+            Users user = await _userService.GetUserById(userId);
             if (user == null) return false;
 
             // Get the salt for the user and hash the current password
