@@ -11,6 +11,7 @@ namespace ChatroomB_Backend.DTO
         public string CurrentPassword { get; set; } = null!;
 
         [Required(ErrorMessage = "New password is required")]
+        [PasswordStrength(ErrorMessage = "Password does not meet strength requirements.")]
         [Column(TypeName = "varchar(256)")]
         public string NewPassword { get; set; } = null!;
     }

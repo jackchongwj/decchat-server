@@ -9,6 +9,7 @@ namespace ChatroomB_Backend.Models
         public Guid TokenId { get; set; }
 
         public Users? Users { get; set; }
+
         [ForeignKey("Users")]
         public int? UserId { get; set; }
 
