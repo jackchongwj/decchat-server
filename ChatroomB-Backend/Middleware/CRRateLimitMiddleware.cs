@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AspNetCoreRateLimit;
+using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ChatroomB_Backend.Middleware
 {
-    public class RateLimitMiddleware
+    public class CRRateLimitMiddleware
     {
         private readonly RequestDelegate _next;
 
-        public RateLimitMiddleware(RequestDelegate next)
+        public CRRateLimitMiddleware(RequestDelegate next)
         {
             _next = next;
         }
@@ -35,6 +36,6 @@ namespace ChatroomB_Backend.Middleware
                 await context.Response.WriteAsync(content);
             }
         }
-    }
 
+    }
 }
