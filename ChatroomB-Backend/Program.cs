@@ -47,29 +47,30 @@ builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>()
 //redis set up
 builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 {
-    ConfigurationOptions configuration = ConfigurationOptions.Parse(builder.Configuration.GetSection("RedisConnection")["RedisConnectionString"]);
+    ConfigurationOptions configuration = ConfigurationOptions.Parse(builder.Configuration.GetSection("RedisConnection")["RedisConnectionString"]!);
     return ConnectionMultiplexer.Connect(configuration);
 });
 
 //MongoDB set up
 builder.Services.AddSingleton<IMongoClient>(provider =>
 {
-    string connectionString = builder.Configuration.GetSection("MongoDBConnection")["MongoDBConnectionString"];
+    string connectionString = builder.Configuration.GetSection("MongoDBConnection")["MongoDBConnectionString"]!;
     return new MongoClient(connectionString);
 });
 
 builder.Services.AddSingleton(provider =>
 {
-    var mongoClient = provider.GetRequiredService<IMongoClient>();
-    var defaultDatabaseName = builder.Configuration.GetSection("MongoDBConnection")["DatabaseName"];
-    var defaultCollectionName = builder.Configuration.GetSection("MongoDBConnection")["CollectionName"];
+    IMongoClient mongoClient = provider.GetRequiredService<IMongoClient>();
+    string defaultDatabaseName = builder.Configuration.GetSection("MongoDBConnection")["DatabaseName"]!;
+    string defaultCollectionName = builder.Configuration.GetSection("MongoDBConnection")["CollectionName"]!;
 
-    var database = mongoClient.GetDatabase(defaultDatabaseName);
-    var collection = database.GetCollection<ErrorHandle>(defaultCollectionName);
+    IMongoDatabase database = mongoClient.GetDatabase(defaultDatabaseName);
+    IMongoCollection<ErrorHandle> collection = database.GetCollection<ErrorHandle>(defaultCollectionName);
     return collection;
 });
 
 // Add Cookie Policy
+IWebHostEnvironment environment = builder.Environment;
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     if (environment.IsProduction())
@@ -169,7 +170,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             ValidIssuer = builder.Configuration.GetSection("JwtSettings:Issuer").Get<string>(),
             ValidAudience = builder.Configuration.GetSection("JwtSettings:Audience").Get<string>(),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JwtSettings:SecretKey").Get<string>()))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JwtSettings:SecretKey").Get<string>()!))
         };
     });
 
