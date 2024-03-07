@@ -29,8 +29,7 @@ namespace ChatroomB_Backend.Repository
         Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
         Task<int> CheckFriendExit(Friends friends);
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
-        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
-       
+        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);  
     }
 
     public interface IChatRoomRepo
@@ -43,6 +42,8 @@ namespace ChatroomB_Backend.Repository
         Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
         Task<int> RemoveUserFromGroup (int chatRoomId, int userId);
         Task<int> QuitGroup(int chatRoomId, int userId);
+        Task<IEnumerable<ChatlistVM>> AddMembersToGroup(int chatRoomId, DataTable selectedUsers);
+        Task<IEnumerable<ChatlistVM>> GetGroupInfoByChatroomId(int chatRoomId, int userId);
 
     }
 

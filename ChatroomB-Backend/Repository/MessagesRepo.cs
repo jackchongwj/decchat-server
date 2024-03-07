@@ -21,19 +21,19 @@ namespace ChatroomB_Backend.Repository
             _logger = logger;
         }
 
-        public async Task<ChatRoomMessage> AddMessages(Messages message)
+        public async Task <ChatRoomMessage> AddMessages(Messages message)
         {
+            var param = new
+            {
+                Content = message.Content,
+                UserChatRoomId = message.UserChatRoomId,
+                TimeStamp = message.TimeStamp,
+                ResourceUrl = message.ResourceUrl,
+                IsDeleted = message.IsDeleted,
+            };
+
             try
             {
-                var param = new
-                {
-                    Content = message.Content,
-                    UserChatRoomId = message.UserChatRoomId,
-                    TimeStamp = message.TimeStamp,
-                    ResourceUrl = message.ResourceUrl,
-                    IsDeleted = message.IsDeleted,
-                };
-
                 using (SqlConnection connection = new SqlConnection(_dbConnectionString))
                 {
                     await connection.OpenAsync(); // Ensure the connection is open
@@ -41,29 +41,28 @@ namespace ChatroomB_Backend.Repository
 
                     ChatRoomMessage result = await connection.QueryFirstAsync<ChatRoomMessage>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
 
-                    Console.WriteLine($"Message  {result}");
                     return result;
                 }
             }
+            catch (Microsoft.Data.SqlClient.SqlException sqlEx)
+            {
+                _logger.LogError(sqlEx, "An error occurred when calling AddMessages.");
+                throw;
+            }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to add messages", ex);
+                // Handle other non-SQL exceptions
+                _logger.LogError(ex, "An unexpected error occurred in AddMessages.");
+                throw;
             }
 
         }
 
         public async Task<int> DeleteMessage(int MessageId)
         {
-            try
-            {
-                string sql = "exec DeleteMessage @MessageId";
+            string sql = "exec DeleteMessage @MessageId";
 
-                return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to delete message", ex);
-            }
+            return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
         }
 
         public async Task<int> EditMessage(ChatRoomMessage NewMessage)
@@ -82,36 +81,29 @@ namespace ChatroomB_Backend.Repository
                     string StoredProcedure = "EditMessage";
 
                     int result = await connection.QueryFirstOrDefaultAsync<int>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
-
                     return result;
                 }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                throw new InvalidOperationException("Failed to edit message", ex);
+                Console.WriteLine(ex.ToString());
             }
+            return 0;
         }
 
         public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId)
         {
-            try
+            var param = new
             {
-                var param = new
-                {
-                    ChatRoomId = ChatRoomId,
-                    MessageId = MessageId
-                };
+                ChatRoomId = ChatRoomId,
+                MessageId = MessageId
+            };
 
-                string sql = "exec RetrieveMessageByPagination @ChatRoomId, @MessageId ";
+            string sql = "exec RetrieveMessageByPagination @ChatRoomId, @MessageId ";
 
-                IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
+            IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
 
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to retrieve messages", ex);
-            }
+            return result;
         }
     }
 }

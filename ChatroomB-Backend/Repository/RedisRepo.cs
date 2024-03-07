@@ -101,7 +101,7 @@ namespace ChatroomB_Backend.Repository
             foreach (StackExchange.Redis.RedisKey key in server.Keys(pattern: "User:*:connection"))
             {
                 StackExchange.Redis.RedisValue userId = await _redisDatabase.HashGetAsync(key, "UserId");
-                if (userId.HasValue)
+              if (userId.HasValue)
                 {
                     userIds.Add(userId.ToString());
                 }

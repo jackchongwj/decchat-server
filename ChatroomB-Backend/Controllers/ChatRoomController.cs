@@ -8,7 +8,7 @@ using Azure.Core;
 using Microsoft.AspNetCore.SignalR;
 using ChatroomB_Backend.Hubs;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization; 
 
 
 namespace ChatroomB_Backend.Controllers
@@ -65,19 +65,55 @@ namespace ChatroomB_Backend.Controllers
                 return BadRequest("Invalid request data");
             }
 
-            IEnumerable<ChatlistVM> chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
+            try
+            {
+                IEnumerable<ChatlistVM> chatinfo = await _ChatRoomService.CreateGroupWithSelectedUsers(createGroupVM);
+                return Ok(new { Message = "Group created successfully" });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
-            return Ok(new { Message = "Group created successfully" });
-
+        [HttpPost("AddMembersToGroup")]
+        public async Task<ActionResult<int>> AddMembersToGroup([FromBody] AddMemberVM addMemberVM)
+        {
+            try
+            {
+                await _ChatRoomService.AddMembersToGroup(addMemberVM);
+                
+                return Ok(new { Message = "User added successfully" });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         [HttpPost("RemoveFromGroup")]
-        [Authorize]
-        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy)
+        
+        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy, [FromQuery] int CurrentUserId)
         {
-            int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
-                   
-            return Ok(new { Message = "User removed successfully" });
+
+            try
+            {
+                if (CurrentUserId  == InitiatedBy)
+                {
+                    int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
+
+                    return Ok(new { Message = "User removed successfully" });
+                }
+                else
+                {
+                    return BadRequest(new { ErrorMessage = "Only admin is allowed to remove user." });
+                }
+               
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         [HttpPost("QuitGroup")]

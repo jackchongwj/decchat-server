@@ -33,11 +33,14 @@ builder.Services.AddTransient<IDbConnection>((sp) =>
            new SqlConnection(builder.Configuration.GetConnectionString("ChatroomB_BackendContext")));
 
 // Add Cache
+builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
 
 // Add Rate Limiting
-builder.Services.AddInMemoryRateLimiting();
 builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 //redis set up
@@ -65,8 +68,7 @@ builder.Services.AddSingleton(provider =>
     return collection;
 });
 
-// Set Up Cookie Policy
-var environment = builder.Environment;
+// Add Cookie Policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     if (environment.IsProduction())
@@ -187,23 +189,24 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseRouting();
+app.UseCors("AngularApp");
 
 app.UseCookiePolicy();
 
-app.UseCors("AngularApp");
+app.UseRouting();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
+// Use IP rate limiting middleware
+app.UseIpRateLimiting();
+//app.UseMiddleware<CRRateLimitMiddleware>();
+
+
 app.UseMiddleware<TokenValidationMiddleware>();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-// Use IP rate limiting middleware
-app.UseIpRateLimiting();
-app.UseMiddleware<RateLimitMiddleware>();
 
 app.MapControllers();
 
