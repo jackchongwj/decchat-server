@@ -77,7 +77,7 @@ namespace ChatroomB_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                throw new Exception(ex.Message); 
             }
         }
     }

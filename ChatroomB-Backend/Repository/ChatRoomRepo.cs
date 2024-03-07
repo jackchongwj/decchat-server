@@ -47,26 +47,6 @@ namespace ChatroomB_Backend.Repository
             return chatList;
         }
 
-        public async Task <IEnumerable<ChatlistVM>> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers)
-        {
-            try
-            {
-                var dynamicParam = new DynamicParameters();
-                dynamicParam.Add("@RoomName", roomName);
-                dynamicParam.Add("@RoomProfilePic", _config["DefaultPicture:GroupProfile"]);
-                dynamicParam.Add("@InitiatedBy", initiatedBy);
-                dynamicParam.Add("@SelectedUsers", selectedUsers.AsTableValuedParameter("IntListTableType"));
-
-                IEnumerable<ChatlistVM> chatinfo = await _dbConnection.QueryAsync<ChatlistVM>("CreateGroup", dynamicParam, commandType: CommandType.StoredProcedure);
-                return chatinfo;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
-                throw;
-            }
-        }
-
         public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
         {
             string sql = "exec UpdateGroupName @ChatRoomId, @NewGroupName";
@@ -88,6 +68,25 @@ namespace ChatroomB_Backend.Repository
             });
             return result;
         }
+        public async Task<IEnumerable<ChatlistVM>> CreateGroup(string roomName, int initiatedBy, DataTable selectedUsers)
+        {
+            try
+            {
+                var dynamicParam = new DynamicParameters();
+                dynamicParam.Add("@RoomName", roomName);
+                dynamicParam.Add("@RoomProfilePic", _config["DefaultPicture:GroupProfile"]);
+                dynamicParam.Add("@InitiatedBy", initiatedBy);
+                dynamicParam.Add("@SelectedUsers", selectedUsers.AsTableValuedParameter("IntListTableType"));
+
+                IEnumerable<ChatlistVM> chatinfo = await _dbConnection.QueryAsync<ChatlistVM>("CreateGroup", dynamicParam, commandType: CommandType.StoredProcedure);
+                return chatinfo;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                throw;
+            }
+        }
 
         public async Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId)
         {
@@ -95,6 +94,44 @@ namespace ChatroomB_Backend.Repository
             var parameters = new { ChatRoomID = chatRoomId, userId = userId };
 
             return await _dbConnection.QueryAsync<GroupMember>(sql, parameters);
+        }
+
+        public async Task<IEnumerable<ChatlistVM>> AddMembersToGroup(int chatRoomId, DataTable selectedUsers)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@ChatRoomID", chatRoomId);
+                parameters.Add("@SelectedUsers", selectedUsers.AsTableValuedParameter("IntListTableType"));
+
+                IEnumerable<ChatlistVM> chatinfo = await _dbConnection.QueryAsync<ChatlistVM>("AddMembersToGroup", parameters, commandType: CommandType.StoredProcedure);
+
+                return chatinfo;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<ChatlistVM>> GetGroupInfoByChatroomId(int chatRoomId, int userId)
+        {
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@ChatRoomID", chatRoomId);
+                parameters.Add("@UserId", userId);
+
+                IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>("RetrieveChatRoomInfoByChatRoomId", parameters, commandType: CommandType.StoredProcedure);
+
+                return chatList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                throw;
+            }
         }
 
         public async Task<int> RemoveUserFromGroup(int chatRoomId, int userId)

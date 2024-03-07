@@ -8,7 +8,7 @@ using Azure.Core;
 using Microsoft.AspNetCore.SignalR;
 using ChatroomB_Backend.Hubs;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization; 
 
 
 namespace ChatroomB_Backend.Controllers
@@ -50,7 +50,7 @@ namespace ChatroomB_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -66,7 +66,7 @@ namespace ChatroomB_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -86,23 +86,47 @@ namespace ChatroomB_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [HttpPost("AddMembersToGroup")]
+        public async Task<ActionResult<int>> AddMembersToGroup([FromBody] AddMemberVM addMemberVM)
+        {
+            try
+            {
+                await _ChatRoomService.AddMembersToGroup(addMemberVM);
+                
+                return Ok(new { Message = "User added successfully" });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 
         [HttpPost("RemoveFromGroup")]
-        [Authorize]
-        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy)
+        
+        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy, [FromQuery] int CurrentUserId)
         {
+
             try
             {
-                int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
-                   
-                return Ok(new { Message = "User removed successfully" });
+                if (CurrentUserId  == InitiatedBy)
+                {
+                    int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
+
+                    return Ok(new { Message = "User removed successfully" });
+                }
+                else
+                {
+                    return BadRequest(new { ErrorMessage = "Only admin is allowed to remove user." });
+                }
+               
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -118,7 +142,7 @@ namespace ChatroomB_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -141,7 +165,7 @@ namespace ChatroomB_Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                throw new Exception(ex.Message);
             }
         }
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
