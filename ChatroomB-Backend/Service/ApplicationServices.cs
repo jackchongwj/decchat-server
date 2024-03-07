@@ -42,7 +42,6 @@ namespace ChatroomB_Backend.Service
                             FileMessage? fm = JsonSerializer.Deserialize<FileMessage>(message);
                             if (fm != null)
                             {
-                                Console.WriteLine(fm);
                                 if (fm.FileByte != null)
                                 {
                                     await StoreMessageWithAttachment(fm);

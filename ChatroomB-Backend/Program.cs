@@ -23,6 +23,7 @@ using MongoDB.Driver;
 using ChatroomB_Backend.Models;
 using System;
 using AspNetCoreRateLimit;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,11 +35,14 @@ builder.Services.AddTransient<IDbConnection>((sp) =>
            new SqlConnection(builder.Configuration.GetConnectionString("ChatroomB_BackendContext")));
 
 // Add Cache
+builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
 
 // Add Rate Limiting
-builder.Services.AddInMemoryRateLimiting();
 builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 //redis set up
@@ -65,8 +69,6 @@ builder.Services.AddSingleton(provider =>
     var collection = database.GetCollection<ErrorHandle>(defaultCollectionName);
     return collection;
 });
-
-
 
 // Add Cookie Policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -180,17 +182,15 @@ app.UseCors("AngularApp");
 
 app.UseRouting();
 
+// Use IP rate limiting middleware
+app.UseIpRateLimiting();
+//app.UseMiddleware<CRRateLimitMiddleware>();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-//app.UseMiddleware<TokenValidationMiddleware>();
-
-// Use IP rate limiting middleware
-app.UseIpRateLimiting();
-app.UseMiddleware<RateLimitMiddleware>();
 
 app.MapControllers();
 
