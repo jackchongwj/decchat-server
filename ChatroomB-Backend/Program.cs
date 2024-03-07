@@ -69,6 +69,7 @@ builder.Services.AddSingleton(provider =>
 });
 
 // Add Cookie Policy
+var environment = builder.Environment;
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     if (environment.IsProduction())

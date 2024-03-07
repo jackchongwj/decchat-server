@@ -112,7 +112,6 @@ namespace ChatroomB_Backend.Repository
                 Console.WriteLine("Error: " + ex.Message);
                 throw;
             }
-            return result;
         }
         public async Task<IEnumerable<ChatlistVM>> GetGroupInfoByChatroomId(int chatRoomId, int userId)
         {
@@ -123,7 +122,6 @@ namespace ChatroomB_Backend.Repository
                 parameters.Add("@UserId", userId);
 
                 IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>("RetrieveChatRoomInfoByChatRoomId", parameters, commandType: CommandType.StoredProcedure);
-            var parameters = new { ChatRoomID = chatRoomId, userId = userId };
                 return chatList;
             }
             catch (Exception ex)
@@ -131,7 +129,6 @@ namespace ChatroomB_Backend.Repository
                 Console.WriteLine("Error: " + ex.Message);
                 throw;
             }
-        }
         }
 
         public async Task<int> RemoveUserFromGroup(int chatRoomId, int userId)
@@ -172,7 +169,6 @@ namespace ChatroomB_Backend.Repository
             {
                 throw new InvalidOperationException("Failed to quit group", ex);
             }
-        }
         }
     }
 }
