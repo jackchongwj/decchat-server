@@ -1,6 +1,4 @@
-﻿using ChatroomB_Backend.Hubs;
-using ChatroomB_Backend.Repository;
-using Microsoft.AspNetCore.SignalR;
+﻿using ChatroomB_Backend.Repository;
 
 namespace ChatroomB_Backend.Service
 {

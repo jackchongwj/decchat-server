@@ -41,7 +41,6 @@ namespace ChatroomB_Backend.Repository
 
                     ChatRoomMessage result = await connection.QueryFirstAsync<ChatRoomMessage>(StoredProcedure, param, commandType: System.Data.CommandType.StoredProcedure);
 
-                    Console.WriteLine($"Message  {result}");
                     return result;
                 }
             }
@@ -89,7 +88,7 @@ namespace ChatroomB_Backend.Repository
             {
                 Console.WriteLine(ex.ToString());
             }
-            return 1;
+            return 0;
         }
 
         public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId)

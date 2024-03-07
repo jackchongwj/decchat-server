@@ -2,6 +2,7 @@
 using ChatroomB_Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Core.Types;
+using System.Collections.Generic;
 using System.Data;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
@@ -41,7 +42,7 @@ namespace ChatroomB_Backend.Service
         Task<int> UpdateGroupPicture(int chatRoomId, byte[] fileBytes, string fileName);                                        // Update group chatroom's profile pic 
         Task<IEnumerable<ChatlistVM>> CreateGroupWithSelectedUsers(CreateGroupVM createGroupVM);                                // Create new group chatroom
         Task<int> RemoveUserFromGroup(int chatRoomId, int userId);                                                              // Remove user from the group chatroom
-        
+        Task<IEnumerable<ChatlistVM>> AddMembersToGroup(AddMemberVM addMemberVM);
         Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);                             // Get the group member 
         Task<int> QuitGroup(int chatRoomId, int userId);                                                                        // Quit group
 
@@ -59,18 +60,20 @@ namespace ChatroomB_Backend.Service
 
     public interface IAuthService
     {
+        Task<Users> Authenticate(string username, string password);
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
-        Task<IActionResult> AddUser(Users user);
+        Task AddUser(string username, string password, string profileName);
         Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
     }
 
     public interface ITokenService
     {
-        Task<string> RenewAccessToken(RefreshToken token, int userId, string username);
-        Task<IActionResult> StoreRefreshToken(RefreshToken token);
-        Task<IActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<IActionResult> UpdateRefreshToken(RefreshToken token);
+        Task ValidateRefreshToken(string token, int userId);
+        Task ValidateAccessToken(int userId, string username);
+        Task StoreRefreshToken(RefreshToken token);
+        Task RemoveRefreshToken(string token);
+        Task UpdateRefreshToken(string token);
     }
 
     public interface IBlobService

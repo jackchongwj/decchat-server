@@ -10,7 +10,6 @@ using System.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-
 using ChatroomB_Backend.Hubs;
 using StackExchange.Redis;
 using SixLabors.ImageSharp;
@@ -23,6 +22,7 @@ using MongoDB.Driver;
 using ChatroomB_Backend.Models;
 using System;
 using AspNetCoreRateLimit;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,11 +34,14 @@ builder.Services.AddTransient<IDbConnection>((sp) =>
            new SqlConnection(builder.Configuration.GetConnectionString("ChatroomB_BackendContext")));
 
 // Add Cache
+builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
 
 // Add Rate Limiting
-builder.Services.AddInMemoryRateLimiting();
 builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 //redis set up
@@ -66,15 +69,25 @@ builder.Services.AddSingleton(provider =>
     return collection;
 });
 
-
-
 // Add Cookie Policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.CheckConsentNeeded = context => true;
-    options.MinimumSameSitePolicy = SameSiteMode.None; 
-    options.HttpOnly = HttpOnlyPolicy.Always;
-    options.Secure = CookieSecurePolicy.SameAsRequest; 
+    if (environment.IsProduction())
+    {
+        // Production cookie policy
+        options.CheckConsentNeeded = context => true;
+        options.MinimumSameSitePolicy = SameSiteMode.Strict;
+        options.HttpOnly = HttpOnlyPolicy.Always;
+        options.Secure = CookieSecurePolicy.SameAsRequest;
+    }
+    else
+    {
+        // Development cookie policy
+        options.CheckConsentNeeded = context => false;
+        options.MinimumSameSitePolicy = SameSiteMode.None;
+        options.HttpOnly = HttpOnlyPolicy.None;
+        options.Secure = CookieSecurePolicy.SameAsRequest;
+    }
 });
 
 // Add services to the container.
@@ -89,8 +102,8 @@ builder.Services.AddSignalR()
     .AddJsonProtocol(options =>
     {
         options.PayloadSerializerOptions.PropertyNamingPolicy = null;
-        
-    }) ;
+
+    });
 
 
 // service repository utils
@@ -98,26 +111,26 @@ builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IUserService, UsersServices>();
 builder.Services.AddScoped<IFriendService, FriendsServices>();
 builder.Services.AddScoped<IAuthService, AuthServices>();
-builder.Services.AddScoped<ITokenService, TokenServices>();
+builder.Services.AddSingleton<ITokenService, TokenServices>();
 builder.Services.AddScoped<IMessageService, MessagesServices>();
 builder.Services.AddScoped<IErrorHandleService, ErrorHanldeServices>();
 
 builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
-builder.Services.AddScoped<IAuthRepo, AuthRepo>();  
-builder.Services.AddScoped<ITokenRepo, TokenRepo>();
+builder.Services.AddScoped<IAuthRepo, AuthRepo>();
+builder.Services.AddSingleton<ITokenRepo, TokenRepo>();
 builder.Services.AddScoped<IMessageRepo, MessagesRepo>();
 builder.Services.AddScoped<IErrorHandleRepo, ErrorHandleRepo>();
 
 
 builder.Services.AddScoped<IAuthUtils, AuthUtils>();
-builder.Services.AddScoped<ITokenUtils, TokenUtils>();
+builder.Services.AddSingleton<ITokenUtils, TokenUtils>();
 
 // RabbitMQ-Related Services
 builder.Services.AddSingleton<RabbitMQServices>();
 builder.Services.AddScoped<ApplicationServices>();
-builder.Services.AddScoped<IBlobService,BlobServices>();
+builder.Services.AddScoped<IBlobService, BlobServices>();
 builder.Services.AddScoped<IBlobRepo, BlobsRepo>();
 
 builder.Services.AddScoped<IChatRoomService, ChatRoomServices>();
@@ -134,9 +147,9 @@ builder.Services.AddSwaggerGen();
 
 
 // add policy
-builder.Services.AddCors(options => 
+builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AngularApp", policy => 
+    options.AddPolicy("AngularApp", policy =>
             policy.WithOrigins("http://localhost:4200", "https://chatroomfe-dec.azurewebsites.net")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
@@ -151,8 +164,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = false,
+            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+
             ValidIssuer = builder.Configuration.GetSection("JwtSettings:Issuer").Get<string>(),
             ValidAudience = builder.Configuration.GetSection("JwtSettings:Audience").Get<string>(),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JwtSettings:SecretKey").Get<string>()))
@@ -178,19 +192,22 @@ app.UseHttpsRedirection();
 
 app.UseCors("AngularApp");
 
+app.UseCookiePolicy();
+
 app.UseRouting();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-//app.UseMiddleware<TokenValidationMiddleware>();
-
 // Use IP rate limiting middleware
 app.UseIpRateLimiting();
-app.UseMiddleware<RateLimitMiddleware>();
+//app.UseMiddleware<CRRateLimitMiddleware>();
+
+
+app.UseMiddleware<TokenValidationMiddleware>();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
 

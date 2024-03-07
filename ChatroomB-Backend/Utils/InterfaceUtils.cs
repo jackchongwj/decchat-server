@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using ChatroomB_Backend.Models;
+using System.Security.Claims;
 
 namespace ChatroomB_Backend.Utils
 {
@@ -11,6 +12,7 @@ namespace ChatroomB_Backend.Utils
     public interface ITokenUtils
     {
         string GenerateAccessToken(int userId, string username);
-        string GenerateRefreshToken();
+        RefreshToken GenerateRefreshToken(int userId);
+        CookieOptions SetCookieOptions();
     }
 }

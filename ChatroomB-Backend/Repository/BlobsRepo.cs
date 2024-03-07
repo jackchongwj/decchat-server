@@ -21,84 +21,119 @@ namespace ChatroomB_Backend.Repository
 
         public BlobsRepo(IConfiguration configuration)
         {
-            _storageConnectionString = configuration.GetSection("AzureBlobStorage")["StorageConnectionString"]
-                         ?? throw new InvalidOperationException("Storage connection string not found.");
-            _containerName = configuration.GetSection("AzureBlobStorage")["ContainerName"]
-                         ?? throw new InvalidOperationException("Container name not found.");
+            try
+            {
+                _storageConnectionString = configuration.GetSection("AzureBlobStorage")["StorageConnectionString"]
+                                            ?? throw new InvalidOperationException("Storage connection string not found.");
+                _containerName = configuration.GetSection("AzureBlobStorage")["ContainerName"]
+                                ?? throw new InvalidOperationException("Container name not found.");
 
-            _blobServiceClient = new BlobServiceClient(_storageConnectionString);
-            client = _blobServiceClient.GetBlobContainerClient(_containerName);
+                _blobServiceClient = new BlobServiceClient(_storageConnectionString);
+                client = _blobServiceClient.GetBlobContainerClient(_containerName);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to initialize BlobServiceClient", ex);
+            }
         }
 
         public async Task<string> UploadImageFiles(byte[] imgByte, string filename, string folderPath)
         {
-            // example folderPath : "images/folder1"
-            string blobName = folderPath.TrimEnd('/') + '/' + filename;
-            BlobClient blobClient = client.GetBlobClient(blobName);
-
-            using (Image image = Image.Load(imgByte))
+            try
             {
-                using (MemoryStream ms = new MemoryStream())
+                // example folderPath : "images/folder1"
+                string blobName = folderPath.TrimEnd('/') + '/' + filename;
+                BlobClient blobClient = client.GetBlobClient(blobName);
+
+                using (Image image = Image.Load(imgByte))
                 {
-                    WebpEncoder encoder = new WebpEncoder();
-                    await image.SaveAsWebpAsync(ms, encoder);
-                    ms.Position = 0; // Reset the memory stream position after writing.
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        WebpEncoder encoder = new WebpEncoder();
+                        await image.SaveAsWebpAsync(ms, encoder);
+                        ms.Position = 0; // Reset the memory stream position after writing.
 
-                    // Upload the WebP image
-                    await blobClient.UploadAsync(ms);
+                        // Upload the WebP image
+                        await blobClient.UploadAsync(ms);
+                    }
                 }
-            }
 
-            return blobClient.Uri.AbsoluteUri;
+                return blobClient.Uri.AbsoluteUri;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to upload image file", ex);
+            }
         }
 
         public async Task<string> UploadVideoFiles(byte[] vidByte, string filename, string folderPath)
         {
-            // example folderPath : "images/folder1"
-            string blobName = folderPath.TrimEnd('/') + '/' + filename;
-            BlobClient blobClient = client.GetBlobClient(blobName);
-
-            // Upload the video file
-            using (MemoryStream ms = new MemoryStream(vidByte))
+            try
             {
-                await blobClient.UploadAsync(ms, new BlobHttpHeaders
-                {
-                    ContentType = "video/mp4",
-                    ContentDisposition = "inline; filename=\"" + blobName + "\""
-                });
-            }
+                // example folderPath : "images/folder1"
+                string blobName = folderPath.TrimEnd('/') + '/' + filename;
+                BlobClient blobClient = client.GetBlobClient(blobName);
 
-            return blobClient.Uri.AbsoluteUri;
+                // Upload the video file
+                using (MemoryStream ms = new MemoryStream(vidByte))
+                {
+                    await blobClient.UploadAsync(ms, new BlobHttpHeaders
+                    {
+                        ContentType = "video/mp4",
+                        ContentDisposition = "inline; filename=\"" + blobName + "\""
+                    });
+                }
+
+                return blobClient.Uri.AbsoluteUri;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to upload video file", ex);
+            }
         }
 
         public async Task<string> UploadDocuments(byte[] docByte, string filename, string folderPath)
         {
-            // example folderPath : "images/folder1"
-            string blobName = folderPath.TrimEnd('/') + '/' + filename;
-            BlobClient blobClient = client.GetBlobClient(blobName);
-
-            // Upload documents
-            using (MemoryStream ms = new MemoryStream(docByte))
+            try
             {
-                await blobClient.UploadAsync(ms);
-            }
+                // example folderPath : "images/folder1"
+                string blobName = folderPath.TrimEnd('/') + '/' + filename;
+                BlobClient blobClient = client.GetBlobClient(blobName);
 
-            return blobClient.Uri.AbsoluteUri;
+                // Upload documents
+                using (MemoryStream ms = new MemoryStream(docByte))
+                {
+                    await blobClient.UploadAsync(ms);
+                }
+
+                return blobClient.Uri.AbsoluteUri;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to upload document", ex);
+            }
         }
 
         public async Task<string> UploadAudios(byte[] audioByte, string filename, string folderPath)
         {
-            // example folderPath : "images/folder1"
-            string blobName = folderPath.TrimEnd('/') + '/' + filename;
-            BlobClient blobClient = client.GetBlobClient(blobName);
-
-            // Upload documents
-            using (MemoryStream ms = new MemoryStream(audioByte))
+            try
             {
-                await blobClient.UploadAsync(ms);
-            }
+                // example folderPath : "images/folder1"
+                string blobName = folderPath.TrimEnd('/') + '/' + filename;
+                BlobClient blobClient = client.GetBlobClient(blobName);
 
-            return blobClient.Uri.AbsoluteUri;
+                // Upload audio file
+                using (MemoryStream ms = new MemoryStream(audioByte))
+                {
+                    await blobClient.UploadAsync(ms);
+                }
+
+                return blobClient.Uri.AbsoluteUri;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to upload audio file", ex);
+            }
         }
 
         public async Task DeleteBlob(string blobUri)
@@ -110,9 +145,9 @@ namespace ChatroomB_Backend.Repository
                 BlobClient blobClient = client.GetBlobClient(blobName);
                 await blobClient.DeleteIfExistsAsync();
             }
-            catch(Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw new InvalidOperationException("Failed to delete blob", ex);
             }
         }
     }
