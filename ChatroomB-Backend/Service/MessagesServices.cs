@@ -56,5 +56,10 @@ namespace ChatroomB_Backend.Service
         {
             return await _MessageRepo.GetMessages(ChatRoomId, MessageId);
         }
+
+        public async Task<int> GetTotalSearchMessage(int ChatRoomId, string SearchValue)
+        {
+            return await _MessageRepo.GetTotalSearchMessage(ChatRoomId, SearchValue);
+        }
     }
 }

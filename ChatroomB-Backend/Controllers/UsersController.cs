@@ -3,6 +3,7 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -22,10 +23,14 @@ namespace ChatroomB_Backend.Controllers
         public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
         {
 
-            IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userId);
+            if (!profileName.IsNullOrEmpty())
+            {
+                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userId);
 
-            return Ok(GetUserByName);
+                return Ok(GetUserByName);
+            }
 
+            return BadRequest(new { ErrorMessage = "Cannot Empty" });
         }
 
         [HttpGet("RetrieveChatListByUser")]

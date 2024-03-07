@@ -44,7 +44,7 @@ namespace ChatroomB_Backend.Service
                 Console.WriteLine($"Error publishing message: {ex}");
             }
         }
-        public void PublishEditMessage(ChatRoomMessage editMsg)
+        public void PublishEditMessage(editMessage editMsg)
         {
             try
             {

@@ -42,10 +42,7 @@ namespace ChatroomB_Backend.Controllers
                 await _FriendService.AddFriends(friends);
                 return Ok(new { Message = "Friend Request send successfully" });
             }
-            else
-            {
                 return BadRequest(new { ErrorMessage = "Friend Has Added Before" });
-            }
 
         }
 
@@ -62,11 +59,8 @@ namespace ChatroomB_Backend.Controllers
 
                 return Ok(PrivateChatlist);
             }
-            else
-            {
 
                 return Ok(result);
-            }
         }
 
 

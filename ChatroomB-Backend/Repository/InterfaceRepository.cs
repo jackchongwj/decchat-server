@@ -52,6 +52,7 @@ namespace ChatroomB_Backend.Repository
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int CurrentPage);
         Task<int> EditMessage(ChatRoomMessage NewMessage);
         Task<int> DeleteMessage(int MessageId);
+        Task<int> GetTotalSearchMessage(int ChatRoomId, string SearchValue);
     }
     
     public interface IBlobRepo

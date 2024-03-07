@@ -106,5 +106,19 @@ namespace ChatroomB_Backend.Repository
 
             return result;
         }
+
+        public async Task<int> GetTotalSearchMessage(int ChatRoomId, string SearchValue)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@ChatRoomId", ChatRoomId);
+            parameters.Add("@SearchValue", SearchValue);
+            parameters.Add("@RowCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _dbConnection.ExecuteAsync("GetTotalSearchMessage", parameters, commandType: CommandType.StoredProcedure);
+
+            int count = parameters.Get<int>("@RowCount");
+
+            return count;
+        }
     }
 }
