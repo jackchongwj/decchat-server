@@ -8,14 +8,14 @@ using Azure.Core;
 using Microsoft.AspNetCore.SignalR;
 using ChatroomB_Backend.Hubs;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization; 
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace ChatroomB_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ChatRoomController: ControllerBase
+    public class ChatRoomController : ControllerBase
     {
         private readonly IChatRoomService _ChatRoomService;
         private readonly IHubContext<ChatHub> _hubContext;
@@ -82,7 +82,7 @@ namespace ChatroomB_Backend.Controllers
             try
             {
                 await _ChatRoomService.AddMembersToGroup(addMemberVM);
-                
+
                 return Ok(new { Message = "User added successfully" });
             }
             catch (Exception ex)
@@ -92,13 +92,13 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("RemoveFromGroup")]
-        
+
         public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy, [FromQuery] int CurrentUserId)
         {
 
             try
             {
-                if (CurrentUserId  == InitiatedBy)
+                if (CurrentUserId == InitiatedBy)
                 {
                     int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
 
@@ -108,7 +108,7 @@ namespace ChatroomB_Backend.Controllers
                 {
                     return BadRequest(new { ErrorMessage = "Only admin is allowed to remove user." });
                 }
-               
+
             }
             catch (Exception ex)
             {
@@ -119,7 +119,7 @@ namespace ChatroomB_Backend.Controllers
         [HttpPost("QuitGroup")]
         [Authorize]
         public async Task<ActionResult<int>> QuitGroup([FromQuery] int chatRoomId, [FromQuery] int userId)
-    {
+        {
             int result = await _ChatRoomService.QuitGroup(chatRoomId, userId);
 
             return Ok(new { Message = "Quit group successfully" });
