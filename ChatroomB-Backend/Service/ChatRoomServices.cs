@@ -161,9 +161,6 @@ namespace ChatroomB_Backend.Service
                         await _hubContext.Clients.Group("User" + groupListUserId).SendAsync("NewGroupCreated", chatList); //kena added grp show in side bar
                     }
                 }
-
-                /*await _hubContext.Clients.Group(chatList.ToList()[0].ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList); //to those been added*/
-
                 return list;
             }
             catch (Exception ex)
@@ -171,25 +168,6 @@ namespace ChatroomB_Backend.Service
                 // Log the exception
                 throw new Exception("An error occurred while adding members to the group.", ex);
             }
-
-
-
-            /* if (result == 1)
-             {
-                 string connectionId = await _RServices.SelectUserIdFromRedis(userId);
-
-                 if (!connectionId.IsNullOrEmpty())
-                 {
-                     await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
-                     // return result;
-                 }
-
-                 await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("UserAdded", chatRoomId, userId);
-                 await _hubContext.Clients.Group("User" + userId).SendAsync("UserAdded", chatRoomId, userId);
-
-                 return result;
-             }*/
-            /*            return result;*/
         }
 
         public async Task<int> RemoveUserFromGroup(int chatRoomId, int userId)
@@ -254,9 +232,8 @@ namespace ChatroomB_Backend.Service
 
         public async Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId)
         {
-            var result = await _repo.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
+            IEnumerable<GroupMember> result = await _repo.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
             return result;
-
         }
 
         public async Task<int> QuitGroup(int chatRoomId, int userId)

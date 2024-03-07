@@ -37,7 +37,7 @@ namespace ChatroomB_Backend.Repository
                 RoomProfilePic = "",
                 SenderId = request.SenderId,
                 ReceiverId = request.ReceiverId,
-                UserId = userId  // Adjust the parameter name
+                UserId = userId  
             };
 
             string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @UserId";
@@ -157,7 +157,6 @@ namespace ChatroomB_Backend.Repository
 
             await _dbConnection.ExecuteAsync("QuitGroup", parameters, commandType: CommandType.StoredProcedure);
             int isSuccess = parameters.Get<int>("@Result");
-
 
             return isSuccess;
         }
