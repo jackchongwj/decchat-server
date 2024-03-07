@@ -1,4 +1,5 @@
 ﻿using ChatroomB_Backend.Service;
+using Microsoft.Data.SqlClient;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
@@ -22,10 +23,19 @@ namespace ChatroomB_Backend.Middleware
             {
                 await next(context);
             }
+            catch (SqlException ex)
+            {
+                await LogErrorMessage(context, "SQL Error Occurred: " + ex.Message);
+            }
+            catch (HttpRequestException ex)
+            {
+                await LogErrorMessage(context, "Http Request Failed: " + ex.Message);
+            }
             catch (Exception ex)
             {
                 await LogErrorMessage(context, ex.Message);
             }
+            
         }
 
         private async Task LogErrorMessage(HttpContext context, string  errorMessage)

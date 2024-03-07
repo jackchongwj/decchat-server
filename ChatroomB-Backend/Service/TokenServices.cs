@@ -8,47 +8,61 @@ namespace ChatroomB_Backend.Service
     public class TokenServices : ITokenService
     {
         private readonly ITokenRepo _repo;
-        private readonly ITokenUtils _tokenUtils;
 
-        public TokenServices(ITokenRepo repo, ITokenUtils tokenUtils, IUserService userService)
+        public TokenServices(ITokenRepo repo)
         {
             _repo = repo;
-            _tokenUtils = tokenUtils;
         }
 
-        public async Task<string> RenewAccessToken(RefreshToken token, int userId, string username)
+        public async Task ValidateRefreshToken(string refreshToken, int userId)
         {
-            bool isValid = await _repo.IsRefreshTokenValid(token, userId, username);
+            bool isValid = await _repo.ValidateRefreshToken(refreshToken, userId);
 
-            // Remove refresh token if its invalid or expired
             if (!isValid)
             {
-                await RemoveRefreshToken(token);
-                throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+                throw new InvalidOperationException("Invalid or expired refresh token");
             }
-
-            // Roll the expiry date forward to current time + 7 days
-            await UpdateRefreshToken(token);
-
-            string newAccessToken = _tokenUtils.GenerateAccessToken(userId, username);
-
-            return newAccessToken;
         }
 
-        public async Task<IActionResult> StoreRefreshToken(RefreshToken token)
-        { 
-            return await _repo.StoreRefreshToken(token);
-        }
-
-        public async Task<IActionResult> RemoveRefreshToken(RefreshToken token)
+        public async Task ValidateAccessToken(int userId, string username)
         {
-            return await _repo.RemoveRefreshToken(token);
+            bool isValid = await _repo.ValidateAccessToken(userId, username);
+
+            if (!isValid)
+            {
+                throw new InvalidOperationException("Invalid access token");
+            }
         }
 
-        public async Task<IActionResult> UpdateRefreshToken(RefreshToken token)
+        public async Task StoreRefreshToken(RefreshToken token)
         {
-            return await _repo.UpdateRefreshToken(token);
+            bool isSuccess = await _repo.StoreRefreshToken(token); 
+
+            if (!isSuccess)
+            {
+                throw new Exception("Failed to store refresh token");
+            }
         }
 
+        public async Task RemoveRefreshToken(string token)
+        {
+            bool isSuccess = await _repo.RemoveRefreshToken(token);
+
+            if (!isSuccess)
+            {
+                throw new Exception("Refresh token not found");
+            }
+        }
+
+
+        public async Task UpdateRefreshToken(string token)
+        {
+            bool isSuccess = await _repo.UpdateRefreshToken(token);
+
+            if(!isSuccess)
+            {
+                throw new Exception("Refresh token not found");
+            }
+        }
     }
 }

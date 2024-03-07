@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using ChatroomB_Backend.Models;
 using System.IdentityModel.Tokens.Jwt;
+using ChatroomB_Backend.Utils;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -11,74 +13,43 @@ namespace ChatroomB_Backend.Controllers
     public class TokenController : ControllerBase
     {
         private readonly ITokenService _tokenService;
+        private readonly ITokenUtils _tokenUtil;
 
-        public TokenController(ITokenService tokenService)
+        public TokenController(ITokenService tokenService, ITokenUtils tokenUtil)
         {
             _tokenService = tokenService;
+            _tokenUtil = tokenUtil;
         }
 
         [HttpPost("RenewToken")]
         [AllowAnonymous]
         public async Task<IActionResult> RenewToken()
         {
-            // Extract the expired access token from the Authorization header
-            string authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            // Get Cookie Refresh Token
+            string refreshToken = HttpContext.Request.Cookies["refreshToken"];
 
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-            {
-                return Unauthorized("Authorization header is missing or invalid");
-            }
-
-            // Extract the refresh token from the request cookie
-            string refreshToken = Request.Cookies["refreshToken"];
-
-            if (string.IsNullOrEmpty(refreshToken))
+            if (string.IsNullOrWhiteSpace(refreshToken))
             {
                 return Unauthorized("Refresh token is missing");
             }
 
-            // Decode the token
-            string expiredToken = authHeader.Substring("Bearer ".Length).Trim();
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwtToken = tokenHandler.ReadJwtToken(expiredToken);
-
-            // Define the JWT claim type URIs
-            string userIdClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
-            string userNameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
-
-            // Retrieve the userId and username
-            string userIdString = jwtToken.Claims.FirstOrDefault(claim => claim.Type == userIdClaimType)?.Value;
-            string username = jwtToken.Claims.FirstOrDefault(claim => claim.Type == userNameClaimType)?.Value;
-
-            // Attempt to parse and null checking
-            if (!int.TryParse(userIdString, out int userId))
+            // Retrieve userId and username from HttpContext, attached by the middleware
+            if (!HttpContext.Items.TryGetValue("UserId", out var userIdObj) ||
+                !HttpContext.Items.TryGetValue("Username", out var usernameObj))
             {
-                return Unauthorized("Invalid user ID in token");
+                return Unauthorized("User information is missing in the request context");
             }
 
-            if (string.IsNullOrEmpty(username))
-            {
-                return Unauthorized("Invalid username in token");
-            }
+            int userId = (int)userIdObj;
+            string username = (string)usernameObj;
 
-            // Create refresh token object
-            RefreshToken token = new RefreshToken
-            {
-                Token = refreshToken,
-            };
+            // Validate and update refresh token expiry
+            await _tokenService.UpdateRefreshToken(refreshToken);
 
-            // Call token service to generate new access token after validating the refresh token
-            try
-            {
-                string newAccessToken = await _tokenService.RenewAccessToken(token, userId, username);
+            // Generate a new access token
+            string newAccessToken = _tokenUtil.GenerateAccessToken(userId, username);
 
-                // Assuming GenerateAccessToken will throw an exception if it cannot generate a token
-                return Ok(new { AccessToken = newAccessToken });
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message); 
-            }
+            return Ok(new { AccessToken = newAccessToken });
         }
     }
 }

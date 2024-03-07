@@ -1,4 +1,5 @@
-﻿using ChatroomB_Backend.DTO;
+﻿using Azure.Core;
+using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Hubs;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
@@ -15,9 +16,9 @@ namespace ChatroomB_Backend.Service
         private readonly IRedisServcie _RServices;
         private readonly IHubContext<ChatHub> _hubContext;
 
-        public UsersServices(IUserRepo reponsitory, IBlobService blobService, IRedisServcie rServices, IHubContext<ChatHub> hubContext)
+        public UsersServices(IUserRepo repository, IBlobService blobService, IRedisServcie rServices, IHubContext<ChatHub> hubContext)
         {
-            _repo = reponsitory;
+            _repo = repository;
             _blobService = blobService;
             _RServices = rServices;
             _hubContext = hubContext;
@@ -25,12 +26,12 @@ namespace ChatroomB_Backend.Service
 
         public async Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId)
         {
-            return (await _repo.GetByName(profileName, userId));
+            return await _repo.GetByName(profileName, userId);
         }
 
         public async Task<IEnumerable<Users>> GetFriendRequest(int userId)
         {
-            return (await _repo.GetFriendRequest(userId));
+            return await _repo.GetFriendRequest(userId);
         }
 
         public async Task<Users> GetUserById(int userId)
