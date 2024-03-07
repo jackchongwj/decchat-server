@@ -60,7 +60,7 @@ namespace ChatroomB_Backend.Repository
                     return 0;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 return 0;
             }

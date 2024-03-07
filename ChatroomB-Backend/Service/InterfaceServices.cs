@@ -59,18 +59,20 @@ namespace ChatroomB_Backend.Service
 
     public interface IAuthService
     {
+        Task<Users> Authenticate(string username, string password);
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
-        Task<IActionResult> AddUser(Users user);
+        Task AddUser(string username, string password, string profileName);
         Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
     }
 
     public interface ITokenService
     {
-        Task<string> RenewAccessToken(RefreshToken token, int userId, string username);
-        Task<IActionResult> StoreRefreshToken(RefreshToken token);
-        Task<IActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<IActionResult> UpdateRefreshToken(RefreshToken token);
+        Task ValidateRefreshToken(string token, int userId);
+        Task ValidateAccessToken(int userId, string username);
+        Task StoreRefreshToken(RefreshToken token);
+        Task RemoveRefreshToken(string token);
+        Task UpdateRefreshToken(string token);
     }
 
     public interface IBlobService

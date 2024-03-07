@@ -28,6 +28,7 @@ namespace ChatroomB_Backend.Hubs
         }
 
         //SignalR start and destroy connection
+        [Authorize]
         public override async Task OnConnectedAsync()
         {
             try

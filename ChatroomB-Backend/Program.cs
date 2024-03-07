@@ -10,7 +10,6 @@ using System.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-
 using ChatroomB_Backend.Hubs;
 using StackExchange.Redis;
 using SixLabors.ImageSharp;
@@ -66,15 +65,26 @@ builder.Services.AddSingleton(provider =>
     return collection;
 });
 
-
-
-// Add Cookie Policy
+// Set Up Cookie Policy
+var environment = builder.Environment;
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.CheckConsentNeeded = context => true;
-    options.MinimumSameSitePolicy = SameSiteMode.None; 
-    options.HttpOnly = HttpOnlyPolicy.Always;
-    options.Secure = CookieSecurePolicy.SameAsRequest; 
+    if (environment.IsProduction())
+    {
+        // Production cookie policy
+        options.CheckConsentNeeded = context => true;
+        options.MinimumSameSitePolicy = SameSiteMode.Strict;
+        options.HttpOnly = HttpOnlyPolicy.Always;
+        options.Secure = CookieSecurePolicy.SameAsRequest;
+    }
+    else
+    {
+        // Development cookie policy
+        options.CheckConsentNeeded = context => false;
+        options.MinimumSameSitePolicy = SameSiteMode.None;
+        options.HttpOnly = HttpOnlyPolicy.None;
+        options.Secure = CookieSecurePolicy.SameAsRequest;
+    }
 });
 
 // Add services to the container.
@@ -98,7 +108,7 @@ builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IUserService, UsersServices>();
 builder.Services.AddScoped<IFriendService, FriendsServices>();
 builder.Services.AddScoped<IAuthService, AuthServices>();
-builder.Services.AddScoped<ITokenService, TokenServices>();
+builder.Services.AddSingleton<ITokenService, TokenServices>();
 builder.Services.AddScoped<IMessageService, MessagesServices>();
 builder.Services.AddScoped<IErrorHandleService, ErrorHanldeServices>();
 
@@ -106,13 +116,13 @@ builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();  
-builder.Services.AddScoped<ITokenRepo, TokenRepo>();
+builder.Services.AddSingleton<ITokenRepo, TokenRepo>();
 builder.Services.AddScoped<IMessageRepo, MessagesRepo>();
 builder.Services.AddScoped<IErrorHandleRepo, ErrorHandleRepo>();
 
 
 builder.Services.AddScoped<IAuthUtils, AuthUtils>();
-builder.Services.AddScoped<ITokenUtils, TokenUtils>();
+builder.Services.AddSingleton<ITokenUtils, TokenUtils>();
 
 // RabbitMQ-Related Services
 builder.Services.AddSingleton<RabbitMQServices>();
@@ -151,8 +161,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = false,
+            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+
             ValidIssuer = builder.Configuration.GetSection("JwtSettings:Issuer").Get<string>(),
             ValidAudience = builder.Configuration.GetSection("JwtSettings:Audience").Get<string>(),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JwtSettings:SecretKey").Get<string>()))
@@ -176,17 +187,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AngularApp");
-
 app.UseRouting();
+
+app.UseCookiePolicy();
+
+app.UseCors("AngularApp");
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<TokenValidationMiddleware>();
 
-//app.UseMiddleware<TokenValidationMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Use IP rate limiting middleware
 app.UseIpRateLimiting();

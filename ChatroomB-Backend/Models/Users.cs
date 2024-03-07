@@ -9,7 +9,7 @@ namespace ChatroomB_Backend.Models
     public class Users
     {
         [Key]
-        public int? UserId { get; set; }
+        public int UserId { get; set; }
 
         [Required]
         [StringLength(15, ErrorMessage = "Username must not exceed 15 characters.")]

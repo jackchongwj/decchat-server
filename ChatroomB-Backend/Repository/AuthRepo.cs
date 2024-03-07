@@ -19,6 +19,22 @@ namespace ChatroomB_Backend.Repository
             _config = config;
         }
 
+        public async Task<Users> GetUserCredentials(string username)
+        {
+            try
+            {
+                string sql = "exec GetUserCredentials @UserName";
+
+                Users user = await _dbConnection.QuerySingleOrDefaultAsync<Users>(sql, new { UserName = username });
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to get user credentials", ex);
+            }
+        }
+
         public async Task<string> GetSalt(string username)
         {
             try
@@ -57,7 +73,7 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<IActionResult> AddUser(Users user)
+        public async Task<bool> AddUser(Users user)
         {
             try
             {
@@ -72,7 +88,7 @@ namespace ChatroomB_Backend.Repository
                     ProfilePicture = _config["DefaultPicture:UserProfile"]
                 });
 
-                return new OkObjectResult(new { Messsage = "Registration successful!" });
+                return true;
             }
             catch (Exception ex)
             {
