@@ -87,7 +87,6 @@ namespace ChatroomB_Backend.Repository
             return result;
         }
         
-
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
             DynamicParameters parameter = new DynamicParameters();

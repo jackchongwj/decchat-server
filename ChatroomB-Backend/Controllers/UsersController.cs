@@ -117,18 +117,32 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file, [FromForm(Name = "id")] string userId)
         {
-            byte[] filebyte = await ConvertToByteArrayAsync(file);
-
             if (file == null || file.Length == 0)
             {
                 return BadRequest("File is not provided or empty.");
             }
 
+            if (file.Length > 7 * 1024 * 1024)
+            {
+                return BadRequest("The file is too large. Please upload an image that is 7MB or smaller.");
+            }
+
+            byte[] fileBytes;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                fileBytes = memoryStream.ToArray();
+            }
+
             try
             {
-                int success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId), filebyte, file.FileName);
+                int success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId), fileBytes, file.FileName);
 
-                if (success == 0)
+                if (success == -1)
+                {
+                    return BadRequest("The uploaded file is not a valid image.");
+                }
+                else if (success == 0)
                 {
                     return NotFound("Failed to update the profile picture.");
                 }
@@ -140,7 +154,6 @@ namespace ChatroomB_Backend.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
 
         [HttpPost("UserDeletion")]
         [Authorize]

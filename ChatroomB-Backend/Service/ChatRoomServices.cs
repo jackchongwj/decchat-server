@@ -152,23 +152,31 @@ namespace ChatroomB_Backend.Service
         }
         public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
         {
-            int updateResult = await _repo.UpdateGroupName(chatRoomId, newGroupName);
-            if (updateResult > 0)
+            try
             {
-                await _hubContext.Clients.Groups(chatRoomId.ToString())
-                    .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupName = newGroupName });
+                int updateResult = await _repo.UpdateGroupName(chatRoomId, newGroupName);
+                if (updateResult > 0)
+                {
+                    await _hubContext.Clients.Groups(chatRoomId.ToString())
+                        .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupName = newGroupName });
+                }
+
+                return updateResult;
             }
-            return updateResult;
+
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return -1;
+            }
         }
 
         public async Task<int> UpdateGroupPicture(int chatRoomId, byte[] fileBytes, string fileName)
         {
             try
             {
-                // Upload the file to blob storage and get the URI
                 string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
 
-                // Update the user's profile picture URI in the database
                 int updateResult = await _repo.UpdateGroupPicture(chatRoomId, blobUri);
 
                 if (updateResult > 0)
@@ -182,7 +190,6 @@ namespace ChatroomB_Backend.Service
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                // Return a value indicating failure, such as -1, to differentiate from successful updates
                 return -1;
             }
         }

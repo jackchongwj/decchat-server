@@ -40,47 +40,61 @@ namespace ChatroomB_Backend.Service
 
         public async Task<int> UpdateProfileName(int userId, string newProfileName)
         {
-            int updateResult = await _repo.UpdateProfileName(userId, newProfileName);
-            if (updateResult > 0 )
+            try
             {
-                IEnumerable<ChatlistVM> chatList = await GetChatListByUserId(userId);
-                List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList(); // Use UserId as friend ID
-                await _hubContext.Clients.Groups(friendIds.Select(id => $"User{id}").ToList()).SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfileName = newProfileName });
+                int updateResult = await _repo.UpdateProfileName(userId, newProfileName);
+
+                if (updateResult > 0)
+                {
+                    IEnumerable<ChatlistVM> chatList = await GetChatListByUserId(userId);
+
+                    List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList();
+
+                    await _hubContext.Clients.Groups(friendIds.Select(id => $"User{id}").ToList())
+                        .SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfileName = newProfileName });
+                }
+                return updateResult;
             }
-            return updateResult;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return -1;
+            }
         }
 
         public async Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName)
         {
             try
             {
-                // Upload the file to blob storage and get the URI
-                string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
-
-                
-                int updateResult = await _repo.UpdateProfilePicture(userId, blobUri);
-
-                
-                if (updateResult > 0)
+                // Attempt to load the image to verify if it's a valid image file
+                using (Image image = SixLabors.ImageSharp.Image.Load(fileBytes))
                 {
-                    // Fetch the list of chatrooms that includes the user's friends
-                    IEnumerable<ChatlistVM> chatList = await GetChatListByUserId(userId);
+                    string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
 
-                    List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList();
+                    int updateResult = await _repo.UpdateProfilePicture(userId, blobUri);
 
-                    await _hubContext.Clients.Groups(friendIds.Select(id => $"User{id}").ToList())
-                        .SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfilePicture = blobUri });
+                    if (updateResult > 0)
+                    {
+                        IEnumerable<ChatlistVM> chatList = await GetChatListByUserId(userId);
+                        List<int> friendIds = chatList.Select(chat => chat.UserId).Distinct().ToList();
+                        await _hubContext.Clients.Groups(friendIds.Select(id => $"User{id}").ToList())
+                            .SendAsync("ReceiveUserProfileUpdate", new { UserId = userId, ProfilePicture = blobUri });
+                    }
+                    return updateResult;
                 }
-
-                return updateResult;
+            }
+            catch (SixLabors.ImageSharp.UnknownImageFormatException)
+            {
+                Console.WriteLine("Uploaded file is not a valid image.");
+                return -1;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                // Return a value indicating failure, such as -1, to differentiate from successful updates
                 return -1;
             }
         }
+
 
         public async Task<int> DeleteUser(int userId)
         {

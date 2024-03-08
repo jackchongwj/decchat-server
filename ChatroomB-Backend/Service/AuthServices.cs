@@ -41,18 +41,14 @@ namespace ChatroomB_Backend.Service
             Users user = await _userService.GetUserById(userId);
             if (user == null) return false;
 
-            // Get the salt for the user and hash the current password
             string salt = await GetSalt(user.UserName);
             string hashedCurrentPassword = _authUtils.HashPassword(currentPassword, salt);
 
-            // Verify the current password using the VerifyPassword method
             bool isCurrentPasswordValid = await _repo.VerifyPassword(user.UserName, hashedCurrentPassword);
             if (!isCurrentPasswordValid) return false;
 
-            // Hash the new password with the same salt
             string newHashedPassword = _authUtils.HashPassword(newPassword, salt);
 
-            // Call the repository to update the password
             return await _repo.ChangePassword(userId, newHashedPassword);
         }
     }
