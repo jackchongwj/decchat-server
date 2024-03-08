@@ -55,7 +55,7 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                var userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
                 if (userIdResult.Result is not null)
                 {
                     // If there is an ActionResult, it means there was an error, return it
