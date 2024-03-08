@@ -28,6 +28,7 @@ namespace ChatroomB_Backend.Hubs
         }
 
         //SignalR start and destroy connection
+        [Authorize]
         public override async Task OnConnectedAsync()
         {
             try
@@ -35,8 +36,6 @@ namespace ChatroomB_Backend.Hubs
                 // declare userId and connection Id
                 string userId = Context.GetHttpContext().Request.Query["userId"];
                 string connectionId = Context.ConnectionId;
-
-                Console.WriteLine($"Connection ID {connectionId} connected.");
 
                 // call redis to add userId and Connection id to redis
                 await Task.Delay(500);
@@ -47,7 +46,6 @@ namespace ChatroomB_Backend.Hubs
                 //add user to a group to easy call them
                 string groupName = "User" + userId.ToString();
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-                Console.WriteLine($"{connectionId} has joined the group {groupName}");
 
                 // add list to group 
                 await AddToGroup(Convert.ToInt32(userId));
@@ -97,7 +95,6 @@ namespace ChatroomB_Backend.Hubs
         {
 
             await Clients.OthersInGroup(ChatRoomId.ToString()).SendAsync("UserTyping", ChatRoomId, typing, profilename);
-            Console.WriteLine($"{Context.ConnectionId} - {profilename} has sending {typing} status to the group {ChatRoomId}.");
         }
 
         public async Task AddToGroup(int userId) 
@@ -112,7 +109,6 @@ namespace ChatroomB_Backend.Hubs
                     {
                         await Groups.AddToGroupAsync(Context.ConnectionId, list.ChatRoomId.ToString());
 
-                        Console.WriteLine($"{Context.ConnectionId} has joined the group {list.ChatRoomId}");
                         await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId, true);
                     }
                     await Clients.Group("User" + userId).SendAsync("Chatlist", chatlist);

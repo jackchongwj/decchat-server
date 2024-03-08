@@ -164,11 +164,11 @@ namespace ChatroomB_Backend.Migrations
 
             modelBuilder.Entity("ChatroomB_Backend.Models.Users", b =>
                 {
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("UserId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
                     b.Property<string>("HashedPassword")
                         .IsRequired()
@@ -189,6 +189,7 @@ namespace ChatroomB_Backend.Migrations
 
                     b.Property<string>("UserName")
                         .IsRequired()
+                        .HasMaxLength(15)
                         .HasColumnType("varchar(15)");
 
                     b.HasKey("UserId");

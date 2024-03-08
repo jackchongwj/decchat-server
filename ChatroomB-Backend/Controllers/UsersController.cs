@@ -3,6 +3,8 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using ChatroomB_Backend.Utils;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -11,27 +13,21 @@ namespace ChatroomB_Backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _UserService;
+        private readonly IAuthUtils _authUtils;
 
-
-        public UsersController(IUserService service)
+        public UsersController(IUserService service, IAuthUtils authUtils)
         {
             _UserService = service;
+            _authUtils = authUtils;
         }
 
         [HttpGet("Search")]
         [Authorize]
         public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
         {
-            try
-            {
-                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userId);
+            IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userId);
 
-                return Ok(GetUserByName);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(GetUserByName);
         }
 
 
@@ -39,42 +35,36 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> GetChatListByUserId([FromQuery] int userId)
         {
-            try
-            {
-                IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userId);
+            IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userId);
 
-                return Ok(chatList);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-
+            return Ok(chatList);
         }
 
         [HttpGet("FriendRequest")]
         [Authorize]
         public async Task<IActionResult> GetFriendRequest(int userId)
         {
-            try
-            {
-                IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
+            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
 
-                return Ok(GetFriendRequest);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(GetFriendRequest);
         }
 
         [HttpGet("UserDetails")]
         [Authorize]
-        public async Task<ActionResult<Users>> GetUserById(int id)
+        public async Task<ActionResult<Users>> GetUserById()
         {
             try
             {
-                Users user = await _UserService.GetUserById(id);
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
+
+                int userId = userIdResult.Value;
+
+                Users user = await _UserService.GetUserById(userId);
 
                 if (user == null)
                 {
@@ -83,10 +73,11 @@ namespace ChatroomB_Backend.Controllers
 
                 return Ok(user);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return BadRequest(ex.Message);
             }
+            
         }
 
         [HttpPost("UpdateProfileName")]
@@ -97,20 +88,12 @@ namespace ChatroomB_Backend.Controllers
             {
                 return BadRequest("Invalid request data");
             }
-            
-            try
-            {
-                int result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
+ 
+            int result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
 
-                if (result == 0) return NotFound("User ID not found or update failed.");
+            if (result == 0) return NotFound("User ID not found or update failed.");
 
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-            
+            return Ok(); 
         }
 
         [HttpPost("UpdateProfilePicture")]
@@ -147,28 +130,17 @@ namespace ChatroomB_Backend.Controllers
                     return NotFound("Failed to update the profile picture.");
                 }
 
-                return Ok(new { Message = "Profile picture updated successfully." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(new { Message = "Profile picture updated successfully." });
         }
 
         [HttpPost("UserDeletion")]
         [Authorize]
         public async Task<IActionResult> DeleteUser([FromQuery]int id)
         {
-            try
-            {
-                int result = await _UserService.DeleteUser(id);
-                if (result == 0) { return NotFound("User ID not found."); }
-                else { return Ok(); }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            int result = await _UserService.DeleteUser(id);
+
+            if (result == 0) { return NotFound("User ID not found."); }
+            else { return Ok(); }
         }
 
         [HttpGet("DoesUsernameExist")]
@@ -188,5 +160,7 @@ namespace ChatroomB_Backend.Controllers
                 return memoryStream.ToArray();
             }
         }
+
+
     }
 }

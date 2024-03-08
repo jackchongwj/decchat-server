@@ -19,19 +19,42 @@ namespace ChatroomB_Backend.Repository
             _config = config;
         }
 
+        public async Task<Users> GetUserCredentials(string username)
+        {
+            try
+            {
+                string sql = "exec GetUserCredentials @UserName";
+
+                Users user = await _dbConnection.QuerySingleOrDefaultAsync<Users>(sql, new { UserName = username });
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to get user credentials", ex);
+            }
+        }
+
         public async Task<string> GetSalt(string username)
         {
-            string sql = "exec GetSaltByUserName @UserName";
-
-            string salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
-
-            if (salt == null)
-
+            try
             {
-                throw new ArgumentNullException("Salt not found for the user");
-            }
+                string sql = "exec GetSaltByUserName @UserName";
 
-            return salt;
+                string salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
+
+                if (salt == null)
+
+                {
+                    throw new ArgumentNullException("Salt not found for the user");
+                }
+
+                return salt;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to get salt for user", ex);
+            }
         }
 
         public async Task<bool> VerifyPassword(string username, string hashedPassword)
@@ -44,17 +67,13 @@ namespace ChatroomB_Backend.Repository
 
                 return result == 1;
             }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("A database error occurred while verifying password", ex);
-            }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("An unexpected error occurred", ex);
+                throw new InvalidOperationException("Failed to verify password", ex);
             }
         }
 
-        public async Task<IActionResult> AddUser(Users user)
+        public async Task<bool> AddUser(Users user)
         {
             try
             {
@@ -69,11 +88,11 @@ namespace ChatroomB_Backend.Repository
                     ProfilePicture = _config["DefaultPicture:UserProfile"]
                 });
 
-                return new OkObjectResult(new { Messsage = "Registration successful!" });
+                return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return new BadRequestObjectResult(new { Error = "Failed to register user" });
+                throw new InvalidOperationException("Failed to register user", ex);
             }
         }
 
@@ -83,20 +102,13 @@ namespace ChatroomB_Backend.Repository
             {
                 string sql = "exec ChangePassword @UserId, @NewHashedPassword";
 
-                await _dbConnection.ExecuteAsync(
-                    sql,
-                    new { UserId = userId, NewHashedPassword = newHashedPassword }
-                );
+                await _dbConnection.ExecuteAsync(sql, new { UserId = userId, NewHashedPassword = newHashedPassword });
 
-                return true; // Return true if the password was successfully changed
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("A database error occurred while changing password", ex);
+                return true; 
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("An unexpected error occurred", ex);
+                throw new InvalidOperationException("Failed to change password", ex);
             }
         }
     }

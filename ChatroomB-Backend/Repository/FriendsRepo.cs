@@ -21,62 +21,89 @@ namespace ChatroomB_Backend.Repository
 
         public async Task <IEnumerable<Users>> AddFriends(Friends friends)
         {
-            var param = new
+            try
             {
-                SenderId = friends.SenderId,
-                ReceiverId = friends.ReceiverId,
-            };
-            string sql = "exec AddFriend @SenderId, @ReceiverId";
+                var param = new
+                {
+                    SenderId = friends.SenderId,
+                    ReceiverId = friends.ReceiverId,
+                };
+                string sql = "exec AddFriend @SenderId, @ReceiverId";
 
-            IEnumerable<Users> result =  await _dbConnection.QueryAsync<Users>(sql, param);
+                IEnumerable<Users> result = await _dbConnection.QueryAsync<Users>(sql, param);
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to add friends", ex);
+            }
         }
 
         public async Task<int> UpdateFriendRequest(FriendRequest request)
         {
-            var param = new
+            try
             {
-                SenderId = request.SenderId,
-                ReceiverId = request.ReceiverId,
-                Status = request.Status
-            };
+                var param = new
+                {
+                    SenderId = request.SenderId,
+                    ReceiverId = request.ReceiverId,
+                    Status = request.Status
+                };
 
-            string sql = "exec UpdateFriendRequest @SenderId, @ReceiverId, @Status";
-            
-            int result = await _dbConnection.ExecuteAsync(sql, param);
+                string sql = "exec UpdateFriendRequest @SenderId, @ReceiverId, @Status";
 
-            return result;
+                int result = await _dbConnection.ExecuteAsync(sql, param);
 
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to update friend request", ex);
+            }
         }
 
         public async Task<int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@ChatRoomId",chatRoomId);
-            parameters.Add("@User1", userId1);
-            parameters.Add("@User2", userId2);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@ChatRoomId", chatRoomId);
+                parameters.Add("@User1", userId1);
+                parameters.Add("@User2", userId2);
+                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await _dbConnection.ExecuteAsync("DeleteFriend", parameters, commandType: CommandType.StoredProcedure);
+                await _dbConnection.ExecuteAsync("DeleteFriend", parameters, commandType: CommandType.StoredProcedure);
 
-            int isSuccess = parameters.Get<int>("@Result");
+                int isSuccess = parameters.Get<int>("@Result");
 
-            return isSuccess;
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to delete friend request", ex);
+            }
         }
 
         public async Task<int> CheckFriendExit(Friends friends)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@SenderId", friends.SenderId);
-            parameters.Add("@ReceiverId", friends.ReceiverId);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@SenderId", friends.SenderId);
+                parameters.Add("@ReceiverId", friends.ReceiverId);
+                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await _dbConnection.ExecuteAsync("CheckFriendExit", parameters, commandType: CommandType.StoredProcedure);
+                await _dbConnection.ExecuteAsync("CheckFriendExit", parameters, commandType: CommandType.StoredProcedure);
 
-            int isSuccess = parameters.Get<int>("@Result");
+                int isSuccess = parameters.Get<int>("@Result");
 
-            return isSuccess;
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to check friend existence", ex);
+            }
         }
     }
 }

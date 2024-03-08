@@ -29,8 +29,7 @@ namespace ChatroomB_Backend.Repository
         Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
         Task<int> CheckFriendExit(Friends friends);
         Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
-        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
-       
+        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);  
     }
 
     public interface IChatRoomRepo
@@ -43,6 +42,8 @@ namespace ChatroomB_Backend.Repository
         Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
         Task<int> RemoveUserFromGroup (int chatRoomId, int userId);
         Task<int> QuitGroup(int chatRoomId, int userId);
+        Task<IEnumerable<ChatlistVM>> AddMembersToGroup(int chatRoomId, DataTable selectedUsers);
+        Task<IEnumerable<ChatlistVM>> GetGroupInfoByChatroomId(int chatRoomId, int userId);
 
     }
 
@@ -65,18 +66,20 @@ namespace ChatroomB_Backend.Repository
 
     public interface IAuthRepo
     {
+        Task<Users> GetUserCredentials(string username);
         Task<string> GetSalt(string username);
         Task<bool> VerifyPassword(string username, string hashedPassword);
-        Task<IActionResult> AddUser(Users user);
+        Task<bool> AddUser(Users user);
         Task<bool> ChangePassword(int userId, string newHashedPassword);
     }
 
     public interface ITokenRepo
     {
-        Task<bool> IsRefreshTokenValid(RefreshToken token, int userId, string username);
-        Task<IActionResult> StoreRefreshToken(RefreshToken token);
-        Task<IActionResult> RemoveRefreshToken(RefreshToken token);
-        Task<IActionResult> UpdateRefreshToken(RefreshToken token);
+        Task<bool> ValidateRefreshToken(string token, int userId);
+        Task<bool> ValidateAccessToken(int userId, string username);
+        Task<bool> StoreRefreshToken(RefreshToken token);
+        Task<bool> RemoveRefreshToken(string token);
+        Task<bool> UpdateRefreshToken(string token);
     }
 
     public interface IRedisRepo 

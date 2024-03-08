@@ -21,57 +21,114 @@ namespace ChatroomB_Backend.Repository
             _config = config;
         }
 
-        public async Task<bool> IsRefreshTokenValid(RefreshToken token, int userId, string username)
+        public async Task<bool> ValidateRefreshToken(string token, int userId)
         {
-            string sql = "exec CheckRefreshTokenValidity @Token, @UserId, @UserName";
-            int result = await _dbConnection.ExecuteScalarAsync<int>(sql, new
+            string connectionString = _config.GetConnectionString("ChatroomB_BackendContext");
+            using (var sqlConnection = new SqlConnection(connectionString))
             {
-                Token = token.Token,
-                UserId = userId,
-                UserName = username
-            });
-            bool isValid = Convert.ToBoolean(result);
-
-            return isValid;
+                try
+                {
+                    await sqlConnection.OpenAsync();
+                    string sql = "exec ValidateRefreshToken @Token, @UserId";
+                    var result = await sqlConnection.ExecuteScalarAsync<bool>(sql, new { Token = token, UserId = userId });
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Failed to validate refresh token", ex);
+                }
+            }
         }
 
-        public async Task<IActionResult> StoreRefreshToken(RefreshToken token)
+        public async Task<bool> ValidateAccessToken(int userId, string userName)
         {
-            string sql = "exec StoreRefreshToken @UserId, @Token, @ExpiredDateTime";
-            int expirationDays = _config.GetValue<int>("RefreshTokenSettings:ExpirationDays");
-            DateTime expirationDateTime = DateTime.UtcNow.AddDays(expirationDays);
-
-            await _dbConnection.ExecuteAsync(sql, new RefreshToken
+            string connectionString = _config.GetConnectionString("ChatroomB_BackendContext");
+            using (var sqlConnection = new SqlConnection(connectionString))
             {
-                UserId = token.UserId,
-                Token = token.Token,
-                ExpiredDateTime = expirationDateTime,
-            });
-
-            return new OkObjectResult(new { Message = "Refresh token stored successfully" });
+                try
+                {
+                    await sqlConnection.OpenAsync();
+                    string sql = "exec ValidateAccessToken @UserId, @UserName";
+                    var result = await sqlConnection.ExecuteScalarAsync<bool>(sql, new { UserId = userId, UserName = userName });
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Failed to validate access token", ex);
+                }
+            }
         }
 
-        public async Task<IActionResult> RemoveRefreshToken(RefreshToken token)
-        {
-            string sql = "exec RemoveRefreshToken @Token";
-            await _dbConnection.ExecuteAsync(sql, new { token.Token });
 
-            return new OkObjectResult(new { Message = "Refresh token removed successfully" });
+        public async Task<bool> StoreRefreshToken(RefreshToken token)
+        {
+            try
+            {
+                string sql = "exec StoreRefreshToken @UserId, @Token, @ExpiredDateTime, @Success OUTPUT";
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserId", token.UserId);
+                parameters.Add("@Token", token.Token);
+                parameters.Add("@ExpiredDateTime", token.ExpiredDateTime);
+                parameters.Add("@Success", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+
+                await _dbConnection.ExecuteAsync(sql, parameters);
+
+                bool isSuccess = parameters.Get<bool>("@Success");
+
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to store refresh token", ex);
+            }
         }
 
-        public async Task<IActionResult> UpdateRefreshToken(RefreshToken token)
+
+        public async Task<bool> RemoveRefreshToken(string token)
         {
-            string sql = "exec UpdateRefreshTokenExpiry @Token, @ExpiredDateTime";
-            int expirationDays = _config.GetValue<int>("RefreshTokenSettings:ExpirationDays");
-            DateTime expirationDateTime = DateTime.UtcNow.AddDays(expirationDays);
-
-            await _dbConnection.ExecuteAsync(sql, new RefreshToken
+            try
             {
-                Token = token.Token,
-                ExpiredDateTime = expirationDateTime,
-            });
+                string sql = "exec RemoveRefreshToken @Token, @Success OUTPUT";
 
-            return new OkObjectResult(token);
+                var parameters = new DynamicParameters();
+                parameters.Add("@Token", token);
+                parameters.Add("@Success", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+
+                await _dbConnection.ExecuteAsync(sql, parameters);
+
+                bool isSuccess = parameters.Get<bool>("@Success");
+
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to remove refresh token", ex);
+            }
+        }
+
+        public async Task<bool> UpdateRefreshToken(string token)
+        {
+            try
+            {
+                string sql = "exec UpdateRefreshTokenExpiry @Token, @ExpiredDateTime, @Success OUTPUT";
+                DateTime expirationDateTime = DateTime.UtcNow.AddDays(Convert.ToInt32(_config["RefreshTokenSettings:ExpirationDays"]));
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@Token", token);
+                parameters.Add("@ExpiredDateTime", expirationDateTime);
+                parameters.Add("@Success", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+
+                await _dbConnection.ExecuteAsync(sql, parameters);
+
+                bool isSuccess = parameters.Get<bool>("@Success");
+
+                return isSuccess;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to update refresh token", ex);
+            }
         }
     }
 }

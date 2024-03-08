@@ -1,9 +1,6 @@
 ﻿using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 using ChatroomB_Backend.Utils;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace ChatroomB_Backend.Service
 {
@@ -21,6 +18,27 @@ namespace ChatroomB_Backend.Service
             _authUtils = authUtils;
         }
 
+        public async Task<Users> Authenticate(string username, string password)
+        {
+            bool doesExist = await _userService.DoesUsernameExist(username);
+
+            if (!doesExist)
+            {
+                throw new UnauthorizedAccessException("Invalid username or password");
+            }
+
+            Users user = await _repo.GetUserCredentials(username);
+
+            string hashedPassword = _authUtils.HashPassword(password, user.Salt);
+
+            if (hashedPassword != user.HashedPassword)
+            {
+                throw new UnauthorizedAccessException("Invalid username or password");
+            }
+
+            return user;
+        }
+
         public async Task<string> GetSalt(string username)
         {
             return await _repo.GetSalt(username);
@@ -31,9 +49,32 @@ namespace ChatroomB_Backend.Service
             return await _repo.VerifyPassword(username, hashedPassword);
         }
 
-        public async Task<IActionResult> AddUser(Users user)
+        public async Task AddUser(string username, string password, string profileName)
         {
-            return await _repo.AddUser(user);
+            bool isUnique = await _userService.DoesUsernameExist(username);
+
+            if (isUnique)
+            {
+                throw new ArgumentException("Duplicate username detected");
+            }
+
+            string salt = _authUtils.GenerateSalt();
+            string hashedPassword = _authUtils.HashPassword(password, salt);
+
+            Users user = new Users
+            {
+                UserName = username,
+                ProfileName = profileName,
+                HashedPassword = hashedPassword,
+                Salt = salt,
+            };
+
+            bool isSuccess = await _repo.AddUser(user);
+
+            if (!isSuccess)
+            {
+                throw new Exception("Registration failed");
+            }
         }
 
         public async Task<bool> ChangePassword(int userId, string currentPassword, string newPassword)

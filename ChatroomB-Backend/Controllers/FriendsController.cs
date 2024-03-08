@@ -36,31 +36,21 @@ namespace ChatroomB_Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid request data");
+                throw new ArgumentException("Invalid request data");
             }
 
-            if (ModelState.IsValid)
-            {
-                int result = await _FriendService.CheckFriendExit(friends);
+            int result = await _FriendService.CheckFriendExit(friends);
 
-                if (result == 0)
-                {
-
-                    await _FriendService.AddFriends(friends);
-                    return Ok(new { Message = "Friend Request send successfully" });
-                }
-                else 
-                {
-                    return BadRequest(new { ErrorMessage = "Friend Has Added Before" });
-                }
-
-            }
-            else
+            if (result == 0)
             {
 
-               return BadRequest(new { ErrorMessage = "Invalid model. Please check the provided data." });
+                await _FriendService.AddFriends(friends);
+                return Ok(new { Message = "Friend Request send successfully" });
             }
-
+            else 
+            {
+                throw new InvalidOperationException("Friend has already been added before");
+            }
         }
 
         [HttpPost("UpdateFriendRequest")]
@@ -69,26 +59,19 @@ namespace ChatroomB_Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest("Invalid request data");
+                throw new ArgumentException("Invalid request data");
             }
 
-            try
-            {
-                int result = await _FriendService.UpdateFriendRequest(request);
+            int result = await _FriendService.UpdateFriendRequest(request);
 
-                if (request.Status == 2)
-                {
-                    IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userId);
+            if (request.Status == 2)
+            {
+                IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userId);
                         
-                    return Ok(PrivateChatlist);
-                }
+                return Ok(PrivateChatlist);
+            }
 
-                return Ok(0);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(0);
         }
 
         [HttpPost("DeleteFriend")]
@@ -100,17 +83,9 @@ namespace ChatroomB_Backend.Controllers
                 return BadRequest("Invalid request data");
             }
 
-            try
-            {
-                int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1, request.UserId2);
+            int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1, request.UserId2);
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(result);
         }
-
     }
 }

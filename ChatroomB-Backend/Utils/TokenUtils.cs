@@ -1,5 +1,7 @@
-﻿using ChatroomB_Backend.Service;
+﻿using ChatroomB_Backend.Models;
+using ChatroomB_Backend.Service;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -10,11 +12,12 @@ namespace ChatroomB_Backend.Utils
     public class TokenUtils : ITokenUtils
     {
         private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _environment;
 
-        public TokenUtils(IConfiguration config)
+        public TokenUtils(IConfiguration config, IWebHostEnvironment environment)
         {
             _config = config;
-
+            _environment = environment;
         }
 
         public string GenerateAccessToken(int userId, string username)
@@ -26,8 +29,8 @@ namespace ChatroomB_Backend.Utils
             // Create a list of claims with both userId and username
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Name, username)
+                new Claim("UserId", userId.ToString()),
+                new Claim("Username", username)
             };
 
             JwtSecurityToken token = new JwtSecurityToken(
@@ -41,15 +44,43 @@ namespace ChatroomB_Backend.Utils
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public string GenerateRefreshToken()
+        public RefreshToken GenerateRefreshToken(int userId)
         {
             byte[] randomNumber = new byte[32];
             using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(randomNumber);
-                return Convert.ToBase64String(randomNumber);
+                string token = Convert.ToBase64String(randomNumber);
+
+                DateTime expiryDateTime = DateTime.UtcNow.AddDays(Convert.ToInt32(_config["RefreshTokenSettings:ExpirationDays"]));
+
+                return new RefreshToken
+                {
+                    UserId = userId,
+                    Token = token,
+                    ExpiredDateTime = expiryDateTime
+                };
             }
         }
 
+        public CookieOptions SetCookieOptions()
+        {
+            // Default to development settings
+            CookieOptions cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true
+            };
+
+            // Adjust for production environment based on Program.cs settings
+            if (_environment.IsProduction())
+            {
+                cookieOptions.SameSite = SameSiteMode.Strict;
+                cookieOptions.Secure = true;
+            }
+
+            return cookieOptions;
+        }
     }
 }
