@@ -12,7 +12,7 @@ namespace ChatroomB_Backend.Models
 
         public string ErrorMessage { get; set; } = null!;
 
-        public string ControlelrName { get; set; } = null!;
+        public string ControllerName { get; set; } = null!;
 
         [BsonRepresentation(BsonType.DateTime)]
         public DateTime Timestamp { get; set;}
