@@ -82,7 +82,7 @@ namespace ChatroomB_Backend.Hubs
 
                     // Broadcast user's offline status to the group
                 }
-                await _RServices.DeleteUserIdFromRedis(userId);
+                await _RServices.DeleteUserIdFromRedis(userId!);
 
                 await base.OnDisconnectedAsync(exception);
             }

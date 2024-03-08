@@ -4,6 +4,7 @@ using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -20,8 +21,26 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("Search")]
         [Authorize]
-        public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
+        public async Task<IActionResult> SearchByProfileName(string profileName)
         {
+            // get all data from JWT token
+            ClaimsIdentity? identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                return Unauthorized("User identity not found");
+            }
+
+            Claim userIdClaim = identity.FindFirst("userId")!; // Claim name should match the one used in the token creation
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID claim not found in the token");
+            }
+
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return BadRequest("Invalid User ID claim value");
+            }
+
 
             if (!profileName.IsNullOrEmpty())
             {
@@ -45,8 +64,24 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("FriendRequest")]
         [Authorize]
-        public async Task<IActionResult> GetFriendRequest(int userId)
+        public async Task<IActionResult> GetFriendRequest()
         {
+            ClaimsIdentity? identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                return Unauthorized("User identity not found");
+            }
+
+            Claim userIdClaim = identity.FindFirst("userId")!;
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID claim not found in the token");
+            }
+
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return BadRequest("Invalid User ID claim value");
+            }
 
             IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
 
@@ -56,8 +91,10 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("UserDetails")]
         [Authorize]
-        public async Task<ActionResult<Users>> GetUserById(int id)
+        public async Task<ActionResult<Users>> GetUserById()
         {
+            int id = (int)HttpContext.Items["UserId"]!;
+
             Users user = await _UserService.GetUserById(id);
 
             if (user == null)

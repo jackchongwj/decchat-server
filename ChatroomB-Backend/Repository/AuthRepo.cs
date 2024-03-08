@@ -25,9 +25,9 @@ namespace ChatroomB_Backend.Repository
             {
                 string sql = "exec GetUserCredentials @UserName";
 
-                Users user = await _dbConnection.QuerySingleOrDefaultAsync<Users>(sql, new { UserName = username });
+                Users? user = await _dbConnection.QuerySingleOrDefaultAsync<Users>(sql, new { UserName = username });
 
-                return user;
+                return user!;
             }
             catch (Exception ex)
             {
@@ -41,7 +41,7 @@ namespace ChatroomB_Backend.Repository
             {
                 string sql = "exec GetSaltByUserName @UserName";
 
-                string salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
+                string? salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
 
                 if (salt == null)
 

@@ -40,7 +40,7 @@ namespace ChatroomB_Backend.Middleware
 
         private async Task LogErrorMessage(HttpContext context, string  errorMessage)
         {
-            string controllerName = context.Request.RouteValues["controller"]?.ToString();
+            string controllerName = context.Request.RouteValues["controller"]?.ToString()!;
             IErrorHandleService errorHandleService = context.RequestServices.GetRequiredService<IErrorHandleService>();
             await errorHandleService.LogError(controllerName, errorMessage);
         }

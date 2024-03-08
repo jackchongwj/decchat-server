@@ -23,7 +23,7 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<bool> ValidateRefreshToken(string token, int userId)
         {
-            string connectionString = _config.GetConnectionString("ChatroomB_BackendContext");
+            string connectionString = _config.GetConnectionString("ChatroomB_BackendContext")!;
             using (var sqlConnection = new SqlConnection(connectionString))
             {
                 try
@@ -42,7 +42,7 @@ namespace ChatroomB_Backend.Repository
 
         public async Task<bool> ValidateAccessToken(int userId, string userName)
         {
-            string connectionString = _config.GetConnectionString("ChatroomB_BackendContext");
+            string connectionString = _config.GetConnectionString("ChatroomB_BackendContext")!;
             using (var sqlConnection = new SqlConnection(connectionString))
             {
                 try
