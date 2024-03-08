@@ -25,9 +25,12 @@ namespace ChatroomB_Backend.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            // Skip middleware for auth routes
-            if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub"))
+            // Skip middleware for auth routes        
+            
+            
+            if (context.Request.Path.StartsWithSegments("/api/Auth"))
             {
+                //string connectionId = Context.ConnectionId;
                 await _next(context);
                 return;
             }
@@ -74,6 +77,7 @@ namespace ChatroomB_Backend.Middleware
                 context.Items["UserId"] = decodedToken.Value.userId;
                 context.Items["Username"] = decodedToken.Value.username;
             }
+
 
             await _next(context);
         }

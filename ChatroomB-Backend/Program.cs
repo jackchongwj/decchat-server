@@ -177,7 +177,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-app.MapHub<ChatHub>("/chatHub");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -200,6 +200,8 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chatHub");
 
 // Use IP rate limiting middleware
 app.UseIpRateLimiting();

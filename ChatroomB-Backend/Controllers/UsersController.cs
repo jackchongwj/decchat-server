@@ -3,8 +3,9 @@ using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using ChatroomB_Backend.Utils;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -13,38 +14,28 @@ namespace ChatroomB_Backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _UserService;
+        private readonly IAuthUtils _authUtils;
 
-        public UsersController(IUserService service)
+        public UsersController(IUserService service, IAuthUtils authUtils)
         {
             _UserService = service;
+            _authUtils = authUtils;
         }
 
         [HttpGet("Search")]
         [Authorize]
         public async Task<IActionResult> SearchByProfileName(string profileName)
         {
-            // get all data from JWT token
-            ClaimsIdentity? identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity == null)
+            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            if (userIdResult.Result is not null)
             {
-                return Unauthorized("User identity not found");
+                // If there is an ActionResult, it means there was an error, return it
+                return userIdResult.Result;
             }
-
-            Claim userIdClaim = identity.FindFirst("userId")!; // Claim name should match the one used in the token creation
-            if (userIdClaim == null)
-            {
-                return Unauthorized("User ID claim not found in the token");
-            }
-
-            if (!int.TryParse(userIdClaim.Value, out int userId))
-            {
-                return BadRequest("Invalid User ID claim value");
-            }
-
 
             if (!profileName.IsNullOrEmpty())
             {
-                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userId);
+                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userIdResult.Value);
 
                 return Ok(GetUserByName);
             }
@@ -93,17 +84,33 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<ActionResult<Users>> GetUserById()
         {
-            int id = (int)HttpContext.Items["UserId"]!;
-
-            Users user = await _UserService.GetUserById(id);
-
-            if (user == null)
+            try
             {
-                return NotFound("User ID not found");
-            }
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
 
-            return Ok(user);
+                int userId = userIdResult.Value;
+
+                Users user = await _UserService.GetUserById(userId);
+
+                if (user == null)
+                {
+                    return NotFound("User ID not found");
+                }
+
+                return Ok(user);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
+
 
         [HttpPost("UpdateProfileName")]
         [Authorize]
@@ -170,5 +177,7 @@ namespace ChatroomB_Backend.Controllers
                 return memoryStream.ToArray();
             }
         }
+
+
     }
 }

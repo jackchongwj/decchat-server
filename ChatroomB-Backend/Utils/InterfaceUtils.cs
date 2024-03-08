@@ -1,5 +1,6 @@
 ﻿using ChatroomB_Backend.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ChatroomB_Backend.Utils
 {
@@ -7,6 +8,7 @@ namespace ChatroomB_Backend.Utils
     {
         string GenerateSalt();
         string HashPassword(string password, string salt);
+        ActionResult<int> ExtractUserIdFromJWT(ClaimsPrincipal user);
     }
     
     public interface ITokenUtils
