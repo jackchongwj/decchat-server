@@ -111,16 +111,6 @@ namespace ChatroomB_Backend.Service
             return await _repo.DoesUsernameExist(username);
         }
 
-        public async Task<int> GetUserId(string username)
-        {
-            return await _repo.GetUserId(username);
-        }
-
-        public async Task<string> GetUserName(int userId)
-        {
-            return await _repo.GetUserName(userId);
-        }
-
         public async Task<string> GetProfilePictureUrl(byte[] fileByte, string filename)
         {
             return await _blobService.UploadImageFiles(fileByte, filename, 2);

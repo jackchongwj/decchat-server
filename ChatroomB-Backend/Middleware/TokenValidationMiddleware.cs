@@ -73,6 +73,8 @@ namespace ChatroomB_Backend.Middleware
                 // Attach User to Context
                 context.Items["UserId"] = decodedToken.Value.userId;
                 context.Items["Username"] = decodedToken.Value.username;
+
+                Console.WriteLine(context.Items["UserId"]);
             }
 
             await _next(context);

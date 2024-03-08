@@ -41,7 +41,9 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> GetFriendRequest(int userId)
         {
-            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
+            int id = (int)HttpContext.Items["UserId"]!;
+
+            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(id);
 
             return Ok(GetFriendRequest);
         }
@@ -97,7 +99,6 @@ namespace ChatroomB_Backend.Controllers
             return Ok(new { Message = "Profile picture updated successfully." });
         }
 
-
         [HttpPost("UserDeletion")]
         [Authorize]
         public async Task<IActionResult> DeleteUser([FromQuery]int id)
@@ -106,15 +107,6 @@ namespace ChatroomB_Backend.Controllers
 
             if (result == 0) { return NotFound("User ID not found."); }
             else { return Ok(); }
-        }
-
-        [HttpGet("DoesUsernameExist")]
-        [AllowAnonymous]
-        public async Task<IActionResult> DoesUsernameExist(string username)
-        {
-            bool isExist = await _UserService.DoesUsernameExist(username);
-
-            return Ok(isExist);
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)

@@ -17,11 +17,8 @@ namespace ChatroomB_Backend.Service
         Task<int> UpdateProfileName(int userId, string newProfileName);
         Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);
         Task<int> DeleteUser(int userId);
-        
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId);
         Task<bool> DoesUsernameExist(string username);
-        Task<int> GetUserId(string username);
-        Task<string> GetUserName(int userId);  
         Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);
     }
 
@@ -44,8 +41,6 @@ namespace ChatroomB_Backend.Service
         Task<IEnumerable<ChatlistVM>> AddMembersToGroup(AddMemberVM addMemberVM);
         Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId);
         Task<int> QuitGroup(int chatRoomId, int userId); 
-
-
     }
 
     public interface IMessageService
