@@ -129,20 +129,6 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<int> GetUserId(string username)
-        {
-            try
-            {
-                string sql = "exec GetUserIdByUserName @username";
-                int result = await _dbConnection.ExecuteScalarAsync<int>(sql, new { UserName = username });
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to get user ID by username", ex);
-            }
-        }
-
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
             try
@@ -159,20 +145,6 @@ namespace ChatroomB_Backend.Repository
             catch (Exception ex)
             {
                 throw new InvalidOperationException("Failed to retrieve chat list by user ID", ex);
-            }
-        }
-
-        public async Task<string> GetUserName(int userId)
-        {
-            try
-            {
-                string sql = "exec GetUserNameByUserId @UserId";
-                string result = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserId = userId });
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to get username by user ID", ex);
             }
         }
     }

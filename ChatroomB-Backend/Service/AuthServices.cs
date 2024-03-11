@@ -1,6 +1,8 @@
-﻿using ChatroomB_Backend.Models;
+﻿using Amazon.Runtime.Internal.Util;
+using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Repository;
 using ChatroomB_Backend.Utils;
+using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 
 namespace ChatroomB_Backend.Service
 {
@@ -39,16 +41,6 @@ namespace ChatroomB_Backend.Service
             return user;
         }
 
-        public async Task<string> GetSalt(string username)
-        {
-            return await _repo.GetSalt(username);
-        }
-
-        public async Task<bool> VerifyPassword(string username, string hashedPassword)
-        {
-            return await _repo.VerifyPassword(username, hashedPassword);
-        }
-
         public async Task AddUser(string username, string password, string profileName)
         {
             bool isUnique = await _userService.DoesUsernameExist(username);
@@ -73,28 +65,34 @@ namespace ChatroomB_Backend.Service
 
             if (!isSuccess)
             {
-                throw new Exception("Registration failed");
+                throw new InvalidOperationException("Registration failed");
             }
         }
 
-        public async Task<bool> ChangePassword(int userId, string currentPassword, string newPassword)
+        public async Task ChangePassword(string username, string currentPassword, string newPassword)
         {
-            Users user = await _userService.GetUserById(userId);
-            if (user == null) return false;
+            Users user = await _repo.GetUserCredentials(username);
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
 
-            // Get the salt for the user and hash the current password
-            string salt = await GetSalt(user.UserName);
-            string hashedCurrentPassword = _authUtils.HashPassword(currentPassword, salt);
+            string currentPasswordHashed = _authUtils.HashPassword(currentPassword, user.Salt);
 
-            // Verify the current password using the VerifyPassword method
-            bool isCurrentPasswordValid = await _repo.VerifyPassword(user.UserName, hashedCurrentPassword);
-            if (!isCurrentPasswordValid) return false;
+            if (currentPasswordHashed != user.HashedPassword)
+            {
+                throw new ArgumentException("Current password is incorrect.");
+            }
 
-            // Hash the new password with the same salt
-            string newHashedPassword = _authUtils.HashPassword(newPassword, salt);
+            string newPasswordHashed = _authUtils.HashPassword(newPassword, user.Salt);
 
-            // Call the repository to update the password
-            return await _repo.ChangePassword(userId, newHashedPassword);
+            bool isSuccess = await _repo.ChangePassword(username, newPasswordHashed);
+
+            if (!isSuccess)
+            {
+                throw new InvalidOperationException("Change password failed. No records were updated.");
+            }
         }
+
     }
 }

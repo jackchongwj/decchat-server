@@ -12,18 +12,15 @@ namespace ChatroomB_Backend.Service
 {
     public interface IUserService
     {
-        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                         // Get user data by profilename
-        Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                  // Get all friend request by userid
-        Task<Users> GetUserById(int userId);                                                                                    // Get user by userid
-        Task<int> UpdateProfileName(int userId, string newProfileName);                                                         // Update user's profilename by user id
-        Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);                                          // Update profile's pic by user id
-        Task<int> DeleteUser(int userId);                                                                                       // Update the user status by user id(Delete)
-        
-        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId);                                                          // Get group member details                                        
-        Task<bool> DoesUsernameExist(string username);                                                                          // Check the user does exist             
-        Task<int> GetUserId(string username);                                                                                   // Get user id by username
-        Task<string> GetUserName(int userId);                                                                                   // Get user by userid
-        Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);                                                    // Get profile pic from blob
+        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);
+        Task<IEnumerable<Users>> GetFriendRequest(int userId);
+        Task<Users> GetUserById(int userId);
+        Task<int> UpdateProfileName(int userId, string newProfileName);
+        Task<int> UpdateProfilePicture(int userId, byte[] fileBytes, string fileName);
+        Task<int> DeleteUser(int userId);
+        Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId);
+        Task<bool> DoesUsernameExist(string username);
+        Task<string> GetProfilePictureUrl(byte[] fileByte, string filename);
     }
 
     public interface IFriendService
@@ -61,10 +58,8 @@ namespace ChatroomB_Backend.Service
     public interface IAuthService
     {
         Task<Users> Authenticate(string username, string password);
-        Task<string> GetSalt(string username);
-        Task<bool> VerifyPassword(string username, string hashedPassword);
         Task AddUser(string username, string password, string profileName);
-        Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
+        Task ChangePassword(string username, string currentPassword, string newPassword);
     }
 
     public interface ITokenService
@@ -95,7 +90,7 @@ namespace ChatroomB_Backend.Service
 
     public interface IErrorHandleService 
     {
-        Task LogError(string controllerName, string errorMessage);
+        Task LogError(string controllerName, int userId, string errorMessage);
     }
     
 }

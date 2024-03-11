@@ -1,49 +1,81 @@
 ﻿using ChatroomB_Backend.Service;
+using ChatroomB_Backend.Utils;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Net;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace ChatroomB_Backend.Middleware
 {
     public class ExceptionHandlingMiddleware
     {
-
-        private readonly RequestDelegate next;
-        private readonly ILogger<ExceptionHandlingMiddleware> logger;
+        private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
         public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
         {
-            this.next = next;
-            this.logger = logger;
+            _next = next;
+            _logger = logger;
         }
 
         public async Task Invoke(HttpContext context)
         {
             try
             {
-                await next(context);
-            }
-            catch (SqlException ex)
-            {
-                await LogErrorMessage(context, "SQL Error Occurred: " + ex.Message);
-            }
-            catch (HttpRequestException ex)
-            {
-                await LogErrorMessage(context, "Http Request Failed: " + ex.Message);
+                await _next(context);
             }
             catch (Exception ex)
             {
-                await LogErrorMessage(context, ex.Message);
+                await HandleExceptionAsync(context, ex);
             }
-            
         }
 
-        private async Task LogErrorMessage(HttpContext context, string  errorMessage)
+        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            string controllerName = context.Request.RouteValues["controller"]?.ToString()!;
-            IErrorHandleService errorHandleService = context.RequestServices.GetRequiredService<IErrorHandleService>();
-            await errorHandleService.LogError(controllerName, errorMessage);
-        }
+            // Resolve IAuthUtils from the scope created for the current request
+            var authUtils = context.RequestServices.GetRequiredService<IAuthUtils>();
 
+            HttpStatusCode statusCode;
+            string message;
+
+            switch (exception)
+            {
+                case SqlException _:
+                    statusCode = HttpStatusCode.InternalServerError;
+                    message = "A database error occurred.";
+                    break;
+                case HttpRequestException _:
+                    statusCode = HttpStatusCode.BadGateway;
+                    message = "External service request failed.";
+                    break;
+                case UnauthorizedAccessException _:
+                    statusCode = HttpStatusCode.Unauthorized;
+                    message = "Access denied.";
+                    break;
+                default:
+                    statusCode = HttpStatusCode.InternalServerError;
+                    message = "An unexpected error occurred.";
+                    break;
+            }
+
+            _logger.LogError(exception, exception.Message);
+
+            // Log the error to MongoDB
+            int userId = authUtils.ExtractUserIdFromJWT(context.User);
+            string controllerName = context.Request.RouteValues["controller"]?.ToString() ?? "UnknownController";
+            IErrorHandleService errorHandleService = context.RequestServices.GetRequiredService<IErrorHandleService>();
+            await errorHandleService.LogError(controllerName, userId, exception.Message);
+
+            var response = new { error = message };
+            var jsonResponse = JsonSerializer.Serialize(response);
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)statusCode;
+
+            await context.Response.WriteAsync(jsonResponse);
+        }
     }
 }
