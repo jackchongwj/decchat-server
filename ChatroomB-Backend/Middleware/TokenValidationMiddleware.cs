@@ -28,7 +28,7 @@ namespace ChatroomB_Backend.Middleware
             // Skip middleware for auth routes        
             
             
-            if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate") || context.Request.Path.StartsWithSegments("/chatHub"))
+            if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate"))
             {
                 //string connectionId = Context.ConnectionId;
                 await _next(context);
@@ -49,7 +49,7 @@ namespace ChatroomB_Backend.Middleware
             }
 
             // Attempt to retrieve cached validation results
-            var cacheKey = $"validation-{accessToken}";
+            string cacheKey = $"validation-{accessToken}";
             if (_cache.TryGetValue(cacheKey, out (int userId, string username) cachedResult))
             {
                 context.Items["UserId"] = cachedResult.userId;
