@@ -34,23 +34,22 @@ namespace ChatroomB_Backend.Hubs
         {
             try
             {
-                ClaimsPrincipal userIdClaim = Context.User!;
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(Context.User!);
+                int userId = _authUtils.ExtractUserIdFromJWT(Context.User);
 
                 // declare userId and connection Id
                 string connectionId = Context.ConnectionId;
 
                 // call redis to add userId and Connection id to redis
-                await _RServices.AddUserIdAndConnetionIdToRedis(userIdResult.Value.ToString(), connectionId);
+                await _RServices.AddUserIdAndConnetionIdToRedis(userId.ToString(), connectionId);
 
                 
 
                 //add user to a group to easy call them
-                string groupName = "User" + userIdResult.Value.ToString();
+                string groupName = "User" + userId.ToString();
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
                 // add list to group 
-                await AddToGroup(Convert.ToInt32(userIdResult.Value.ToString()));
+                await AddToGroup(Convert.ToInt32(userId.ToString()));
 
                 await base.OnConnectedAsync();
 
@@ -62,27 +61,27 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+        [Authorize]
         public override async Task OnDisconnectedAsync(Exception? exception) 
         
         {
             try
             {
-                ClaimsPrincipal userIdClaim = Context.User!;
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(Context.User!);
+                int userId = _authUtils.ExtractUserIdFromJWT(Context.User);
 
                 string connectionId = Context.ConnectionId;
 
 
                 // Notify other members in the user's groups that they have gone offline
                 // retrieve the list of groups or chat rooms the user is part of
-                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userIdResult.Value.ToString()));
+                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(userId);
                 foreach (var list in chatlist)
                 {
-                    await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userIdResult.Value.ToString(), false);
+                    await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId.ToString(), false);
                     await Groups.RemoveFromGroupAsync(connectionId, list.ChatRoomId.ToString());
                     Console.WriteLine($"{connectionId} has left the group {list.ChatRoomId}");
                 }
-                await _RServices.DeleteUserIdFromRedis(userIdResult.Value.ToString()!);
+                await _RServices.DeleteUserIdFromRedis(userId.ToString()!);
 
                 await base.OnDisconnectedAsync(exception);
             }

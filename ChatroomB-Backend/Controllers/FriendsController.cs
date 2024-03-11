@@ -38,13 +38,9 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> AddFriend([FromBody] Friends friends)
         {
-            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-            if (userIdResult.Result is not null)
-            {
-                return userIdResult.Result;
-            }
+            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-            friends.SenderId = userIdResult.Value;
+            friends.SenderId = userId;
 
             int result = await _FriendService.CheckFriendExist(friends);
 
@@ -63,13 +59,9 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<ActionResult<int>> UpdateFriendRequest([FromBody] FriendRequest request)
         {
-            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-            if (userIdResult.Result is not null)
-            {
-                return userIdResult.Result;
-            }
+            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-            request.ReceiverId = userIdResult.Value;
+            request.ReceiverId = userId;
 
             int result = await _FriendService.UpdateFriendRequest(request);
 
@@ -88,18 +80,11 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<ActionResult<int>> DeleteFriend([FromBody] DeleteFriendRequest request)
         {
-            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-            if (userIdResult.Result is not null)
-            {
-                return userIdResult.Result;
-            }
+            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-
-            int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1 = userIdResult.Value, request.UserId2);
+            int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1 = userId, request.UserId2);
 
             return Ok(result);
-
         }
-
     }
 }

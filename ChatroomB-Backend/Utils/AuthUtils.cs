@@ -27,27 +27,44 @@ namespace ChatroomB_Backend.Utils
             }
         }
 
-        public ActionResult<int> ExtractUserIdFromJWT(ClaimsPrincipal user)
+        public int ExtractUserIdFromJWT(ClaimsPrincipal user)
         {
             ClaimsIdentity? identity = user.Identity as ClaimsIdentity;
             if (identity == null)
             {
-                return new UnauthorizedObjectResult("User identity not found");
+                throw new UnauthorizedAccessException("User identity not found");
             }
 
-            Claim userIdClaim = identity.FindFirst("userId")!; // Claim name should match the one used in the token creation
+            Claim userIdClaim = identity.FindFirst("UserId")!;
             if (userIdClaim == null)
             {
-                return new UnauthorizedObjectResult("User ID claim not found in the token");
+                throw new UnauthorizedAccessException("User ID claim not found in the token");
             }
 
             if (!int.TryParse(userIdClaim.Value, out int userId))
             {
-                return new BadRequestObjectResult("Invalid User ID claim value");
+                throw new UnauthorizedAccessException("Invalid User ID claim value");
             }
 
             return userId;
         }
-            
+
+        public string ExtractUsernameFromJWT(ClaimsPrincipal user)
+        {
+            ClaimsIdentity? identity = user.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                throw new UnauthorizedAccessException("User identity not found");
+            }
+
+            Claim usernameClaim = identity.FindFirst("Username")!;
+            if (usernameClaim == null)
+            {
+                throw new UnauthorizedAccessException("Username claim not found in the token");
+            }
+
+            return usernameClaim.Value;
+        }
+
     }
 }

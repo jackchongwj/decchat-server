@@ -35,60 +35,19 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<string> GetSalt(string username)
-        {
-            try
-            {
-                string sql = "exec GetSaltByUserName @UserName";
-
-                string? salt = await _dbConnection.ExecuteScalarAsync<string>(sql, new { UserName = username });
-
-                if (salt == null)
-
-                {
-                    throw new ArgumentNullException("Salt not found for the user");
-                }
-
-                return salt;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to get salt for user", ex);
-            }
-        }
-
-        public async Task<bool> VerifyPassword(string username, string hashedPassword)
-        {
-            try
-            {
-                string sql = "exec VerifyUserCredentials @UserName, @HashedPassword";
-
-                int result = await _dbConnection.ExecuteScalarAsync<int>(sql, new { UserName = username, HashedPassword = hashedPassword });
-
-                return result == 1;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to verify password", ex);
-            }
-        }
-
         public async Task<bool> AddUser(Users user)
         {
             try
             {
-                string sql = "exec AddUser @UserName, @HashedPassword, @Salt, @ProfileName, @ProfilePicture";
+                string sql = "exec AddUser @UserName, @HashedPassword, @Salt, @ProfileName, @ProfilePicture, @Success OUTPUT";
 
-                await _dbConnection.ExecuteAsync(sql, new Users
-                {
-                    UserName = user.UserName,
-                    ProfileName = user.ProfileName,
-                    HashedPassword = user.HashedPassword,
-                    Salt = user.Salt,
-                    ProfilePicture = _config["DefaultPicture:UserProfile"]
-                });
+                var parameters = new DynamicParameters(user);
+                parameters.Add("@Success", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+                parameters.Add("@ProfilePicture", _config["DefaultPicture:UserProfile"]); // Assuming you still want to set this from the config
 
-                return true;
+                await _dbConnection.ExecuteAsync(sql, parameters);
+
+                return parameters.Get<bool>("@Success");
             }
             catch (Exception ex)
             {
@@ -96,15 +55,21 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<bool> ChangePassword(int userId, string newHashedPassword)
+        public async Task<bool> ChangePassword(string username, string newHashedPassword)
         {
             try
             {
-                string sql = "exec ChangePassword @UserId, @NewHashedPassword";
+                string sql = "exec ChangePassword @UserName, @NewHashedPassword, @RowsAffected OUTPUT";
 
-                await _dbConnection.ExecuteAsync(sql, new { UserId = userId, NewHashedPassword = newHashedPassword });
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserName", username);
+                parameters.Add("@NewHashedPassword", newHashedPassword);
+                parameters.Add("@RowsAffected", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-                return true; 
+                await _dbConnection.ExecuteAsync(sql, parameters);
+
+                int rowsAffected = parameters.Get<int>("@RowsAffected");
+                return rowsAffected > 0; // Returns true if one or more rows were affected, indicating success.
             }
             catch (Exception ex)
             {

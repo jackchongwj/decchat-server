@@ -20,8 +20,6 @@ namespace ChatroomB_Backend.Repository
         Task<int> DeleteUser(int userId);       
         Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId); //return chatlist
         Task<bool> DoesUsernameExist(string username);
-        Task<int> GetUserId(string username);
-        Task<string> GetUserName(int userId);
     }   
 
     public interface IFriendRepo
@@ -69,10 +67,8 @@ namespace ChatroomB_Backend.Repository
     public interface IAuthRepo
     {
         Task<Users> GetUserCredentials(string username);
-        Task<string> GetSalt(string username);
-        Task<bool> VerifyPassword(string username, string hashedPassword);
         Task<bool> AddUser(Users user);
-        Task<bool> ChangePassword(int userId, string newHashedPassword);
+        Task<bool> ChangePassword(string username, string newHashedPassword);
     }
 
     public interface ITokenRepo
@@ -95,6 +91,6 @@ namespace ChatroomB_Backend.Repository
 
     public interface IErrorHandleRepo
     {
-        Task LogError(string controllerName, string errorMessage);
+        Task LogError(string controllerName, int userId, string errorMessage);
     }
 }
