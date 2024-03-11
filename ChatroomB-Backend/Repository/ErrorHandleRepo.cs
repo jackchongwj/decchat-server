@@ -14,12 +14,13 @@ namespace ChatroomB_Backend.Repository
             _collection = collection;
         }
 
-        public async Task LogError(string controllerName, string errorMessage)
+        public async Task LogError(string controllerName, int userId, string errorMessage)
         {
             var errorHandle = new ErrorHandle
             {
                 ErrorMessage = errorMessage,
                 ControllerName = controllerName,
+                UserId = userId,
                 Timestamp = DateTime.Now,
         };
 

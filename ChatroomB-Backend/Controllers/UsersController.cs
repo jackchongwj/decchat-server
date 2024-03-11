@@ -26,16 +26,11 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> SearchByProfileName(string profileName)
         {
-            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-            if (userIdResult.Result is not null)
-            {
-                // If there is an ActionResult, it means there was an error, return it
-                return userIdResult.Result;
-            }
+            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
             if (!profileName.IsNullOrEmpty())
             {
-                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userIdResult.Value);
+                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userId);
 
                 return Ok(GetUserByName);
             }
@@ -57,29 +52,11 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> GetFriendRequest()
         {
-            ClaimsIdentity? identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity == null)
-            {
-                return Unauthorized("User identity not found");
-            }
-
-            Claim userIdClaim = identity.FindFirst("userId")!;
-            if (userIdClaim == null)
-            {
-                return Unauthorized("User ID claim not found in the token");
-            }
-
-            if (!int.TryParse(userIdClaim.Value, out int userId))
-            {
-                return BadRequest("Invalid User ID claim value");
-            }
+            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
             IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
 
-            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(id);
-
             return Ok(GetFriendRequest);
-
         }
 
         [HttpGet("UserDetails")]

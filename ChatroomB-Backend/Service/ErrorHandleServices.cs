@@ -2,11 +2,11 @@
 
 namespace ChatroomB_Backend.Service
 {
-    public class ErrorHanldeServices : IErrorHandleService
+    public class ErrorHandleServices : IErrorHandleService
     {
         private readonly IErrorHandleRepo _repo;
 
-        public ErrorHanldeServices(IErrorHandleRepo _repository)
+        public ErrorHandleServices(IErrorHandleRepo _repository)
         {
             _repo = _repository;
         }

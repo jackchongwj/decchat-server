@@ -114,7 +114,7 @@ builder.Services.AddScoped<IFriendService, FriendsServices>();
 builder.Services.AddScoped<IAuthService, AuthServices>();
 builder.Services.AddSingleton<ITokenService, TokenServices>();
 builder.Services.AddScoped<IMessageService, MessagesServices>();
-builder.Services.AddScoped<IErrorHandleService, ErrorHanldeServices>();
+builder.Services.AddScoped<IErrorHandleService, ErrorHandleServices>();
 
 builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
