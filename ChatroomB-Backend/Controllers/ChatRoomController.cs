@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using ChatroomB_Backend.Hubs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using ChatroomB_Backend.Utils;
 
 
 namespace ChatroomB_Backend.Controllers
@@ -19,11 +20,13 @@ namespace ChatroomB_Backend.Controllers
     {
         private readonly IChatRoomService _ChatRoomService;
         private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IAuthUtils _authUtils;
 
-        public ChatRoomController(IHubContext<ChatHub> hubContext, IChatRoomService CService)
+        public ChatRoomController(IHubContext<ChatHub> hubContext, IChatRoomService CService, IAuthUtils authUtils)
         {
             _hubContext = hubContext;
             _ChatRoomService = CService;
+            _authUtils = authUtils;
         }
 
         [HttpPost("UpdateGroupPicture")]
@@ -49,11 +52,27 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("groupMembers")]
         [Authorize]
-        public async Task<IActionResult> GetGroupMembers(int chatRoomId, int userId)
+        public async Task<IActionResult> GetGroupMembers(int chatRoomId)
         {
-            IEnumerable<GroupMember> groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
+            try
+            {
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
 
-            return Ok(groupMembers);
+                IEnumerable<GroupMember> groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userIdResult.Value);
+
+                return Ok(groupMembers);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
         [HttpPost("createNewGroup")]
@@ -77,6 +96,7 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("AddMembersToGroup")]
+        [Authorize]
         public async Task<ActionResult<int>> AddMembersToGroup([FromBody] AddMemberVM addMemberVM)
         {
             try
@@ -92,13 +112,19 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("RemoveFromGroup")]
-
-        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy, [FromQuery] int CurrentUserId)
+        [Authorize]
+        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy)
         {
-
             try
             {
-                if (CurrentUserId == InitiatedBy)
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
+
+                if (userIdResult.Value == InitiatedBy)
                 {
                     int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
 
@@ -118,11 +144,27 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("QuitGroup")]
         [Authorize]
-        public async Task<ActionResult<int>> QuitGroup([FromQuery] int chatRoomId, [FromQuery] int userId)
+        public async Task<ActionResult<int>> QuitGroup([FromQuery] int chatRoomId)
         {
-            int result = await _ChatRoomService.QuitGroup(chatRoomId, userId);
+            try
+            {
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
 
-            return Ok(new { Message = "Quit group successfully" });
+                int result = await _ChatRoomService.QuitGroup(chatRoomId, userIdResult.Value);
+
+                return Ok(new { Message = "Quit group successfully" });
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
         [HttpPost("UpdateGroupName")]

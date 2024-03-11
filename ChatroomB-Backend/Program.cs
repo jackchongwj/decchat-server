@@ -196,14 +196,12 @@ app.UseCookiePolicy();
 
 app.UseRouting();
 
+// Use IP rate limiting middleware
+app.UseIpRateLimiting();
+
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-// Use IP rate limiting middleware
-app.UseIpRateLimiting();
-//app.UseMiddleware<CRRateLimitMiddleware>();
-
 
 app.UseMiddleware<TokenValidationMiddleware>();
 

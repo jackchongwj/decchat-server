@@ -23,30 +23,75 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("Search")]
         [Authorize]
-        public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
+        public async Task<IActionResult> SearchByProfileName(string profileName)
         {
-            IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userId);
+            try
+            {
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
 
-            return Ok(GetUserByName);
+                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userIdResult.Value);
+
+                return Ok(GetUserByName);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
         }
 
 
         [HttpGet("RetrieveChatListByUser")]
         [Authorize]
-        public async Task<IActionResult> GetChatListByUserId([FromQuery] int userId)
+        public async Task<IActionResult> GetChatListByUserId()
         {
-            IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userId);
+            try
+            {
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
 
-            return Ok(chatList);
+                IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userIdResult.Value);
+
+                return Ok(chatList);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         [HttpGet("FriendRequest")]
         [Authorize]
-        public async Task<IActionResult> GetFriendRequest(int userId)
+        public async Task<IActionResult> GetFriendRequest()
         {
-            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
+            try
+            {
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
 
-            return Ok(GetFriendRequest);
+                IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userIdResult.Value);
+
+                return Ok(GetFriendRequest);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
         [HttpGet("UserDetails")]
@@ -62,9 +107,7 @@ namespace ChatroomB_Backend.Controllers
                     return userIdResult.Result;
                 }
 
-                int userId = userIdResult.Value;
-
-                Users user = await _UserService.GetUserById(userId);
+                Users user = await _UserService.GetUserById(userIdResult.Value);
 
                 if (user == null)
                 {
@@ -98,34 +141,61 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("UpdateProfilePicture")]
         [Authorize]
-        public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file, [FromForm(Name = "id")] string userId)
+        public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file)
         {
-            byte[] filebyte = await ConvertToByteArrayAsync(file);
-
-            if (file == null || file.Length == 0)
+            try
             {
-                return BadRequest("File is not provided or empty.");
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
+
+                byte[] filebyte = await ConvertToByteArrayAsync(file);
+
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("File is not provided or empty.");
+                }
+
+                int success = await _UserService.UpdateProfilePicture(userIdResult.Value, filebyte, file.FileName);
+
+                if (success == 0)
+                {
+                    return NotFound("Failed to update the profile picture.");
+                }
+
+                return Ok(new { Message = "Profile picture updated successfully." });
             }
-
-            int success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId), filebyte, file.FileName);
-
-            if (success == 0)
+            catch (Exception ex)
             {
-                return NotFound("Failed to update the profile picture.");
+                return BadRequest(ex.Message);
             }
-
-            return Ok(new { Message = "Profile picture updated successfully." });
         }
 
 
         [HttpPost("UserDeletion")]
         [Authorize]
-        public async Task<IActionResult> DeleteUser([FromQuery]int id)
+        public async Task<IActionResult> DeleteUser()
         {
-            int result = await _UserService.DeleteUser(id);
+            try
+            {
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
+                int result = await _UserService.DeleteUser(userIdResult.Value);
 
-            if (result == 0) { return NotFound("User ID not found."); }
-            else { return Ok(); }
+                if (result == 0) { return NotFound("User ID not found."); }
+                else { return Ok(); }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("DoesUsernameExist")]

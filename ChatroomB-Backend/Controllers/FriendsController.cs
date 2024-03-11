@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Cors;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Authorization;
+using ChatroomB_Backend.Utils;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -22,11 +23,13 @@ namespace ChatroomB_Backend.Controllers
     {
         private readonly IFriendService _FriendService;
         private readonly IChatRoomService _ChatRoomService;
+        private readonly IAuthUtils _authUtils;
 
-        public FriendsController(IFriendService Fservice, IChatRoomService CService)
+        public FriendsController(IFriendService Fservice, IChatRoomService CService, IAuthUtils authUtil)
         {
             _FriendService = Fservice;
             _ChatRoomService = CService;
+            _authUtils = authUtil;
         }
 
         //POST: Friends/Create
@@ -55,23 +58,39 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("UpdateFriendRequest")]
         [Authorize]
-        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody]FriendRequest request, [FromQuery]int userId)
+        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody]FriendRequest request)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                throw new ArgumentException("Invalid request data");
+                if (!ModelState.IsValid)
+                {
+                    throw new ArgumentException("Invalid request data");
+                }
+
+                int result = await _FriendService.UpdateFriendRequest(request);
+
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
+
+                if (request.Status == 2)
+                {
+                    IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userIdResult.Value);
+
+                    return Ok(PrivateChatlist);
+                }
+
+                return Ok(0);
+
             }
-
-            int result = await _FriendService.UpdateFriendRequest(request);
-
-            if (request.Status == 2)
+            catch (Exception ex)
             {
-                IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request, userId);
-                        
-                return Ok(PrivateChatlist);
+                throw new Exception(ex.Message);
             }
-
-            return Ok(0);
+            
         }
 
         [HttpPost("DeleteFriend")]
