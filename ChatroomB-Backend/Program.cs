@@ -79,7 +79,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
         options.CheckConsentNeeded = context => true;
         options.MinimumSameSitePolicy = SameSiteMode.None;
         options.HttpOnly = HttpOnlyPolicy.Always;
-        options.Secure = CookieSecurePolicy.SameAsRequest;
+        options.Secure = CookieSecurePolicy.Always;
     }
     else
     {
@@ -114,7 +114,7 @@ builder.Services.AddScoped<IFriendService, FriendsServices>();
 builder.Services.AddScoped<IAuthService, AuthServices>();
 builder.Services.AddSingleton<ITokenService, TokenServices>();
 builder.Services.AddScoped<IMessageService, MessagesServices>();
-builder.Services.AddScoped<IErrorHandleService, ErrorHanldeServices>();
+builder.Services.AddScoped<IErrorHandleService, ErrorHandleServices>();
 
 builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
@@ -177,8 +177,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -191,9 +189,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AngularApp");
-
+// Apply cookie policy.
 app.UseCookiePolicy();
+
+// Placement of UseCors is crucial to ensure it's applied correctly.
+app.UseCors("AngularApp");
 
 app.UseRouting();
 
@@ -201,17 +201,16 @@ app.UseRouting();
 app.UseIpRateLimiting();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
 
+// Custom middleware for token validation and exception handling.
 app.UseMiddleware<TokenValidationMiddleware>();
-
-app.MapHub<ChatHub>("/chatHub");
-
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+// SignalR hubs registration.
+app.MapHub<ChatHub>("/chatHub");
+
+// Mapping controllers should come after all middleware are configured.
 app.MapControllers();
 
 app.Run();
-
-

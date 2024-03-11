@@ -28,19 +28,14 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
+                int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-                if (!profileName.IsNullOrEmpty())
-                {
-                    IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userIdResult.Value);
+            if (!profileName.IsNullOrEmpty())
+            {
+                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userId);
 
-                    return Ok(GetUserByName);
-                }
+                return Ok(GetUserByName);
+            }
 
                 return BadRequest(new { ErrorMessage = "Profile Name Cannot Be Empty" });
             }
@@ -58,14 +53,9 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-                IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userIdResult.Value);
+                IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userIdResult);
 
                 return Ok(chatList);
             }
@@ -81,14 +71,9 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
+                int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-                IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userIdResult.Value);
+                IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
 
                 return Ok(GetFriendRequest);
             }
@@ -105,14 +90,9 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
+                int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-                Users user = await _UserService.GetUserById(userIdResult.Value);
+                Users user = await _UserService.GetUserById(userId);
 
                 if (user == null)
                 {
@@ -135,19 +115,14 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
                 if (model == null || !ModelState.IsValid)
                 {
                     return BadRequest("Invalid request data");
                 }
 
-                model.Id = userIdResult.Value;
+                model.Id = userIdResult;
 
                 int result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
 
@@ -169,12 +144,7 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
                 byte[] filebyte = await ConvertToByteArrayAsync(file);
 
@@ -183,7 +153,7 @@ namespace ChatroomB_Backend.Controllers
                     return BadRequest("File is not provided or empty.");
                 }
 
-                int success = await _UserService.UpdateProfilePicture(userIdResult.Value, filebyte, file.FileName);
+                int success = await _UserService.UpdateProfilePicture(userIdResult, filebyte, file.FileName);
 
                 if (success == 0)
                 {
@@ -205,13 +175,9 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
-                int result = await _UserService.DeleteUser(userIdResult.Value);
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+
+                int result = await _UserService.DeleteUser(userIdResult);
 
                 if (result == 0) { return NotFound("User ID not found."); }
                 else { return Ok(); }
@@ -220,15 +186,6 @@ namespace ChatroomB_Backend.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        }
-
-        [HttpGet("DoesUsernameExist")]
-        [AllowAnonymous]
-        public async Task<IActionResult> DoesUsernameExist(string username)
-        {
-            bool isExist = await _UserService.DoesUsernameExist(username);
-
-            return Ok(isExist);
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)

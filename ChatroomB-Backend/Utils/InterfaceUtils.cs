@@ -8,7 +8,8 @@ namespace ChatroomB_Backend.Utils
     {
         string GenerateSalt();
         string HashPassword(string password, string salt);
-        ActionResult<int> ExtractUserIdFromJWT(ClaimsPrincipal user);
+        int ExtractUserIdFromJWT(ClaimsPrincipal user);
+        string ExtractUsernameFromJWT(ClaimsPrincipal user);
     }
     
     public interface ITokenUtils
