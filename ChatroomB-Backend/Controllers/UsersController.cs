@@ -5,6 +5,7 @@ using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using ChatroomB_Backend.Utils;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -23,18 +24,30 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("Search")]
         [Authorize]
-        public async Task<IActionResult> SearchByProfileName(string profileName, int userId)
+        public async Task<IActionResult> SearchByProfileName(string profileName)
         {
-            IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userId);
+            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            if (userIdResult.Result is not null)
+            {
+                // If there is an ActionResult, it means there was an error, return it
+                return userIdResult.Result;
+            }
 
-            return Ok(GetUserByName);
+            if (!profileName.IsNullOrEmpty())
+            {
+                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userIdResult.Value);
+
+                return Ok(GetUserByName);
+            }
+
+            return BadRequest(new { ErrorMessage = "Cannot Empty" });
         }
-
 
         [HttpGet("RetrieveChatListByUser")]
         [Authorize]
         public async Task<IActionResult> GetChatListByUserId([FromQuery] int userId)
         {
+
             IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userId);
 
             return Ok(chatList);
@@ -42,13 +55,31 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("FriendRequest")]
         [Authorize]
-        public async Task<IActionResult> GetFriendRequest(int userId)
+        public async Task<IActionResult> GetFriendRequest()
         {
-            int id = (int)HttpContext.Items["UserId"]!;
+            ClaimsIdentity? identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                return Unauthorized("User identity not found");
+            }
+
+            Claim userIdClaim = identity.FindFirst("userId")!;
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID claim not found in the token");
+            }
+
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return BadRequest("Invalid User ID claim value");
+            }
+
+            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
 
             IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(id);
 
             return Ok(GetFriendRequest);
+
         }
 
         [HttpGet("UserDetails")]
@@ -74,6 +105,7 @@ namespace ChatroomB_Backend.Controllers
             }
             
         }
+
 
         [HttpPost("UpdateProfileName")]
         [Authorize]
@@ -112,9 +144,10 @@ namespace ChatroomB_Backend.Controllers
             return Ok(new { Message = "Profile picture updated successfully." });
         }
 
+
         [HttpPost("UserDeletion")]
         [Authorize]
-        public async Task<IActionResult> DeleteUser([FromQuery]int id)
+        public async Task<IActionResult> DeleteUser([FromQuery] int id)
         {
             int result = await _UserService.DeleteUser(id);
 

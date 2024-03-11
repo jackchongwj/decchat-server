@@ -25,9 +25,9 @@ namespace ChatroomB_Backend.Repository
             {
                 string sql = "exec GetUserCredentials @UserName";
 
-                Users user = await _dbConnection.QuerySingleOrDefaultAsync<Users>(sql, new { UserName = username });
+                Users? user = await _dbConnection.QuerySingleOrDefaultAsync<Users>(sql, new { UserName = username });
 
-                return user;
+                return user!;
             }
             catch (Exception ex)
             {

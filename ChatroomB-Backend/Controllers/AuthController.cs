@@ -86,7 +86,7 @@ namespace ChatroomB_Backend.Controllers
         public async Task<IActionResult> Logout()
         {
             // Retrieve refresh token from the request
-            string refreshToken = Request.Cookies["refreshToken"];
+            string refreshToken = Request.Cookies["refreshToken"]!;
 
             // Delete refresh token from database
             if(!string.IsNullOrEmpty(refreshToken)) 

@@ -1,13 +1,16 @@
 ﻿using ChatroomB_Backend.DTO;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using ChatroomB_Backend.Utils;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using MongoDB.Driver.Core.Connections;
 using NuGet.Protocol.Plugins;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace ChatroomB_Backend.Hubs
@@ -15,42 +18,39 @@ namespace ChatroomB_Backend.Hubs
     public sealed class ChatHub: Hub
     {
         private readonly IUserService _Uservices;
-        private readonly IMessageService _MServices;
         private readonly IRedisServcie _RServices;
-        private readonly IChatRoomService _ChatRoomService;
+        private readonly IAuthUtils _authUtils;
 
-        public ChatHub(IChatRoomService ChatRoomService, IUserService _UserService, IMessageService _MessageService, IRedisServcie _RedisServices)
+        public ChatHub(IUserService _UserService, IRedisServcie _RedisServices, IAuthUtils authUtils)
         {
             _Uservices = _UserService;
             _RServices = _RedisServices;
-            _MServices = _MessageService;
-            _ChatRoomService = ChatRoomService;
+            _authUtils = authUtils;
         }
 
-        //SignalR start and destroy connection
         [Authorize]
+        //SignalR start and destroy connection
         public override async Task OnConnectedAsync()
         {
             try
             {
+                ClaimsPrincipal userIdClaim = Context.User!;
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(Context.User!);
+
                 // declare userId and connection Id
-                string userId = Context.GetHttpContext().Request.Query["userId"];
                 string connectionId = Context.ConnectionId;
 
                 // call redis to add userId and Connection id to redis
-                await Task.Delay(500);
-                await _RServices.AddUserIdAndConnetionIdToRedis(userId, connectionId);
+                await _RServices.AddUserIdAndConnetionIdToRedis(userIdResult.Value.ToString(), connectionId);
 
                 
 
                 //add user to a group to easy call them
-                string groupName = "User" + userId.ToString();
+                string groupName = "User" + userIdResult.Value.ToString();
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
                 // add list to group 
-                await AddToGroup(Convert.ToInt32(userId));
-
-                
+                await AddToGroup(Convert.ToInt32(userIdResult.Value.ToString()));
 
                 await base.OnConnectedAsync();
 
@@ -67,22 +67,24 @@ namespace ChatroomB_Backend.Hubs
         {
             try
             {
-                string userId = Context.GetHttpContext().Request.Query["userId"];
+                ClaimsPrincipal userIdClaim = Context.User!;
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(Context.User!);
+
                 string connectionId = Context.ConnectionId;
 
 
                 // Notify other members in the user's groups that they have gone offline
                 // retrieve the list of groups or chat rooms the user is part of
-                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userId));
+                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userIdResult.Value.ToString()));
                 foreach (var list in chatlist)
                 {
-                    await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId, false);
+                    await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userIdResult.Value.ToString(), false);
                     await Groups.RemoveFromGroupAsync(connectionId, list.ChatRoomId.ToString());
                     Console.WriteLine($"{connectionId} has left the group {list.ChatRoomId}");
 
                     // Broadcast user's offline status to the group
                 }
-                await _RServices.DeleteUserIdFromRedis(userId);
+                await _RServices.DeleteUserIdFromRedis(userIdResult.Value.ToString()!);
 
                 await base.OnDisconnectedAsync(exception);
             }

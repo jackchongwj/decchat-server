@@ -68,7 +68,7 @@ namespace ChatroomB_Backend.Service
                 {
                     try
                     {
-                        ChatRoomMessage? chatRoomMessage = JsonSerializer.Deserialize<ChatRoomMessage>(message);
+                        EditMessage? chatRoomMessage = JsonSerializer.Deserialize<EditMessage>(message);
                         if (chatRoomMessage != null)
                         {
                             await _messageService.EditMessage(chatRoomMessage);

@@ -26,7 +26,7 @@ namespace ChatroomB_Backend.Controllers
         public async Task<IActionResult> RenewToken()
         {
             // Get Cookie Refresh Token
-            string refreshToken = HttpContext.Request.Cookies["refreshToken"];
+            string refreshToken = HttpContext.Request.Cookies["refreshToken"]!;
 
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
@@ -40,8 +40,8 @@ namespace ChatroomB_Backend.Controllers
                 return Unauthorized("User information is missing in the request context");
             }
 
-            int userId = (int)userIdObj;
-            string username = (string)usernameObj;
+            int userId = (int)userIdObj!;
+            string username = (string)usernameObj!;
 
             // Validate and update refresh token expiry
             await _tokenService.UpdateRefreshToken(refreshToken);
