@@ -22,6 +22,7 @@ using MongoDB.Driver;
 using ChatroomB_Backend.Models;
 using System;
 using AspNetCoreRateLimit;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,30 +47,30 @@ builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>()
 //redis set up
 builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 {
-    ConfigurationOptions configuration = ConfigurationOptions.Parse(builder.Configuration.GetSection("RedisConnection")["RedisConnectionString"]);
+    ConfigurationOptions configuration = ConfigurationOptions.Parse(builder.Configuration.GetSection("RedisConnection")["RedisConnectionString"]!);
     return ConnectionMultiplexer.Connect(configuration);
 });
 
 //MongoDB set up
 builder.Services.AddSingleton<IMongoClient>(provider =>
 {
-    string connectionString = builder.Configuration.GetSection("MongoDBConnection")["MongoDBConnectionString"];
+    string connectionString = builder.Configuration.GetSection("MongoDBConnection")["MongoDBConnectionString"]!;
     return new MongoClient(connectionString);
 });
 
 builder.Services.AddSingleton(provider =>
 {
-    var mongoClient = provider.GetRequiredService<IMongoClient>();
-    var defaultDatabaseName = builder.Configuration.GetSection("MongoDBConnection")["DatabaseName"];
-    var defaultCollectionName = builder.Configuration.GetSection("MongoDBConnection")["CollectionName"];
+    IMongoClient mongoClient = provider.GetRequiredService<IMongoClient>();
+    string defaultDatabaseName = builder.Configuration.GetSection("MongoDBConnection")["DatabaseName"]!;
+    string defaultCollectionName = builder.Configuration.GetSection("MongoDBConnection")["CollectionName"]!;
 
-    var database = mongoClient.GetDatabase(defaultDatabaseName);
-    var collection = database.GetCollection<ErrorHandle>(defaultCollectionName);
+    IMongoDatabase database = mongoClient.GetDatabase(defaultDatabaseName);
+    IMongoCollection<ErrorHandle> collection = database.GetCollection<ErrorHandle>(defaultCollectionName);
     return collection;
 });
 
 // Add Cookie Policy
-var environment = builder.Environment;
+IWebHostEnvironment environment = builder.Environment;
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     if (environment.IsProduction())
@@ -102,8 +103,8 @@ builder.Services.AddSignalR()
     .AddJsonProtocol(options =>
     {
         options.PayloadSerializerOptions.PropertyNamingPolicy = null;
-        
-    }) ;
+
+    });
 
 
 // service repository utils
@@ -118,7 +119,7 @@ builder.Services.AddScoped<IErrorHandleService, ErrorHanldeServices>();
 builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
-builder.Services.AddScoped<IAuthRepo, AuthRepo>();  
+builder.Services.AddScoped<IAuthRepo, AuthRepo>();
 builder.Services.AddSingleton<ITokenRepo, TokenRepo>();
 builder.Services.AddScoped<IMessageRepo, MessagesRepo>();
 builder.Services.AddScoped<IErrorHandleRepo, ErrorHandleRepo>();
@@ -130,7 +131,7 @@ builder.Services.AddSingleton<ITokenUtils, TokenUtils>();
 // RabbitMQ-Related Services
 builder.Services.AddSingleton<RabbitMQServices>();
 builder.Services.AddScoped<ApplicationServices>();
-builder.Services.AddScoped<IBlobService,BlobServices>();
+builder.Services.AddScoped<IBlobService, BlobServices>();
 builder.Services.AddScoped<IBlobRepo, BlobsRepo>();
 
 builder.Services.AddScoped<IChatRoomService, ChatRoomServices>();
@@ -147,9 +148,9 @@ builder.Services.AddSwaggerGen();
 
 
 // add policy
-builder.Services.AddCors(options => 
+builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AngularApp", policy => 
+    options.AddPolicy("AngularApp", policy =>
             policy.WithOrigins("http://localhost:4200", "https://chatroomfe-dec.azurewebsites.net")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
@@ -169,14 +170,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             ValidIssuer = builder.Configuration.GetSection("JwtSettings:Issuer").Get<string>(),
             ValidAudience = builder.Configuration.GetSection("JwtSettings:Audience").Get<string>(),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JwtSettings:SecretKey").Get<string>()))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JwtSettings:SecretKey").Get<string>()!))
         };
     });
 
 
 var app = builder.Build();
 
-app.MapHub<ChatHub>("/chatHub");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -202,6 +203,8 @@ app.UseIpRateLimiting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.UseMiddleware<TokenValidationMiddleware>();
 

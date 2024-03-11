@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Cors;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Authorization;
 using ChatroomB_Backend.Utils;
+using Azure.Core;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -25,11 +26,11 @@ namespace ChatroomB_Backend.Controllers
         private readonly IChatRoomService _ChatRoomService;
         private readonly IAuthUtils _authUtils;
 
-        public FriendsController(IFriendService Fservice, IChatRoomService CService, IAuthUtils authUtil)
+        public FriendsController(IFriendService Fservice, IChatRoomService CService, IAuthUtils authUtils)
         {
             _FriendService = Fservice;
             _ChatRoomService = CService;
-            _authUtils = authUtil;
+            _authUtils = authUtils;
         }
 
         //POST: Friends/Create
@@ -37,12 +38,15 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> AddFriend([FromBody] Friends friends)
         {
-            if (!ModelState.IsValid)
+            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            if (userIdResult.Result is not null)
             {
-                throw new ArgumentException("Invalid request data");
+                return userIdResult.Result;
             }
 
-            int result = await _FriendService.CheckFriendExit(friends);
+            friends.SenderId = userIdResult.Value;
+
+            int result = await _FriendService.CheckFriendExist(friends);
 
             if (result == 0)
             {
@@ -50,11 +54,10 @@ namespace ChatroomB_Backend.Controllers
                 await _FriendService.AddFriends(friends);
                 return Ok(new { Message = "Friend Request send successfully" });
             }
-            else 
-            {
-                throw new InvalidOperationException("Friend has already been added before");
-            }
+                return BadRequest(new { ErrorMessage = "Friend Has Added Before" });
+
         }
+
 
         [HttpPost("UpdateFriendRequest")]
         [Authorize]
@@ -62,19 +65,16 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    throw new ArgumentException("Invalid request data");
-                }
-
-                int result = await _FriendService.UpdateFriendRequest(request);
-
                 ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
                 if (userIdResult.Result is not null)
                 {
                     // If there is an ActionResult, it means there was an error, return it
                     return userIdResult.Result;
                 }
+
+                request.ReceiverId = userIdResult.Value;
+
+                int result = await _FriendService.UpdateFriendRequest(request);
 
                 if (request.Status == 2)
                 {
@@ -93,18 +93,23 @@ namespace ChatroomB_Backend.Controllers
             
         }
 
+
         [HttpPost("DeleteFriend")]
         [Authorize]
         public async Task<ActionResult<int>> DeleteFriend([FromBody] DeleteFriendRequest request)
         {
-            if (!ModelState.IsValid)
+            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            if (userIdResult.Result is not null)
             {
-                return BadRequest("Invalid request data");
+                return userIdResult.Result;
             }
 
-            int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1, request.UserId2);
+
+            int result = await _FriendService.DeleteFriendRequest(request.ChatRoomId, request.UserId1 = userIdResult.Value, request.UserId2);
 
             return Ok(result);
+
         }
+
     }
 }

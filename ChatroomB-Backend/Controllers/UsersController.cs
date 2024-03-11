@@ -5,6 +5,7 @@ using ChatroomB_Backend.DTO;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using ChatroomB_Backend.Utils;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -34,9 +35,12 @@ namespace ChatroomB_Backend.Controllers
                     return userIdResult.Result;
                 }
 
-                IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName, userIdResult.Value);
+                if (!profileName.IsNullOrEmpty())
+                {
+                    IEnumerable<UserSearchDetails> GetUserByName = await _UserService.GetByName(profileName.Trim(), userIdResult.Value);
 
-                return Ok(GetUserByName);
+                    return Ok(GetUserByName);
+                }
 
             }
             catch (Exception ex)
@@ -122,6 +126,7 @@ namespace ChatroomB_Backend.Controllers
             }
             
         }
+
 
         [HttpPost("UpdateProfileName")]
         [Authorize]

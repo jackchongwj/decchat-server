@@ -24,7 +24,6 @@ namespace ChatroomB_Backend.Controllers
 
         public ChatRoomController(IHubContext<ChatHub> hubContext, IChatRoomService CService, IAuthUtils authUtils)
         {
-            _hubContext = hubContext;
             _ChatRoomService = CService;
             _authUtils = authUtils;
         }
@@ -182,6 +181,8 @@ namespace ChatroomB_Backend.Controllers
 
             return Ok();
         }
+
+
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
         {
             using (MemoryStream memoryStream = new MemoryStream())

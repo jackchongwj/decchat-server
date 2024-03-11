@@ -26,7 +26,7 @@ namespace ChatroomB_Backend.Service
 
             ChatRoomMessage newMessage =  await _MessageRepo.AddMessages(message);
 
-            await _hubContext.Clients.Group(newMessage.ChatRoomId.ToString()).SendAsync("UpdateMessage", newMessage);
+            await _hubContext.Clients.Group(newMessage.ChatRoomId.ToString()!).SendAsync("UpdateMessage", newMessage);
             return newMessage;
         }
 
@@ -41,12 +41,12 @@ namespace ChatroomB_Backend.Service
             return result;
         }
 
-        public async Task<int> EditMessage(ChatRoomMessage NewMessage)
+        public async Task<int> EditMessage(EditMessage NewMessage)
         {
             int result = await _MessageRepo.EditMessage(NewMessage);
             if (result == 0)
             {
-                await _hubContext.Clients.Group(NewMessage.ChatRoomId.ToString()).SendAsync("EditMessage", NewMessage);
+                await _hubContext.Clients.Group(NewMessage.ChatRoomId.ToString()!).SendAsync("EditMessage", NewMessage);
             }
 
             return result;
@@ -55,6 +55,11 @@ namespace ChatroomB_Backend.Service
         public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId)
         {
             return await _MessageRepo.GetMessages(ChatRoomId, MessageId);
+        }
+
+        public async Task<int> GetTotalSearchMessage(int ChatRoomId, string SearchValue)
+        {
+            return await _MessageRepo.GetTotalSearchMessage(ChatRoomId, SearchValue);
         }
     }
 }

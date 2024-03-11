@@ -65,7 +65,7 @@ namespace ChatroomB_Backend.Repository
             return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
         }
 
-        public async Task<int> EditMessage(ChatRoomMessage NewMessage)
+        public async Task<int> EditMessage(EditMessage NewMessage)
         {
             try
             {
@@ -104,6 +104,20 @@ namespace ChatroomB_Backend.Repository
             IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
 
             return result;
+        }
+
+        public async Task<int> GetTotalSearchMessage(int ChatRoomId, string SearchValue)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@ChatRoomId", ChatRoomId);
+            parameters.Add("@SearchValue", SearchValue);
+            parameters.Add("@RowCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _dbConnection.ExecuteAsync("GetTotalSearchMessage", parameters, commandType: CommandType.StoredProcedure);
+
+            int count = parameters.Get<int>("@RowCount");
+
+            return count;
         }
     }
 }

@@ -80,7 +80,7 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("EditMessage")]
         [Authorize]
-        public IActionResult EditMessage([FromBody] ChatRoomMessage edittedMessage)
+        public IActionResult EditMessage([FromBody] EditMessage edittedMessage)
         {
             _RabbitMQService.PublishEditMessage(edittedMessage);
 
@@ -94,6 +94,14 @@ namespace ChatroomB_Backend.Controllers
             int result = await _MessageService.DeleteMessage(MessageId, ChatRoomId);
 
             return Ok(result);
+        }
+
+        [HttpGet("GetTotalSearchMessage")]
+        public async Task<int> GetTotalSearchMessage(int ChatRoomId, string searchValue)
+        {
+            int result = await _MessageService.GetTotalSearchMessage(ChatRoomId, searchValue);
+
+            return result;
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
