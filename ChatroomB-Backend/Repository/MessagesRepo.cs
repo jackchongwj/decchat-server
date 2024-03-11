@@ -65,7 +65,7 @@ namespace ChatroomB_Backend.Repository
             return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
         }
 
-        public async Task<int> EditMessage(ChatRoomMessage NewMessage)
+        public async Task<int> EditMessage(EditMessage NewMessage)
         {
             try
             {

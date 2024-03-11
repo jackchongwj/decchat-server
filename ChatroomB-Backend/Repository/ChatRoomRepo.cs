@@ -122,7 +122,6 @@ namespace ChatroomB_Backend.Repository
                 parameters.Add("@UserId", userId);
 
                 IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>("RetrieveChatRoomInfoByChatRoomId", parameters, commandType: CommandType.StoredProcedure);
-                var parameter = new { ChatRoomID = chatRoomId, userId = userId };
                 return chatList;
             }
             catch (Exception ex)

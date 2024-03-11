@@ -41,7 +41,7 @@ namespace ChatroomB_Backend.Service
             return result;
         }
 
-        public async Task<int> EditMessage(ChatRoomMessage NewMessage)
+        public async Task<int> EditMessage(EditMessage NewMessage)
         {
             int result = await _MessageRepo.EditMessage(NewMessage);
             if (result == 0)

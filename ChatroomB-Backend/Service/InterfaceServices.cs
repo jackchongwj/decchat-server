@@ -53,7 +53,7 @@ namespace ChatroomB_Backend.Service
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                    // Add new message
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId);                                          // Get the message
-        Task<int> EditMessage(ChatRoomMessage NewMessage);                                                                      // Edit the message
+        Task<int> EditMessage(EditMessage NewMessage);                                                                      // Edit the message
         Task<int> DeleteMessage(int MessageId, int ChatRoomId);                                                                 // Delete the message 
         Task<int> GetTotalSearchMessage(int ChatRoomId, string SearchValue);
     }

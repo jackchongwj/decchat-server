@@ -25,7 +25,7 @@ namespace ChatroomB_Backend.DTO
         public string? ProfilePicture { get; set; }
     }
 
-    public class editMessage 
+    public class EditMessage 
     {
         public int? MessageId { get; set; }
 

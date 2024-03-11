@@ -80,7 +80,7 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("EditMessage")]
         [Authorize]
-        public IActionResult EditMessage([FromBody] editMessage edittedMessage)
+        public IActionResult EditMessage([FromBody] EditMessage edittedMessage)
         {
             _RabbitMQService.PublishEditMessage(edittedMessage);
 
