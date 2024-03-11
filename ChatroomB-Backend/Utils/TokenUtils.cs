@@ -73,7 +73,7 @@ namespace ChatroomB_Backend.Utils
             {
                 cookieOptions.HttpOnly = true;
                 cookieOptions.SameSite = SameSiteMode.None;
-                cookieOptions.Secure = true; // Corresponds to CookieSecurePolicy.Always
+                cookieOptions.Secure = _environment.IsProduction(); // Corresponds to CookieSecurePolicy.Always
             }
             else
             {
