@@ -32,9 +32,9 @@ namespace ChatroomB_Backend.Service
             _RServices = rServices;
         }
 
-        public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
+        public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request)
         {
-            IEnumerable<ChatlistVM> result = await _repo.AddChatRoom(request, userId);
+            IEnumerable<ChatlistVM> result = await _repo.AddChatRoom(request);
 
             if (!result.IsNullOrEmpty())
             {
@@ -42,8 +42,10 @@ namespace ChatroomB_Backend.Service
                 {
                     // Retrieve online user IDs from Redis
                     List<string> onlineUserIds = await _RServices.GetAllUserIdsFromRedisSet();
+
                     // Determine if the sender is online
                     bool isSenderOnline = onlineUserIds.Contains(request.SenderId.ToString());
+
                     // add private list to signalR group for send message
                     string connectionIdS = await _RServices.SelectUserIdFromRedis(request.SenderId);
                     string connectionIdR = await _RServices.SelectUserIdFromRedis(request.ReceiverId);
@@ -191,6 +193,7 @@ namespace ChatroomB_Backend.Service
             }
             return result;
         }
+
         public async Task<int> UpdateGroupName(int chatRoomId, string newGroupName)
         {
             try
@@ -234,7 +237,6 @@ namespace ChatroomB_Backend.Service
                 return -1;
             }
         }
-
 
         public async Task<IEnumerable<GroupMember>> RetrieveGroupMemberByChatroomId(int chatRoomId, int userId)
         {

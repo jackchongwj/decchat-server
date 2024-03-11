@@ -24,4 +24,13 @@ namespace ChatroomB_Backend.DTO
         public string? ProfileName { get; set; }
         public string? ProfilePicture { get; set; }
     }
+
+    public class EditMessage 
+    {
+        public int? MessageId { get; set; }
+
+        public string Content { get; set; } = null!;
+
+        public int? ChatRoomId { get; set; }
+    }
 }

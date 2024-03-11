@@ -5,43 +5,43 @@ namespace ChatroomB_Backend.DTO
 {
     public class PasswordStrengthAttribute : ValidationAttribute
     {
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            var password = value as string;
-            var errors = new List<string>();
+            string? password = value as string;
+            List<string> errors = new List<string>();
 
             // Minimum length check
-            if (password.Length < 8)
+            if (password?.Length < 8)
             {
                 errors.Add("Password must be at least 8 characters long.");
             }
 
             // Maximum length check
-            if (password.Length > 20)
+            if (password?.Length > 20)
             {
                 errors.Add("Password must not exceed 20 characters.");
             }
 
             // Digit check
-            if (!Regex.IsMatch(password, @"\d"))
+            if (!Regex.IsMatch(password!, @"\d"))
             {
                 errors.Add("Password must contain at least one digit.");
             }
 
             // Uppercase letter check
-            if (!Regex.IsMatch(password, @"[A-Z]"))
+            if (!Regex.IsMatch(password!, @"[A-Z]"))
             {
                 errors.Add("Password must contain at least one uppercase letter.");
             }
 
             // Lowercase letter check
-            if (!Regex.IsMatch(password, @"[a-z]"))
+            if (!Regex.IsMatch(password!, @"[a-z]"))
             {
                 errors.Add("Password must contain at least one lowercase letter.");
             }
 
             // Special character check
-            if (!Regex.IsMatch(password, @"[$@^!%*?&]"))
+            if (!Regex.IsMatch(password!, @"[$@^!%*?&]"))
             {
                 errors.Add("Password must contain at least one special character.");
             }

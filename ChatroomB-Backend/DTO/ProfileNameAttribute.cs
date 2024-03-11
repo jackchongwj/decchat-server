@@ -5,7 +5,7 @@ namespace ChatroomB_Backend.DTO
 {
     public class ProfileNameAttribute : ValidationAttribute
     {
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
             var profileName = value as string ?? "";
 

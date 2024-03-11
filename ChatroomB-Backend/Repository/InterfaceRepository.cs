@@ -12,8 +12,8 @@ namespace ChatroomB_Backend.Repository
 {
     public interface IUserRepo
     {
-        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                                    //Get user by user profile name and filter friend request
-        Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                 // Get All Friend request
+        Task<IEnumerable<UserSearchDetails>> GetByName(string profileName, int userId);                                                    
+        Task<IEnumerable<Users>> GetFriendRequest(int userId);                                                                 
         Task<Users> GetUserById(int userId);
         Task<int> UpdateProfileName(int userId, string newProfileName);
         Task<int> UpdateProfilePicture(int userId, string newProfilePicture);
@@ -26,15 +26,16 @@ namespace ChatroomB_Backend.Repository
 
     public interface IFriendRepo
     {
-        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                     // Add new friend 
-        Task<int> CheckFriendExit(Friends friends);
-        Task<int> UpdateFriendRequest (FriendRequest request);                                              // update friend request
-        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);  
+        Task<IEnumerable<Users>> AddFriends(Friends friends);                                                                                    
+        Task<int> CheckFriendExist(Friends friends);
+        Task<int> UpdateFriendRequest (FriendRequest request);                                            
+        Task <int> DeleteFriendRequest(int chatRoomId, int userId1, int userId2);
+       
     }
 
     public interface IChatRoomRepo
     {
-        Task <IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId); // add new ChatRoom and user chat room with private user
+        Task <IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request); 
         Task<int> UpdateGroupName(int chatRoomId, string newGroupName);
         Task<int> UpdateGroupPicture(int chatRoomId, string newGroupPicture);
 
@@ -51,8 +52,9 @@ namespace ChatroomB_Backend.Repository
     {
         Task<ChatRoomMessage> AddMessages(Messages message);                                                                               
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int CurrentPage);
-        Task<int> EditMessage(ChatRoomMessage NewMessage);
+        Task<int> EditMessage(EditMessage NewMessage);
         Task<int> DeleteMessage(int MessageId);
+        Task<int> GetTotalSearchMessage(int ChatRoomId, string SearchValue);
     }
     
     public interface IBlobRepo

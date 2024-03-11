@@ -85,7 +85,7 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<int> CheckFriendExit(Friends friends)
+        public async Task<int> CheckFriendExist(Friends friends)
         {
             try
             {
@@ -105,5 +105,6 @@ namespace ChatroomB_Backend.Repository
                 throw new InvalidOperationException("Failed to check friend existence", ex);
             }
         }
+
     }
 }
