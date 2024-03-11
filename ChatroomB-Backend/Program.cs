@@ -71,13 +71,24 @@ builder.Services.AddSingleton(provider =>
 
 // Add Cookie Policy
 IWebHostEnvironment environment = builder.Environment;
-// Add Cookie Policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.CheckConsentNeeded = context => true;
-    options.MinimumSameSitePolicy = SameSiteMode.None;
-    options.HttpOnly = HttpOnlyPolicy.Always;
-    options.Secure = CookieSecurePolicy.SameAsRequest;
+    if (environment.IsProduction())
+    {
+        // Production cookie policy
+        options.CheckConsentNeeded = context => true;
+        options.MinimumSameSitePolicy = SameSiteMode.None;
+        options.HttpOnly = HttpOnlyPolicy.Always;
+        options.Secure = CookieSecurePolicy.Always;
+    }
+    else
+    {
+        // Development cookie policy
+        options.CheckConsentNeeded = context => false;
+        options.MinimumSameSitePolicy = SameSiteMode.None;
+        options.HttpOnly = HttpOnlyPolicy.None;
+        options.Secure = CookieSecurePolicy.SameAsRequest;
+    }
 });
 
 // Add services to the container.
