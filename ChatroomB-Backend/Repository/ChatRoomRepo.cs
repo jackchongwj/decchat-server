@@ -28,7 +28,7 @@ namespace ChatroomB_Backend.Repository
             _config = config;
         }
 
-        public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request, int userId)
+        public async Task<IEnumerable<ChatlistVM>> AddChatRoom(FriendRequest request)
         {
             var param = new
             {
@@ -37,12 +37,12 @@ namespace ChatroomB_Backend.Repository
                 RoomProfilePic = "",
                 SenderId = request.SenderId,
                 ReceiverId = request.ReceiverId,
-                UserId = userId  
+                UserId = request.ReceiverId  // Adjust the parameter name
             };
 
-                string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @UserId";
+            string sql = "exec CreateChatRoomAndUserChatRoomWithPrivate @RoomName, @RoomType, @RoomProfilePic, @SenderId, @ReceiverId, @UserId";
 
-                IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, param);
+            IEnumerable<ChatlistVM> chatList = await _dbConnection.QueryAsync<ChatlistVM>(sql, param);
 
             return chatList;
         }

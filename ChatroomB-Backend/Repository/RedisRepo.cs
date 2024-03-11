@@ -34,7 +34,7 @@ namespace ChatroomB_Backend.Repository
 
                 return 1;
 
-            } catch (Exception ex)
+            } catch (Exception)
             {
                 return 0;
             }
@@ -60,7 +60,7 @@ namespace ChatroomB_Backend.Repository
                     return 0;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return 0;
             }

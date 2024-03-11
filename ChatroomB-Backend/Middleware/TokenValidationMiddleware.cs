@@ -25,18 +25,21 @@ namespace ChatroomB_Backend.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            // Skip middleware for auth routes
-            if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub"))
+            // Skip middleware for auth routes        
+            
+            
+            if (context.Request.Path.StartsWithSegments("/api/Auth"))
             {
+                //string connectionId = Context.ConnectionId;
                 await _next(context);
                 return;
             }
 
             // Get JWT Access Token
-            string accessToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            string accessToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last()!;
 
             // Get Cookie Refresh Token
-            string refreshToken = context.Request.Cookies["refreshToken"];
+            string refreshToken = context.Request.Cookies["refreshToken"]!;
 
             if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(refreshToken))
             {
@@ -75,19 +78,20 @@ namespace ChatroomB_Backend.Middleware
                 context.Items["Username"] = decodedToken.Value.username;
             }
 
+
             await _next(context);
         }
 
         private (int userId, string username)? DecodeAccessToken(string accessToken)
         {
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwtToken = handler.ReadToken(accessToken) as JwtSecurityToken;
+            JwtSecurityToken? jwtToken = handler.ReadToken(accessToken) as JwtSecurityToken;
 
             if (jwtToken == null) return null;
 
             // Retrieve username and userId
-            string userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "UserId")?.Value;
-            string usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "Username")?.Value;
+            string? userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "UserId")?.Value;
+            string? usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "Username")?.Value;
 
             // Check for null or invalid values before returning
             if (userIdClaim == null || usernameClaim == null) return null;

@@ -142,7 +142,6 @@ namespace ChatroomB_Backend.Repository
                 throw new InvalidOperationException("Failed to get user ID by username", ex);
             }
         }
-        
 
         public async Task<IEnumerable<ChatlistVM>> GetChatListByUserId(int userId)
         {
