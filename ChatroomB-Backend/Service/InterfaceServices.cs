@@ -54,10 +54,8 @@ namespace ChatroomB_Backend.Service
     public interface IAuthService
     {
         Task<Users> Authenticate(string username, string password);
-        Task<string> GetSalt(string username);
-        Task<bool> VerifyPassword(string username, string hashedPassword);
         Task AddUser(string username, string password, string profileName);
-        Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
+        Task ChangePassword(string username, string currentPassword, string newPassword);
     }
 
     public interface ITokenService
@@ -88,7 +86,7 @@ namespace ChatroomB_Backend.Service
 
     public interface IErrorHandleService 
     {
-        Task LogError(string controllerName, string errorMessage);
+        Task LogError(string controllerName, int userId, string errorMessage);
     }
     
 }

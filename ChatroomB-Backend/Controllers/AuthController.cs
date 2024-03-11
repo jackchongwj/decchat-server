@@ -42,7 +42,7 @@ namespace ChatroomB_Backend.Controllers
             }
 
             // Store the user object
-            await _authService.AddUser(request.Username, request.Password, request.ProfileName);
+            await _authService.AddUser(request.Username, request.Password, request.ProfileName!);
 
             return Ok(new { Message = "Registration successful!" });
         }
@@ -103,24 +103,18 @@ namespace ChatroomB_Backend.Controllers
         
         [HttpPost("PasswordChange")]
         [Authorize]
-        public async Task<IActionResult> ChangePassword(int id, [FromBody] PasswordChange model)
+        public async Task<IActionResult> ChangePassword([FromBody] PasswordChange model)
         {
             if (!ModelState.IsValid)
             {
                 throw new ArgumentException("Invalid request data");
             }
 
-            bool result = await _authService.ChangePassword(id, model.CurrentPassword, model.NewPassword);
+            string username = _authUtils.ExtractUsernameFromJWT(HttpContext.User);
 
-            if (!result)
-            {
-                // This means the current password did not match
-                throw new ArgumentException("Current password is incorrect or user not found.");
-            }   
+            await _authService.ChangePassword(username, model.CurrentPassword, model.NewPassword);
 
-            // If the password was successfully changed
             return Ok(new { Message = "Password changed successfully." });
-
         }
     }
  

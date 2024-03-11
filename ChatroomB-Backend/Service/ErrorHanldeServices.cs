@@ -11,9 +11,9 @@ namespace ChatroomB_Backend.Service
             _repo = _repository;
         }
 
-        public async Task LogError(string controllerName, string errorMessage)
+        public async Task LogError(string controllerName, int userId, string errorMessage)
         {
-            await _repo.LogError(controllerName, errorMessage);
+            await _repo.LogError(controllerName, userId, errorMessage);
         }
     }
 }
