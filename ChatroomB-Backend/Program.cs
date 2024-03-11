@@ -197,19 +197,19 @@ app.UseCors("AngularApp");
 
 app.UseRouting();
 
+// IP rate limiting middleware can be used after authorization.
+app.UseIpRateLimiting();
+
 // Ensure that authentication and authorization come after UseRouting and UseCors.
 app.UseAuthentication();
 app.UseAuthorization();
 
-// SignalR hubs registration.
-app.MapHub<ChatHub>("/chatHub");
-
-// IP rate limiting middleware can be used after authorization.
-app.UseIpRateLimiting();
-
 // Custom middleware for token validation and exception handling.
 app.UseMiddleware<TokenValidationMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// SignalR hubs registration.
+app.MapHub<ChatHub>("/chatHub");
 
 // Mapping controllers should come after all middleware are configured.
 app.MapControllers();
