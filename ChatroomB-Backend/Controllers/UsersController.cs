@@ -89,13 +89,10 @@ namespace ChatroomB_Backend.Controllers
                 ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
                 if (userIdResult.Result is not null)
                 {
-                    // If there is an ActionResult, it means there was an error, return it
                     return userIdResult.Result;
                 }
 
-                int userId = userIdResult.Value;
-
-                Users user = await _UserService.GetUserById(userId);
+                Users user = await _UserService.GetUserById(userIdResult.Value);
 
                 if (user == null)
                 {
@@ -111,18 +108,22 @@ namespace ChatroomB_Backend.Controllers
             
         }
 
-
         [HttpPost("UpdateProfileName")]
         [Authorize]
         public async Task<IActionResult> UpdateProfileName([FromBody] UpdateProfileName model)
         {
+            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            if (userIdResult.Result is not null)
+            {
+                return userIdResult.Result;
+            }
 
             if (model == null || !ModelState.IsValid)
             {
                 return BadRequest("Invalid request data");
             }
  
-            int result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
+            int result = await _UserService.UpdateProfileName(userIdResult.Value, model.NewProfileName);
 
             if (result == 0) return NotFound("User ID not found or update failed.");
 
@@ -131,8 +132,15 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("UpdateProfilePicture")]
         [Authorize]
-        public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file, [FromForm(Name = "id")] string userId)
+        public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file)
         {
+
+            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            if (userIdResult.Result is not null)
+            {
+                return userIdResult.Result;
+            }
+
             if (file == null || file.Length == 0)
             {
                 return BadRequest("File is not provided or empty.");
@@ -152,7 +160,7 @@ namespace ChatroomB_Backend.Controllers
 
             try
             {
-                int success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId), fileBytes, file.FileName);
+                int success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userIdResult.Value), fileBytes, file.FileName);
 
                 if (success == -1)
                 {
@@ -173,9 +181,14 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("UserDeletion")]
         [Authorize]
-        public async Task<IActionResult> DeleteUser([FromQuery] int id)
+        public async Task<IActionResult> DeleteUser()
         {
-            int result = await _UserService.DeleteUser(id);
+            ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            if (userIdResult.Result is not null)
+            {
+                return userIdResult.Result;
+            }
+            int result = await _UserService.DeleteUser(userIdResult.Value);
 
             if (result == 0) { return NotFound("User ID not found."); }
             else { return Ok(); }
