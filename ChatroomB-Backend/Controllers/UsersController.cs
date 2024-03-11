@@ -42,6 +42,7 @@ namespace ChatroomB_Backend.Controllers
                     return Ok(GetUserByName);
                 }
 
+                return BadRequest(new { ErrorMessage = "Profile Name Cannot Be Empty" });
             }
             catch (Exception ex)
             {
@@ -126,22 +127,40 @@ namespace ChatroomB_Backend.Controllers
             }
             
         }
-
+         
 
         [HttpPost("UpdateProfileName")]
         [Authorize]
         public async Task<IActionResult> UpdateProfileName([FromBody] UpdateProfileName model)
         {
-            if (model == null || !ModelState.IsValid)
+            try
             {
-                return BadRequest("Invalid request data");
+                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+                if (userIdResult.Result is not null)
+                {
+                    // If there is an ActionResult, it means there was an error, return it
+                    return userIdResult.Result;
+                }
+
+                if (model == null || !ModelState.IsValid)
+                {
+                    return BadRequest("Invalid request data");
+                }
+
+                model.Id = userIdResult.Value;
+
+                int result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
+
+                if (result == 0) return NotFound("User ID not found or update failed.");
+
+                return Ok();
+
             }
- 
-            int result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
 
-            if (result == 0) return NotFound("User ID not found or update failed.");
-
-            return Ok(); 
         }
 
         [HttpPost("UpdateProfilePicture")]

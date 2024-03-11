@@ -77,7 +77,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     {
         // Production cookie policy
         options.CheckConsentNeeded = context => true;
-        options.MinimumSameSitePolicy = SameSiteMode.Strict;
+        options.MinimumSameSitePolicy = SameSiteMode.None;
         options.HttpOnly = HttpOnlyPolicy.Always;
         options.Secure = CookieSecurePolicy.SameAsRequest;
     }
@@ -204,9 +204,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapHub<ChatHub>("/chatHub");
-
 app.UseMiddleware<TokenValidationMiddleware>();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
