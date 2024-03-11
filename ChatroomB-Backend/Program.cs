@@ -177,8 +177,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -191,29 +189,26 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Placement of UseCors is crucial to ensure it's applied correctly.
 app.UseCors("AngularApp");
-
-app.UseCookiePolicy();
 
 app.UseRouting();
 
+// Ensure that authentication and authorization come after UseRouting and UseCors.
 app.UseAuthentication();
-
 app.UseAuthorization();
 
+// SignalR hubs registration.
 app.MapHub<ChatHub>("/chatHub");
 
-// Use IP rate limiting middleware
+// IP rate limiting middleware can be used after authorization.
 app.UseIpRateLimiting();
-//app.UseMiddleware<CRRateLimitMiddleware>();
 
-
+// Custom middleware for token validation and exception handling.
 app.UseMiddleware<TokenValidationMiddleware>();
-
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+// Mapping controllers should come after all middleware are configured.
 app.MapControllers();
 
 app.Run();
-
-
