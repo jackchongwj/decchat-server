@@ -84,6 +84,7 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateProfileName([FromBody] UpdateProfileName model)
         {
+
             if (model == null || !ModelState.IsValid)
             {
                 return BadRequest("Invalid request data");
@@ -130,7 +131,12 @@ namespace ChatroomB_Backend.Controllers
                     return NotFound("Failed to update the profile picture.");
                 }
 
-            return Ok(new { Message = "Profile picture updated successfully." });
+                return Ok(new { Message = "Profile picture updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPost("UserDeletion")]
