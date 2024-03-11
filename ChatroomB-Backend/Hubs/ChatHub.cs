@@ -61,6 +61,7 @@ namespace ChatroomB_Backend.Hubs
             }
         }
 
+        [Authorize]
         public override async Task OnDisconnectedAsync(Exception? exception) 
         
         {
@@ -73,7 +74,7 @@ namespace ChatroomB_Backend.Hubs
 
                 // Notify other members in the user's groups that they have gone offline
                 // retrieve the list of groups or chat rooms the user is part of
-                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(Convert.ToInt32(userId.ToString()));
+                IEnumerable<ChatlistVM> chatlist = await _Uservices.GetChatListByUserId(userId);
                 foreach (var list in chatlist)
                 {
                     await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId.ToString(), false);

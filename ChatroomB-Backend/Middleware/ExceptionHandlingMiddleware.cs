@@ -14,13 +14,11 @@ namespace ChatroomB_Backend.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-        private readonly IAuthUtils _authUtils;
 
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IAuthUtils authUtils)
+        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
             _logger = logger;
-            _authUtils = authUtils;
         }
 
         public async Task Invoke(HttpContext context)
@@ -37,6 +35,9 @@ namespace ChatroomB_Backend.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
+            // Resolve IAuthUtils from the scope created for the current request
+            var authUtils = context.RequestServices.GetRequiredService<IAuthUtils>();
+
             HttpStatusCode statusCode;
             string message;
 
@@ -63,7 +64,7 @@ namespace ChatroomB_Backend.Middleware
             _logger.LogError(exception, exception.Message);
 
             // Log the error to MongoDB
-            int userId = _authUtils.ExtractUserIdFromJWT(context.User);
+            int userId = authUtils.ExtractUserIdFromJWT(context.User);
             string controllerName = context.Request.RouteValues["controller"]?.ToString() ?? "UnknownController";
             IErrorHandleService errorHandleService = context.RequestServices.GetRequiredService<IErrorHandleService>();
             await errorHandleService.LogError(controllerName, userId, exception.Message);
