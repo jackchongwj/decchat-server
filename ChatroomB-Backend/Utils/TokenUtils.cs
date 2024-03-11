@@ -76,7 +76,6 @@ namespace ChatroomB_Backend.Utils
             // Adjust for production environment based on Program.cs settings
             if (_environment.IsProduction())
             {
-                cookieOptions.SameSite = SameSiteMode.Strict;
                 cookieOptions.Secure = true;
             }
 
