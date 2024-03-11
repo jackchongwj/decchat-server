@@ -189,6 +189,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Apply cookie policy.
+app.UseCookiePolicy();
+
 // Placement of UseCors is crucial to ensure it's applied correctly.
 app.UseCors("AngularApp");
 
