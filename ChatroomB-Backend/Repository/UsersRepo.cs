@@ -101,7 +101,7 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<int> DeleteUserProfile(int userId)
+        public async Task<int> DeleteUser(int userId)
         {
             try
             {
