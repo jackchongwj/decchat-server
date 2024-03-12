@@ -19,12 +19,10 @@ namespace ChatroomB_Backend.Controllers
     public class ChatRoomController : ControllerBase
     {
         private readonly IChatRoomService _ChatRoomService;
-        private readonly IHubContext<ChatHub> _hubContext;
         private readonly IAuthUtils _authUtils;
 
-        public ChatRoomController(IHubContext<ChatHub> hubContext, IChatRoomService CService, IAuthUtils authUtils)
+        public ChatRoomController(IChatRoomService CService, IAuthUtils authUtils)
         {
-            _hubContext = hubContext;
             _ChatRoomService = CService;
             _authUtils = authUtils;
         }
