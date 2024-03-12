@@ -197,10 +197,9 @@ app.UseCors("AngularApp");
 
 app.UseRouting();
 
-// IP rate limiting middleware can be used after authorization.
+// Use IP rate limiting
 app.UseIpRateLimiting();
 
-// Ensure that authentication and authorization come after UseRouting and UseCors.
 app.UseAuthentication();
 app.UseAuthorization();
 

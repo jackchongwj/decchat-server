@@ -37,6 +37,8 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Folder Include="StoredProcedure\*.sql" />
+	<Content Include="StoredProcedure\*.sql">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
 </Project>
