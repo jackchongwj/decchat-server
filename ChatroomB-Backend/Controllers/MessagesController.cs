@@ -66,7 +66,7 @@ namespace ChatroomB_Backend.Controllers
                 });
             }
 
-            return Ok(1);
+            return Ok();
         }
 
         [HttpGet("GetMessage")]
