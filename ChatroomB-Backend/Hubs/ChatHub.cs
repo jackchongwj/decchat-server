@@ -34,10 +34,6 @@ namespace ChatroomB_Backend.Hubs
         {
             try
             {
-                string accessToken = Context.GetHttpContext().Request.Query["access_token"]!;
-
-                //int userId = _authUtils.ExtractUserIdFromJWT(Context.User);
-
                 Claim userIdClaim = Context.User.Claims.FirstOrDefault(c => c.Type == "UserId")!;
                 if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                 {
