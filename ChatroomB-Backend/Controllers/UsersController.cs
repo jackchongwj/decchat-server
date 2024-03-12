@@ -88,8 +88,6 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<ActionResult<Users>> GetUserById()
         {
-            try
-            {
                 int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
                 Users user = await _UserService.GetUserById(userId);
@@ -100,103 +98,82 @@ namespace ChatroomB_Backend.Controllers
                 }
 
                 return Ok(user);
-            }
-            catch(Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            
         }
-         
 
         [HttpPost("UpdateProfileName")]
         [Authorize]
         public async Task<IActionResult> UpdateProfileName([FromBody] UpdateProfileName model)
         {
-            try
-            {
-                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-                if (model == null || !ModelState.IsValid)
+            if (model == null || !ModelState.IsValid)
                 {
                     return BadRequest("Invalid request data");
                 }
+ 
+            int result = await _UserService.UpdateProfileName(userId, model.NewProfileName);
 
-                model.Id = userIdResult;
+            if (result == 0) return NotFound("User ID not found or update failed.");
 
-                int result = await _UserService.UpdateProfileName(model.Id, model.NewProfileName);
-
-                if (result == 0) return NotFound("User ID not found or update failed.");
-
-                return Ok();
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-
+            return Ok();
+                
         }
 
         [HttpPost("UpdateProfilePicture")]
         [Authorize]
         public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file)
         {
-            try
+            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+
+            if (file == null || file.Length == 0)
             {
-                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-
-                byte[] filebyte = await ConvertToByteArrayAsync(file);
-
-                if (file == null || file.Length == 0)
-                {
-                    return BadRequest("File is not provided or empty.");
-                }
-
-                int success = await _UserService.UpdateProfilePicture(userIdResult, filebyte, file.FileName);
-
-                if (success == 0)
-                {
-                    return NotFound("Failed to update the profile picture.");
-                }
-
-                return Ok(new { Message = "Profile picture updated successfully." });
+                return BadRequest("File is not provided or empty.");
             }
-            catch (Exception ex)
+
+            if (file.Length > 7 * 1024 * 1024)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("The file is too large. Please upload an image that is 7MB or smaller.");
             }
+
+            byte[] fileBytes;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                fileBytes = memoryStream.ToArray();
+            }
+   
+            int success = await _UserService.UpdateProfilePicture(Convert.ToInt32(userId), fileBytes, file.FileName);
+
+            if (success == -1)
+            {
+                return BadRequest("The uploaded file is not a valid image.");
+            }
+            else if (success == 0)
+            {
+                return NotFound("Failed to update the profile picture.");
+            }
+
+            return Ok(new { Message = "Profile picture updated successfully." });
         }
-
 
         [HttpPost("UserDeletion")]
         [Authorize]
         public async Task<IActionResult> DeleteUser()
         {
-            try
-            {
-                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+         
+            int result = await _UserService.DeleteUser(userId);
 
-                int result = await _UserService.DeleteUser(userIdResult);
-
-                if (result == 0) { return NotFound("User ID not found."); }
-                else { return Ok(); }
+            if (result == 0) 
+            { 
+                return NotFound("User ID not found."); 
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
+            else 
+            { 
+                return Ok(); 
             }
+            
         }
-
-        private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
-        {
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                await file.CopyToAsync(memoryStream);
-                return memoryStream.ToArray();
-            }
-        }
-
 
     }
 }

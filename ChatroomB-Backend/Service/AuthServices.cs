@@ -90,6 +90,7 @@ namespace ChatroomB_Backend.Service
             {
                 throw new InvalidOperationException("Change password failed. No records were updated.");
             }
+
         }
 
     }
