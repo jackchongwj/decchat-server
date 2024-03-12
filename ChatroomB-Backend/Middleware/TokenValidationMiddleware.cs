@@ -49,7 +49,7 @@ namespace ChatroomB_Backend.Middleware
             }
 
             // Attempt to retrieve cached validation results
-            var cacheKey = $"validation-{accessToken}";
+            string cacheKey = $"validation-{accessToken}";
             if (_cache.TryGetValue(cacheKey, out (int userId, string username) cachedResult))
             {
                 context.Items["UserId"] = cachedResult.userId;

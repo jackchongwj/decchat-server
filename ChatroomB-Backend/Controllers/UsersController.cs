@@ -26,7 +26,9 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> SearchByProfileName(string profileName)
         {
-            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            try
+            {
+                int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
             if (!profileName.IsNullOrEmpty())
             {
@@ -35,28 +37,51 @@ namespace ChatroomB_Backend.Controllers
                 return Ok(GetUserByName);
             }
 
-            return BadRequest(new { ErrorMessage = "Cannot Empty" });
+                return BadRequest(new { ErrorMessage = "Profile Name Cannot Be Empty" });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
         }
+
 
         [HttpGet("RetrieveChatListByUser")]
         [Authorize]
-        public async Task<IActionResult> GetChatListByUserId([FromQuery] int userId)
+        public async Task<IActionResult> GetChatListByUserId()
         {
+            try
+            {
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-            IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userId);
+                IEnumerable<ChatlistVM> chatList = await _UserService.GetChatListByUserId(userIdResult);
 
-            return Ok(chatList);
+                return Ok(chatList);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         [HttpGet("FriendRequest")]
         [Authorize]
         public async Task<IActionResult> GetFriendRequest()
         {
-            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+            try
+            {
+                int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-            IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
+                IEnumerable<Users> GetFriendRequest = await _UserService.GetFriendRequest(userId);
 
-            return Ok(GetFriendRequest);
+                return Ok(GetFriendRequest);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
         [HttpGet("UserDetails")]
@@ -104,9 +129,16 @@ namespace ChatroomB_Backend.Controllers
  
             int result = await _UserService.UpdateProfileName(userIdResult.Value, model.NewProfileName);
 
-            if (result == 0) return NotFound("User ID not found or update failed.");
+                if (result == 0) return NotFound("User ID not found or update failed.");
 
-            return Ok(); 
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
         }
 
         [HttpPost("UpdateProfilePicture")]
@@ -120,10 +152,10 @@ namespace ChatroomB_Backend.Controllers
                 return userIdResult.Result;
             }
 
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest("File is not provided or empty.");
-            }
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("File is not provided or empty.");
+                }
 
             if (file.Length > 7 * 1024 * 1024)
             {
@@ -169,8 +201,13 @@ namespace ChatroomB_Backend.Controllers
             }
             int result = await _UserService.DeleteUser(userIdResult.Value);
 
-            if (result == 0) { return NotFound("User ID not found."); }
-            else { return Ok(); }
+                if (result == 0) { return NotFound("User ID not found."); }
+                else { return Ok(); }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)

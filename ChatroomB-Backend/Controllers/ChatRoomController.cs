@@ -2,7 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using ChatroomB_Backend.Models;
 using ChatroomB_Backend.Service;
+using ChatroomB_Backend.DTO;
+using System.Text.RegularExpressions;
+using Azure.Core;
+using Microsoft.AspNetCore.SignalR;
+using ChatroomB_Backend.Hubs;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using ChatroomB_Backend.Utils;
 
 
 namespace ChatroomB_Backend.Controllers
@@ -12,11 +19,12 @@ namespace ChatroomB_Backend.Controllers
     public class ChatRoomController : ControllerBase
     {
         private readonly IChatRoomService _ChatRoomService;
+        private readonly IAuthUtils _authUtils;
 
-
-        public ChatRoomController(IChatRoomService CService)
+        public ChatRoomController(IChatRoomService CService, IAuthUtils authUtils)
         {
             _ChatRoomService = CService;
+            _authUtils = authUtils;
         }
 
         [HttpPost("UpdateGroupPicture")]
@@ -63,11 +71,22 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpGet("groupMembers")]
         [Authorize]
-        public async Task<IActionResult> GetGroupMembers(int chatRoomId, int userId)
+        public async Task<IActionResult> GetGroupMembers(int chatRoomId)
         {
-            IEnumerable<GroupMember> groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userId);
+            try
+            {
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-            return Ok(groupMembers);
+                IEnumerable<GroupMember> groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userIdResult);
+
+                return Ok(groupMembers);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
         [HttpPost("createNewGroup")]
@@ -91,6 +110,7 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("AddMembersToGroup")]
+        [Authorize]
         public async Task<ActionResult<int>> AddMembersToGroup([FromBody] AddMemberVM addMemberVM)
         {
             try
@@ -106,15 +126,16 @@ namespace ChatroomB_Backend.Controllers
         }
 
         [HttpPost("RemoveFromGroup")]
-
-        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy, [FromQuery] int CurrentUserId)
+        [Authorize]
+        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int removedUserId, [FromQuery] int InitiatedBy)
         {
-
             try
             {
-                if (CurrentUserId == InitiatedBy)
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
+
+                if (userIdResult == InitiatedBy)
                 {
-                    int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
+                    int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, removedUserId);
 
                     return Ok(new { Message = "User removed successfully" });
                 }
@@ -132,11 +153,22 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("QuitGroup")]
         [Authorize]
-        public async Task<ActionResult<int>> QuitGroup([FromQuery] int chatRoomId, [FromQuery] int userId)
+        public async Task<ActionResult<int>> QuitGroup([FromQuery] int chatRoomId)
         {
-            int result = await _ChatRoomService.QuitGroup(chatRoomId, userId);
+            try
+            {
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-            return Ok(new { Message = "Quit group successfully" });
+                int result = await _ChatRoomService.QuitGroup(chatRoomId, userIdResult);
+
+                return Ok(new { Message = "Quit group successfully" });
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
         [HttpPost("UpdateGroupName")]

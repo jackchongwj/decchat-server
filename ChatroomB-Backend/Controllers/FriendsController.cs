@@ -57,22 +57,31 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("UpdateFriendRequest")]
         [Authorize]
-        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody] FriendRequest request)
+        public async Task<ActionResult<int>> UpdateFriendRequest([FromBody]FriendRequest request)
         {
-            int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-
-            request.ReceiverId = userId;
-
-            int result = await _FriendService.UpdateFriendRequest(request);
-
-            if (request.Status == 2)
+            try
             {
-                IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request);
+                int userId = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-                return Ok(PrivateChatlist);
+                request.ReceiverId = userId;
+
+                int result = await _FriendService.UpdateFriendRequest(request);
+
+                if (request.Status == 2)
+                {
+                    IEnumerable<ChatlistVM> PrivateChatlist = await _ChatRoomService.AddChatRoom(request);
+
+                    return Ok(PrivateChatlist);
+                }
+
+                return Ok(0);
+
             }
-
-                return Ok(result);
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            
         }
 
 
