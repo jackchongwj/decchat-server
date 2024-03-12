@@ -136,14 +136,9 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-                int result = await _ChatRoomService.QuitGroup(chatRoomId, userIdResult.Value);
+                int result = await _ChatRoomService.QuitGroup(chatRoomId, userIdResult);
 
                 return Ok(new { Message = "Quit group successfully" });
 
