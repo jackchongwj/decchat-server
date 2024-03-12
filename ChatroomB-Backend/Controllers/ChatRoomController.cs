@@ -23,21 +23,42 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateGroupPicture([FromForm] IFormFile file, [FromForm(Name = "id")] string ChatRoomId)
         {
-            byte[] filebyte = await ConvertToByteArrayAsync(file);
-
             if (file == null || file.Length == 0)
             {
                 return BadRequest("File is not provided or empty.");
             }
 
-            int success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(ChatRoomId), filebyte, file.FileName);
-
-            if (success == 0)
+            if (file.Length > 7 * 1024 * 1024)
             {
-                return NotFound("Failed to update the group picture.");
+                return BadRequest("The file is too large. Please upload an image that is 7MB or smaller.");
             }
 
-            return Ok(new { Message = "Profile picture updated successfully." });
+            byte[] fileBytes;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                fileBytes = memoryStream.ToArray();
+            }
+
+            try
+            {
+                int success = await _ChatRoomService.UpdateGroupPicture(Convert.ToInt32(ChatRoomId), fileBytes, file.FileName);
+
+                if (success == -1)
+                {
+                    return BadRequest("The uploaded file is not a valid image.");
+                }
+                else if (success == 0)
+                {
+                    return NotFound("Failed to update the group picture.");
+                }
+
+                return Ok(new { Message = "Group picture updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpGet("groupMembers")]

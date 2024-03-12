@@ -28,7 +28,7 @@ namespace ChatroomB_Backend.Middleware
             // Skip middleware for auth routes        
             
             
-            if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate") || context.Request.Path.StartsWithSegments("/chatHub"))
+            if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate"))
             {
                 //string connectionId = Context.ConnectionId;
                 await _next(context);

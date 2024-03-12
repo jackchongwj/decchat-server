@@ -219,17 +219,25 @@ namespace ChatroomB_Backend.Service
         {
             try
             {
-                string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
-
-                int updateResult = await _repo.UpdateGroupPicture(chatRoomId, blobUri);
-
-                if (updateResult > 0)
+                using (Image image = SixLabors.ImageSharp.Image.Load(fileBytes))
                 {
-                    await _hubContext.Clients.Groups(chatRoomId.ToString())
-                        .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupPicture = blobUri });
-                }
+                    string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
 
-                return updateResult;
+                    int updateResult = await _repo.UpdateGroupPicture(chatRoomId, blobUri);
+
+                    if (updateResult > 0)
+                    {
+                        await _hubContext.Clients.Groups(chatRoomId.ToString())
+                            .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupPicture = blobUri });
+                    }
+
+                    return updateResult;
+                }
+            }
+            catch (SixLabors.ImageSharp.UnknownImageFormatException)
+            {
+                Console.WriteLine("Uploaded file is not a valid image.");
+                return -1;
             }
             catch (Exception ex)
             {

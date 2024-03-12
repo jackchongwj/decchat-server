@@ -85,14 +85,13 @@ namespace ChatroomB_Backend.Service
             }
 
             string newPasswordHashed = _authUtils.HashPassword(newPassword, user.Salt);
-            if (!isCurrentPasswordValid) return false;
+
             bool isSuccess = await _repo.ChangePassword(username, newPasswordHashed);
-            string newHashedPassword = _authUtils.HashPassword(newPassword, salt);
+
             if (!isSuccess)
             {
                 throw new InvalidOperationException("Change password failed. No records were updated.");
             }
-                throw new InvalidOperationException("Change password failed. No records were updated.");
 
         }
 
