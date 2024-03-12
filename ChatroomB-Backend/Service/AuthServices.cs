@@ -22,20 +22,18 @@ namespace ChatroomB_Backend.Service
 
         public async Task<Users> Authenticate(string username, string password)
         {
-            bool doesExist = await _userService.DoesUsernameExist(username);
-
-            if (!doesExist)
-            {
-                throw new UnauthorizedAccessException("Invalid username or password");
-            }
-
             Users user = await _repo.GetUserCredentials(username);
+
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("Invalid username or password.");
+            }
 
             string hashedPassword = _authUtils.HashPassword(password, user.Salt);
 
             if (hashedPassword != user.HashedPassword)
             {
-                throw new UnauthorizedAccessException("Invalid username or password");
+                throw new UnauthorizedAccessException("Invalid username or password.");
             }
 
             return user;
@@ -47,7 +45,7 @@ namespace ChatroomB_Backend.Service
 
             if (isUnique)
             {
-                throw new ArgumentException("Duplicate username detected");
+                throw new InvalidOperationException("Duplicate username detected.");
             }
 
             string salt = _authUtils.GenerateSalt();
@@ -65,7 +63,7 @@ namespace ChatroomB_Backend.Service
 
             if (!isSuccess)
             {
-                throw new InvalidOperationException("Registration failed");
+                throw new InvalidOperationException("Registration failed. No records were updated.");
             }
         }
 
@@ -74,14 +72,14 @@ namespace ChatroomB_Backend.Service
             Users user = await _repo.GetUserCredentials(username);
             if (user == null)
             {
-                throw new ArgumentException("User not found.");
+                throw new KeyNotFoundException("User not found.");
             }
 
             string currentPasswordHashed = _authUtils.HashPassword(currentPassword, user.Salt);
 
             if (currentPasswordHashed != user.HashedPassword)
             {
-                throw new ArgumentException("Current password is incorrect.");
+                throw new UnauthorizedAccessException("Current password is incorrect");
             }
 
             string newPasswordHashed = _authUtils.HashPassword(newPassword, user.Salt);
