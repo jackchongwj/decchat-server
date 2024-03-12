@@ -197,7 +197,7 @@ app.UseCors("AngularApp");
 
 app.UseRouting();
 
-// Use IP rate limiting middleware
+// Use IP rate limiting
 app.UseIpRateLimiting();
 
 app.UseAuthentication();
