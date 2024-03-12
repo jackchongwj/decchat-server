@@ -16,6 +16,5 @@ namespace ChatroomB_Backend.Utils
     {
         string GenerateAccessToken(int userId, string username);
         RefreshToken GenerateRefreshToken(int userId);
-        CookieOptions SetCookieOptions();
     }
 }

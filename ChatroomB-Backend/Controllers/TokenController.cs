@@ -25,28 +25,30 @@ namespace ChatroomB_Backend.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> RenewToken()
         {
-            // Get Cookie Refresh Token
-            string refreshToken = HttpContext.Request.Cookies["refreshToken"]!;
-
+            // Get Refresh Token from custom header
+            var refreshToken = Request.Headers["X-Refresh-Token"].FirstOrDefault();
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
-                return Unauthorized("Refresh token is missing");
+                throw new ArgumentException("Refresh token is required");
             }
 
-            // Retrieve userId and username from HttpContext, attached by the middleware
+            // Retrieve userId and username from HttpContext, attached by the token middleware
             if (!HttpContext.Items.TryGetValue("UserId", out var userIdObj) ||
                 !HttpContext.Items.TryGetValue("Username", out var usernameObj))
             {
-                return Unauthorized("User information is missing in the request context");
+                throw new UnauthorizedAccessException("User information is missing in the request context");
             }
 
             int userId = (int)userIdObj!;
             string username = (string)usernameObj!;
 
-            // Validate and update refresh token expiry
+            // Validate the refresh token
+            await _tokenService.ValidateRefreshToken(refreshToken, userId);
+
+            // Update refresh token expiry
             await _tokenService.UpdateRefreshToken(refreshToken);
 
-            // Generate a new access token
+            // Generate and pass new access token
             string newAccessToken = _tokenUtil.GenerateAccessToken(userId, username);
 
             return Ok(new { AccessToken = newAccessToken });

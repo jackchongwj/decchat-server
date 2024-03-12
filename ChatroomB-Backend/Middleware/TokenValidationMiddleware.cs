@@ -26,9 +26,7 @@ namespace ChatroomB_Backend.Middleware
         public async Task Invoke(HttpContext context)
         {
             // Skip middleware for auth routes        
-            
-            
-            if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate") || context.Request.Path.StartsWithSegments("/chatHub"))
+            if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate"))
             {
                 //string connectionId = Context.ConnectionId;
                 await _next(context);
@@ -37,14 +35,10 @@ namespace ChatroomB_Backend.Middleware
 
             // Get JWT Access Token
             string accessToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last()!;
-
-            // Get Cookie Refresh Token
-            string refreshToken = context.Request.Cookies["refreshToken"]!;
-
-            if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(refreshToken))
+            if (string.IsNullOrWhiteSpace(accessToken))
             {
                 context.Response.StatusCode = 401; // Unauthorized
-                await context.Response.WriteAsync("Access token or refresh token is missing");
+                await context.Response.WriteAsync("Access token is missing");
                 return;
             }
 
@@ -59,7 +53,6 @@ namespace ChatroomB_Backend.Middleware
             {
                 // Decode Access Token
                 var decodedToken = DecodeAccessToken(accessToken);
-
                 if (decodedToken == null)
                 {
                     context.Response.StatusCode = 401; // Unauthorized
@@ -67,10 +60,7 @@ namespace ChatroomB_Backend.Middleware
                     return;
                 }
 
-                // Validate Refresh Token
-                await _tokenService.ValidateRefreshToken(refreshToken, decodedToken.Value.userId);
-
-                // Validate Access Token
+                // Validate Access Token (Check if username in JWT == username in DB WHERE userId in DB == userID in JWT)
                 await _tokenService.ValidateAccessToken(decodedToken.Value.userId, decodedToken.Value.username);
 
                 // Attach User to Context
