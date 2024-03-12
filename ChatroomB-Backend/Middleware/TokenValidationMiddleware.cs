@@ -3,6 +3,7 @@ using ChatroomB_Backend.Service;
 using ChatroomB_Backend.Utils;
 using Microsoft.Extensions.Caching.Memory;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ChatroomB_Backend.Middleware
 {
@@ -25,6 +26,7 @@ namespace ChatroomB_Backend.Middleware
 
         public async Task Invoke(HttpContext context)
         {
+            string accessToken;
             // Skip middleware for auth routes        
             if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate"))
             {
@@ -33,8 +35,16 @@ namespace ChatroomB_Backend.Middleware
                 return;
             }
 
-            // Get JWT Access Token
-            string accessToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last()!;
+            if (context.Request.Path.StartsWithSegments("/chatHub"))
+            {
+                accessToken = context.Request.Query["access_token"];
+            }
+            else
+            {
+                // Get JWT Access Token
+                accessToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last()!;
+            }
+            
             if (string.IsNullOrWhiteSpace(accessToken))
             {
                 context.Response.StatusCode = 401; // Unauthorized
@@ -46,6 +56,15 @@ namespace ChatroomB_Backend.Middleware
             string cacheKey = $"validation-{accessToken}";
             if (_cache.TryGetValue(cacheKey, out (int userId, string username) cachedResult))
             {
+                List<Claim> claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, cachedResult.userId.ToString()),
+                };
+                ClaimsIdentity identity = new ClaimsIdentity(claims, "Bearer");
+                ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+                context.User = principal; // This is the key step
+
                 context.Items["UserId"] = cachedResult.userId;
                 context.Items["Username"] = cachedResult.username;
             }
@@ -66,6 +85,16 @@ namespace ChatroomB_Backend.Middleware
                 // Attach User to Context
                 context.Items["UserId"] = decodedToken.Value.userId;
                 context.Items["Username"] = decodedToken.Value.username;
+
+                // Create and assign a ClaimsPrincipal from the validated token
+                List<Claim> claims = new List<Claim>
+                {
+                    new Claim("UserId", decodedToken.Value.userId.ToString()),
+                };
+                ClaimsIdentity identity = new ClaimsIdentity(claims, "Bearer");
+                ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+                context.User = principal; // This is the key step
             }
 
             await _next(context);

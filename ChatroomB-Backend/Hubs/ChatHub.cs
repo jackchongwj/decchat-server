@@ -34,7 +34,16 @@ namespace ChatroomB_Backend.Hubs
         {
             try
             {
-                int userId = _authUtils.ExtractUserIdFromJWT(Context.User);
+                string accessToken = Context.GetHttpContext().Request.Query["access_token"]!;
+
+                //int userId = _authUtils.ExtractUserIdFromJWT(Context.User);
+
+                Claim userIdClaim = Context.User.Claims.FirstOrDefault(c => c.Type == "UserId")!;
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    // Handle the case where the userId is not found or not an integer
+                    throw new UnauthorizedAccessException("User ID claim is not present or invalid in the token");
+                }
 
                 // declare userId and connection Id
                 string connectionId = Context.ConnectionId;
