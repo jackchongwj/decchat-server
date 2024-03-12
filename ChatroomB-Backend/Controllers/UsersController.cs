@@ -116,6 +116,7 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateProfileName([FromBody] UpdateProfileName model)
         {
+            try {
             ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
             if (userIdResult.Result is not null)
             {
@@ -132,7 +133,6 @@ namespace ChatroomB_Backend.Controllers
                 if (result == 0) return NotFound("User ID not found or update failed.");
 
                 return Ok();
-
             }
             catch (Exception ex)
             {
@@ -194,6 +194,7 @@ namespace ChatroomB_Backend.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteUser()
         {
+            try {
             ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
             if (userIdResult.Result is not null)
             {
