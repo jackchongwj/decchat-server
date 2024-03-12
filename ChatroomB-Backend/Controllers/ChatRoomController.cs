@@ -186,15 +186,5 @@ namespace ChatroomB_Backend.Controllers
 
             return Ok();
         }
-
-
-        private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
-        {
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                await file.CopyToAsync(memoryStream);
-                return memoryStream.ToArray();
-            }
-        }
     }
 }

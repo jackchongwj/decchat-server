@@ -19,6 +19,5 @@ namespace ChatroomB_Backend.DTO
         public int InitiatedBy {  get; set; }
         public string? InitiatorProfileName { get; set; }
         public bool IsOnline { get; set; } = false;
-        public int UnreadCount { get; set; } = 0;
     }
 }

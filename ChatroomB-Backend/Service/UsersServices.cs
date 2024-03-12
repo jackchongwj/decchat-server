@@ -89,11 +89,6 @@ namespace ChatroomB_Backend.Service
                 Console.WriteLine("Uploaded file is not a valid image.");
                 return -1;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                return -1;
-            }
         }
 
 
