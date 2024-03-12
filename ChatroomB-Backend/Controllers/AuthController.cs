@@ -38,7 +38,7 @@ namespace ChatroomB_Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                throw new ArgumentException("Invalid request data");
+                throw new ArgumentException();
             }
 
             // Store the user object
@@ -52,15 +52,10 @@ namespace ChatroomB_Backend.Controllers
         {
             if(!ModelState.IsValid)
             {
-                throw new ArgumentException("Invalid request data");
+                throw new ArgumentException();
             }
 
             Users user = await _authService.Authenticate(request.Username, request.Password);
-
-            if (user == null)
-            {
-                throw new UnauthorizedAccessException("Invalid username or password");
-            }
 
             // Generate access token and refresh token
             string accessToken = _tokenUtil.GenerateAccessToken(user.UserId, user.UserName);
@@ -86,7 +81,7 @@ namespace ChatroomB_Backend.Controllers
 
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
-                throw new ArgumentNullException("Refresh token is required.");
+                throw new ArgumentException("Refresh token is required.");
             }
 
             // Delete refresh token from database
@@ -101,7 +96,7 @@ namespace ChatroomB_Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                throw new ArgumentException("Invalid request data");
+                throw new ArgumentException();
             }
 
             string username = _authUtils.ExtractUsernameFromJWT(HttpContext.User);

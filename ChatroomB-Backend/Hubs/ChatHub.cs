@@ -85,8 +85,6 @@ namespace ChatroomB_Backend.Hubs
                     await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId.ToString(), false);
                     await Groups.RemoveFromGroupAsync(connectionId, list.ChatRoomId.ToString());
                     Console.WriteLine($"{connectionId} has left the group {list.ChatRoomId}");
-
-                    // Broadcast user's offline status to the group
                 }
                 await _RServices.DeleteUserIdFromRedis(userId.ToString()!);
 

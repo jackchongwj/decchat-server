@@ -35,11 +35,25 @@ namespace ChatroomB_Backend.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            // Resolve IAuthUtils from the scope created for the current request
-            var authUtils = context.RequestServices.GetRequiredService<IAuthUtils>();
-
-            HttpStatusCode statusCode;
+            int userId = 0; // Default value indicating unauthenticated or invalid request
+            string controllerName = context.Request.RouteValues["controller"]?.ToString() ?? "UnknownController";
             string message;
+            HttpStatusCode statusCode;
+
+            // Try to resolve IAuthUtils and extract userId only if the user is authenticated
+            if (context.User.Identity.IsAuthenticated)
+            {
+                var authUtils = context.RequestServices.GetRequiredService<IAuthUtils>();
+                try
+                {
+                    userId = authUtils.ExtractUserIdFromJWT(context.User);
+                }
+                catch (Exception authException)
+                {
+                    _logger.LogWarning(authException, "Failed to extract userId from JWT");
+                    // In this case, keep the default userId value
+                }
+            }
 
             switch (exception)
             {
@@ -51,9 +65,21 @@ namespace ChatroomB_Backend.Middleware
                     statusCode = HttpStatusCode.BadGateway;
                     message = "External service request failed.";
                     break;
+                case ArgumentException _:
+                    statusCode = HttpStatusCode.BadRequest;
+                    message = exception.Message ?? "Invalid request data";
+                    break;
                 case UnauthorizedAccessException _:
                     statusCode = HttpStatusCode.Unauthorized;
-                    message = "Access denied.";
+                    message = exception.Message;
+                    break;
+                case KeyNotFoundException _:
+                    statusCode = HttpStatusCode.NotFound;
+                    message = exception.Message;
+                    break;
+                case InvalidOperationException _:
+                    statusCode = HttpStatusCode.Conflict;
+                    message = exception.Message;
                     break;
                 default:
                     statusCode = HttpStatusCode.InternalServerError;
@@ -63,19 +89,14 @@ namespace ChatroomB_Backend.Middleware
 
             _logger.LogError(exception, exception.Message);
 
-            // Log the error to MongoDB
-            int userId = authUtils.ExtractUserIdFromJWT(context.User);
-            string controllerName = context.Request.RouteValues["controller"]?.ToString() ?? "UnknownController";
+            // Log the error to MongoDB using the resolved userId (or the default value)
             IErrorHandleService errorHandleService = context.RequestServices.GetRequiredService<IErrorHandleService>();
             await errorHandleService.LogError(controllerName, userId, exception.Message);
 
-            var response = new { error = message };
-            var jsonResponse = JsonSerializer.Serialize(response);
-
+            // Return a Json object as response
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-
-            await context.Response.WriteAsync(jsonResponse);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(message));
         }
     }
 }
