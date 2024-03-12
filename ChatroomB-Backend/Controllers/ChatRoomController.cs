@@ -56,14 +56,9 @@ namespace ChatroomB_Backend.Controllers
         {
             try
             {
-                ActionResult<int> userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
-                if (userIdResult.Result is not null)
-                {
-                    // If there is an ActionResult, it means there was an error, return it
-                    return userIdResult.Result;
-                }
+                int userIdResult = _authUtils.ExtractUserIdFromJWT(HttpContext.User);
 
-                IEnumerable<GroupMember> groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userIdResult.Value);
+                IEnumerable<GroupMember> groupMembers = await _ChatRoomService.RetrieveGroupMemberByChatroomId(chatRoomId, userIdResult);
 
                 return Ok(groupMembers);
 
@@ -113,7 +108,7 @@ namespace ChatroomB_Backend.Controllers
 
         [HttpPost("RemoveFromGroup")]
         [Authorize]
-        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int userId, [FromQuery] int InitiatedBy)
+        public async Task<ActionResult<int>> RemoveUserFromGroup([FromQuery] int chatRoomId, [FromQuery] int removedUserId, [FromQuery] int InitiatedBy)
         {
             try
             {
@@ -121,7 +116,7 @@ namespace ChatroomB_Backend.Controllers
 
                 if (userIdResult == InitiatedBy)
                 {
-                    int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, userId);
+                    int result = await _ChatRoomService.RemoveUserFromGroup(chatRoomId, removedUserId);
 
                     return Ok(new { Message = "User removed successfully" });
                 }
