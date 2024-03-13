@@ -38,7 +38,7 @@ namespace ChatroomB_Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                throw new ArgumentException("Invalid request data");
+                throw new ArgumentException();
             }
 
             // Store the user object
@@ -52,15 +52,10 @@ namespace ChatroomB_Backend.Controllers
         {
             if(!ModelState.IsValid)
             {
-                throw new ArgumentException("Invalid request data");
+                throw new ArgumentException();
             }
 
             Users user = await _authService.Authenticate(request.Username, request.Password);
-
-            if (user == null)
-            {
-                throw new UnauthorizedAccessException("Invalid username or password");
-            }
 
             // Generate access token and refresh token
             string accessToken = _tokenUtil.GenerateAccessToken(user.UserId, user.UserName);
@@ -69,15 +64,11 @@ namespace ChatroomB_Backend.Controllers
             // Store refresh token in database
             await _tokenService.StoreRefreshToken(refreshToken);
 
-            // Set the refresh token in a cookie
-            CookieOptions cookieOptions = _tokenUtil.SetCookieOptions();
-            Response.Cookies.Append("refreshToken", refreshToken.Token, cookieOptions);
-
-            // Return access token and user Id in the response body
+            // Return both tokens in the response body
             return Ok(new
             {
                 AccessToken = accessToken,
-                UserId = user.UserId,
+                RefreshToken = refreshToken.Token,
                 Message = "Login successful!"
             });
         }
@@ -86,17 +77,15 @@ namespace ChatroomB_Backend.Controllers
         public async Task<IActionResult> Logout()
         {
             // Retrieve refresh token from the request
-            string refreshToken = Request.Cookies["refreshToken"]!;
+            string refreshToken = Request.Headers["X-Refresh-Token"].FirstOrDefault()!;
 
-            // Delete refresh token from database
-            if(!string.IsNullOrEmpty(refreshToken)) 
+            if (string.IsNullOrWhiteSpace(refreshToken))
             {
-                await _tokenService.RemoveRefreshToken(refreshToken);
+                throw new ArgumentException("Refresh token is required.");
             }
 
-            // Delete refresh token from client (cookie)
-            CookieOptions cookieOptions = _tokenUtil.SetCookieOptions();
-            Response.Cookies.Delete("refreshToken", cookieOptions);
+            // Delete refresh token from database
+            await _tokenService.RemoveRefreshToken(refreshToken);
 
             return Ok(new { Message = "Logout successful" });
         }
@@ -107,7 +96,7 @@ namespace ChatroomB_Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                throw new ArgumentException("Invalid request data");
+                throw new ArgumentException();
             }
 
             string username = _authUtils.ExtractUsernameFromJWT(HttpContext.User);

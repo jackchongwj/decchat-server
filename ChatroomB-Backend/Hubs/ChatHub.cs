@@ -34,7 +34,12 @@ namespace ChatroomB_Backend.Hubs
         {
             try
             {
-                int userId = _authUtils.ExtractUserIdFromJWT(Context.User);
+                Claim userIdClaim = Context.User.Claims.FirstOrDefault(c => c.Type == "UserId")!;
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    // Handle the case where the userId is not found or not an integer
+                    throw new UnauthorizedAccessException("User ID claim is not present or invalid in the token");
+                }
 
                 // declare userId and connection Id
                 string connectionId = Context.ConnectionId;
@@ -80,8 +85,6 @@ namespace ChatroomB_Backend.Hubs
                     await Clients.Group(list.ChatRoomId.ToString()).SendAsync("UpdateUserOnlineStatus", userId.ToString(), false);
                     await Groups.RemoveFromGroupAsync(connectionId, list.ChatRoomId.ToString());
                     Console.WriteLine($"{connectionId} has left the group {list.ChatRoomId}");
-
-                    // Broadcast user's offline status to the group
                 }
                 await _RServices.DeleteUserIdFromRedis(userId.ToString()!);
 

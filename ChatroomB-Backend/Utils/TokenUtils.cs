@@ -62,31 +62,5 @@ namespace ChatroomB_Backend.Utils
                 };
             }
         }
-
-        public CookieOptions SetCookieOptions()
-        {
-            // Initialize default cookie options
-            CookieOptions cookieOptions = new CookieOptions();
-
-            // Adjust for production environment based on Program.cs settings
-            if (_environment.IsProduction())
-            {
-                cookieOptions.HttpOnly = true;
-                cookieOptions.SameSite = SameSiteMode.None;
-                cookieOptions.Secure = _environment.IsProduction(); // Corresponds to CookieSecurePolicy.Always
-            }
-            else
-            {
-                // Development settings
-                // where cookies are less restrictive in development for ease of testing.
-                // Adjust this block if you have specific requirements for development cookies.
-                cookieOptions.HttpOnly = false;
-                cookieOptions.SameSite = SameSiteMode.None;
-                cookieOptions.Secure = _environment.IsDevelopment(); 
-            }
-
-            return cookieOptions;
-        }
-
     }
 }
