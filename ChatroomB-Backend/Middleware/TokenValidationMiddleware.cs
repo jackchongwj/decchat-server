@@ -21,7 +21,6 @@ namespace ChatroomB_Backend.Middleware
         public async Task Invoke(HttpContext context)
         {
             // Access scoped services from the request's service provider
-
             var tokenService = context.RequestServices.GetService<ITokenService>();
 
             string accessToken;
