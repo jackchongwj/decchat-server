@@ -12,9 +12,6 @@ namespace ChatroomB_Backend.Models
         public int UserId { get; set; }
 
         [Required]
-        [StringLength(15, ErrorMessage = "Username must not exceed 15 characters.")]
-        [RegularExpression(@"^[a-zA-Z\d$@^!%*?&]*$", ErrorMessage = "Invalid characters detected in username.")]
-        [Remote(action: "DoesUsernameExist", controller: "User", HttpMethod = "GET", ErrorMessage = "Username is already taken.")]
         [Column(TypeName = "varchar(15)")]
         public string UserName { get; set; } = null!;
 

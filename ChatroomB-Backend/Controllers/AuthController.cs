@@ -41,7 +41,6 @@ namespace ChatroomB_Backend.Controllers
                 throw new ArgumentException();
             }
 
-            // Store the user object
             await _authService.AddUser(request.Username, request.Password, request.ProfileName!);
 
             return Ok(new { Message = "Registration successful!" });
@@ -76,20 +75,19 @@ namespace ChatroomB_Backend.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            // Retrieve refresh token from the request
-            string refreshToken = Request.Headers["X-Refresh-Token"].FirstOrDefault()!;
+            // Retrieve the refresh token from the request
+            string refreshToken = Request.Headers["X-Refresh-Token"].FirstOrDefault() ?? string.Empty;
 
-            if (string.IsNullOrWhiteSpace(refreshToken))
+            if (!string.IsNullOrWhiteSpace(refreshToken))
             {
-                throw new ArgumentException("Refresh token is required.");
+                // Attempt to delete the refresh token from the database if it's actually provided.
+                await _tokenService.RemoveRefreshToken(refreshToken);
             }
 
-            // Delete refresh token from database
-            await _tokenService.RemoveRefreshToken(refreshToken);
-
+            // Always return a successful response, regardless of whether a refresh token was provided or not.
             return Ok(new { Message = "Logout successful" });
         }
-        
+
         [HttpPost("PasswordChange")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] PasswordChange model)

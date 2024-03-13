@@ -1,12 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace ChatroomB_Backend.DTO
 {
     public class RegisterRequest
     {
         [Required(ErrorMessage = "Username is required")]
-        [StringLength(15, ErrorMessage = "Username must not exceed 15 characters.")]
+        [StringLength(15, MinimumLength = 2, ErrorMessage = "Username must be between 2 and 15 characters.")]
         [RegularExpression(@"^[a-zA-Z\d$@^!%*?&]*$", ErrorMessage = "Username contains invalid characters.")]
+        [Remote(action: "DoesUsernameExist", controller: "User", HttpMethod = "GET", ErrorMessage = "Username is already taken.")]
         public string Username { get; set; }
 
         [Required(ErrorMessage = "Password is required")]
