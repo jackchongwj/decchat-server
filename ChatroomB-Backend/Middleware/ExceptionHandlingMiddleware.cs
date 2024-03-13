@@ -35,6 +35,10 @@ namespace ChatroomB_Backend.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
+            // Access scoped services from the request's service provider
+            var authUtils = context.RequestServices.GetService<IAuthUtils>();
+            var errorHandleService = context.RequestServices.GetService<IErrorHandleService>();
+
             int userId = 0; // Default value indicating unauthenticated or invalid request
             string controllerName = context.Request.RouteValues["controller"]?.ToString() ?? "UnknownController";
             string message;
@@ -43,7 +47,6 @@ namespace ChatroomB_Backend.Middleware
             // Try to resolve IAuthUtils and extract userId only if the user is authenticated
             if (context.User.Identity.IsAuthenticated)
             {
-                var authUtils = context.RequestServices.GetRequiredService<IAuthUtils>();
                 try
                 {
                     userId = authUtils.ExtractUserIdFromJWT(context.User);
@@ -90,7 +93,6 @@ namespace ChatroomB_Backend.Middleware
             _logger.LogError(exception, exception.Message);
 
             // Log the error to MongoDB using the resolved userId (or the default value)
-            IErrorHandleService errorHandleService = context.RequestServices.GetRequiredService<IErrorHandleService>();
             await errorHandleService.LogError(controllerName, userId, exception.Message);
 
             // Return a Json object as response
