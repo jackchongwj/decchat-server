@@ -23,17 +23,17 @@ namespace ChatroomB_Backend.Repository
 
         public async Task <ChatRoomMessage> AddMessages(Messages message)
         {
-            var param = new
-            {
-                Content = message.Content,
-                UserChatRoomId = message.UserChatRoomId,
-                TimeStamp = message.TimeStamp,
-                ResourceUrl = message.ResourceUrl,
-                IsDeleted = message.IsDeleted,
-            };
-
             try
             {
+                var param = new
+                {
+                    Content = message.Content,
+                    UserChatRoomId = message.UserChatRoomId,
+                    TimeStamp = message.TimeStamp,
+                    ResourceUrl = message.ResourceUrl,
+                    IsDeleted = message.IsDeleted,
+                };
+
                 using (SqlConnection connection = new SqlConnection(_dbConnectionString))
                 {
                     await connection.OpenAsync(); // Ensure the connection is open
@@ -44,25 +44,25 @@ namespace ChatroomB_Backend.Repository
                     return result;
                 }
             }
-            catch (Microsoft.Data.SqlClient.SqlException sqlEx)
-            {
-                _logger.LogError(sqlEx, "An error occurred when calling AddMessages.");
-                throw;
-            }
             catch (Exception ex)
             {
-                // Handle other non-SQL exceptions
-                _logger.LogError(ex, "An unexpected error occurred in AddMessages.");
-                throw;
+                throw new Exception("Failed to execute AddMessages", ex);
             }
 
         }
 
         public async Task<int> DeleteMessage(int MessageId)
         {
-            string sql = "exec DeleteMessage @MessageId";
+            try
+            {
+                string sql = "exec DeleteMessage @MessageId";
 
-            return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
+                return await _dbConnection.ExecuteAsync(sql, new { MessageId = MessageId });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to execute DeleteMessage", ex);
+            }
         }
 
         public async Task<int> EditMessage(EditMessage NewMessage)
@@ -84,40 +84,53 @@ namespace ChatroomB_Backend.Repository
                     return result;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                throw new Exception("Failed to execute EditMessage", ex);
             }
-            return 0;
         }
 
         public async Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId)
         {
-            var param = new
+            try
             {
-                ChatRoomId = ChatRoomId,
-                MessageId = MessageId
-            };
+                var param = new
+                {
+                    ChatRoomId = ChatRoomId,
+                    MessageId = MessageId
+                };
 
-            string sql = "exec RetrieveMessageByPagination @ChatRoomId, @MessageId ";
+                string sql = "exec RetrieveMessageByPagination @ChatRoomId, @MessageId ";
 
-            IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
+                IEnumerable<ChatRoomMessage> result = await _dbConnection.QueryAsync<ChatRoomMessage>(sql, param);
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to execute GetMessages", ex);
+            }
         }
 
         public async Task<int> GetTotalSearchMessage(int ChatRoomId, string SearchValue)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@ChatRoomId", ChatRoomId);
-            parameters.Add("@SearchValue", SearchValue);
-            parameters.Add("@RowCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            try
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@ChatRoomId", ChatRoomId);
+                parameters.Add("@SearchValue", SearchValue);
+                parameters.Add("@RowCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            await _dbConnection.ExecuteAsync("GetTotalSearchMessage", parameters, commandType: CommandType.StoredProcedure);
+                await _dbConnection.ExecuteAsync("GetTotalSearchMessage", parameters, commandType: CommandType.StoredProcedure);
 
-            int count = parameters.Get<int>("@RowCount");
+                int count = parameters.Get<int>("@RowCount");
 
-            return count;
+                return count;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to execute GetTotalSearchMessage", ex);
+            }
         }
     }
 }

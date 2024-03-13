@@ -31,7 +31,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to retrieve user details by profile name", ex);
+                throw new Exception("Failed to execute GetByName", ex);
             }
         }
 
@@ -47,7 +47,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to retrieve friend requests", ex);
+                throw new Exception("Failed to execute GetFriendRequest", ex);
             }
         }
 
@@ -61,7 +61,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to retrieve user details by ID", ex);
+                throw new Exception("Failed to execute GetUserById", ex);
             }
         }
 
@@ -79,7 +79,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to update profile name", ex);
+                throw new Exception("Failed to execute UpdateProfileName", ex);
             }
         }
 
@@ -97,7 +97,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to update profile picture", ex);
+                throw new Exception("Failed to execute UpdateProfilePicture", ex);
             }
         }
 
@@ -111,7 +111,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to delete user profile", ex);
+                throw new Exception("Failed to execute DeleteUser", ex);
             }
         }
 
@@ -125,7 +125,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to check username existence", ex);
+                throw new Exception("Failed to execute DoesUsernameExist", ex);
             }
         }
 
@@ -144,7 +144,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to retrieve chat list by user ID", ex);
+                throw new Exception("Failed to execute GetChatListByUserId", ex);
             }
         }
     }

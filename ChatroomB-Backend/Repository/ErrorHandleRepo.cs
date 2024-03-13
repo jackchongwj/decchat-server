@@ -16,15 +16,23 @@ namespace ChatroomB_Backend.Repository
 
         public async Task LogError(string controllerName, int userId, string errorMessage)
         {
-            var errorHandle = new ErrorHandle
+            try
             {
-                ErrorMessage = errorMessage,
-                ControllerName = controllerName,
-                UserId = userId,
-                Timestamp = DateTime.Now,
-            };
+                var errorHandle = new ErrorHandle
+                {
+                    ErrorMessage = errorMessage,
+                    ControllerName = controllerName,
+                    UserId = userId,
+                    Timestamp = DateTime.Now,
+                };
 
-            await _collection.InsertOneAsync(errorHandle);
+                await _collection.InsertOneAsync(errorHandle);
+            }
+            catch 
+            {
+                throw new Exception("Failed to log error to MongoDB");
+            }
+            
         }
     }
 }

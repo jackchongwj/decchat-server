@@ -35,7 +35,7 @@ namespace ChatroomB_Backend.Repository
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException("Failed to validate refresh token", ex);
+                    throw new Exception("Failed to execute ValidateRefreshToken", ex);
                 }
             }
         }
@@ -54,7 +54,7 @@ namespace ChatroomB_Backend.Repository
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException("Failed to validate access token", ex);
+                    throw new Exception("Failed to execute ValidateAccessToken", ex);
                 }
             }
         }
@@ -80,7 +80,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to store refresh token", ex);
+                throw new Exception("Failed to execute StoreRefreshToken", ex);
             }
         }
 
@@ -103,7 +103,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to remove refresh token", ex);
+                throw new Exception("Failed to execute RemoveRefreshToken", ex);
             }
         }
 
@@ -127,7 +127,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to update refresh token", ex);
+                throw new Exception("Failed to execute UpdateRefreshToken", ex);
             }
         }
     }
