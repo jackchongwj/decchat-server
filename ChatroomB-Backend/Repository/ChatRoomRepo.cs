@@ -131,13 +131,13 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<int> RemoveUserFromGroup(int chatRoomId, int userId)
+        public async Task<int> RemoveUserFromGroup(int chatRoomId, int removedUserId)
         {
             try
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@ChatRoomID", chatRoomId);
-                parameters.Add("@UserID", userId);
+                parameters.Add("@UserID", removedUserId);
                 parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 await _dbConnection.ExecuteAsync("RemoveUserFromGroup", parameters, commandType: CommandType.StoredProcedure);

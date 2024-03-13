@@ -128,7 +128,7 @@ namespace ChatroomB_Backend.Service
             await _hubContext.Groups.AddToGroupAsync(adminConnectionId, groupName); //get admin connectionid to grp
 
             // Send SignalR message to the user's group using their connection ID
-            await _hubContext.Clients.Group(chatList.ToList()[0].ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
+            await _hubContext.Clients.Group(chatList.ToList()[0].ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList.First());
 
             return chatList;
         }
@@ -172,13 +172,13 @@ namespace ChatroomB_Backend.Service
             }
         }
 
-        public async Task<int> RemoveUserFromGroup(int chatRoomId, int userId)
+        public async Task<int> RemoveUserFromGroup(int chatRoomId, int removedUserId)
         {
-            int result = await _repo.RemoveUserFromGroup(chatRoomId, userId);
+            int result = await _repo.RemoveUserFromGroup(chatRoomId, removedUserId);
 
             if (result == 1)
             {
-                string connectionId = await _RServices.SelectUserIdFromRedis(userId);
+                string connectionId = await _RServices.SelectUserIdFromRedis(removedUserId);
 
                 if (!connectionId.IsNullOrEmpty())
                 {
@@ -186,8 +186,8 @@ namespace ChatroomB_Backend.Service
                     // return result;
                 }
 
-                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("UserRemoved", chatRoomId, userId);
-                await _hubContext.Clients.Group("User" + userId).SendAsync("UserRemoved", chatRoomId, userId);
+                await _hubContext.Clients.Group(chatRoomId.ToString()).SendAsync("UserRemoved", chatRoomId, removedUserId);
+                await _hubContext.Clients.Group("User" + removedUserId).SendAsync("UserRemoved", chatRoomId, removedUserId);
 
                 return result;
             }
@@ -209,7 +209,7 @@ namespace ChatroomB_Backend.Service
         {
             try
             {
-                // Upload the file to blob storage and get the URI
+                // Upload the file to blob storage and get the URI1
                 string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
 
                 // Update the user's profile picture URI in the database
