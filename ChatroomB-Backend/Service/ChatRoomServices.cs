@@ -128,7 +128,7 @@ namespace ChatroomB_Backend.Service
             await _hubContext.Groups.AddToGroupAsync(adminConnectionId, groupName); //get admin connectionid to grp
 
             // Send SignalR message to the user's group using their connection ID
-            await _hubContext.Clients.Group(chatList.ToList()[0].ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList.First());
+            await _hubContext.Clients.Group(chatList.ToList()[0].ChatRoomId.ToString()).SendAsync("NewGroupCreated", chatList);
 
             return chatList;
         }
@@ -144,15 +144,16 @@ namespace ChatroomB_Backend.Service
                     selectedUsersTable.Rows.Add(userId);
                 }
 
-                IEnumerable<ChatlistVM> list = await _repo.AddMembersToGroup(addMemberVM.ChatRoomId, selectedUsersTable);
+                IEnumerable<ChatlistVM> groupProfileList = await _repo.AddMembersToGroup(addMemberVM.ChatRoomId, selectedUsersTable);
+                IEnumerable<ChatlistVM> newMemberChatList = await _repo.GetGroupInfoByChatroomId(addMemberVM.ChatRoomId, selectedUsersTable);
 
                 // Bring list to FE 
                 // Send SignalR message to the user's group using their connection ID
-                await _hubContext.Clients.Group(addMemberVM.ChatRoomId.ToString()).SendAsync("UserAdded", list); //show new user to currentgrpmmb
+                await _hubContext.Clients.Group(addMemberVM.ChatRoomId.ToString()).SendAsync("UserAdded", groupProfileList); //show new user to currentgrpmmb
 
                 foreach (int groupListUserId in addMemberVM.SelectedUsers)
                 {
-                    IEnumerable<ChatlistVM> chatList = await _repo.GetGroupInfoByChatroomId(addMemberVM.ChatRoomId, groupListUserId);
+                    //IEnumerable<ChatlistVM> chatList = await _repo.GetGroupInfoByChatroomId(addMemberVM.ChatRoomId, groupListUserId);
                     
                     // Retrieve the connection ID for the current user ID from Redis
                     string userConnectionId = await _RServices.SelectUserIdFromRedis(groupListUserId);
@@ -160,10 +161,10 @@ namespace ChatroomB_Backend.Service
                     if (userConnectionId != "Hash entry not found or empty.")
                     {
                         await _hubContext.Groups.AddToGroupAsync(userConnectionId, addMemberVM.ChatRoomId.ToString()); //
-                        await _hubContext.Clients.Group("User" + groupListUserId).SendAsync("NewGroupCreated", chatList); //kena added grp show in side bar
+                        await _hubContext.Clients.Group("User" + groupListUserId).SendAsync("NewGroupCreated", newMemberChatList); //kena added grp show in side bar
                     }
                 }
-                return list;
+                return groupProfileList;
             }
             catch (Exception ex)
             {
