@@ -22,7 +22,7 @@ namespace ChatroomB_Backend.Repository
                 ControllerName = controllerName,
                 UserId = userId,
                 Timestamp = DateTime.Now,
-        };
+            };
 
             await _collection.InsertOneAsync(errorHandle);
         }
