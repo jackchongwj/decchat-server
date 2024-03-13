@@ -42,7 +42,7 @@ namespace ChatroomB_Backend.Repository
         Task<int> RemoveUserFromGroup (int chatRoomId, int userId);
         Task<int> QuitGroup(int chatRoomId, int userId);
         Task<IEnumerable<ChatlistVM>> AddMembersToGroup(int chatRoomId, DataTable selectedUsers);
-        Task<IEnumerable<ChatlistVM>> GetGroupInfoByChatroomId(int chatRoomId, int userId);
+        Task<IEnumerable<ChatlistVM>> GetGroupInfoByChatroomId(int chatRoomId, DataTable selectedUsers);
 
     }
 
