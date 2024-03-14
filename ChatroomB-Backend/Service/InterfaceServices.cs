@@ -48,7 +48,7 @@ namespace ChatroomB_Backend.Service
 
     public interface IMessageService
     {
-        Task<ChatRoomMessage> AddMessages(Messages message);                                                                    // Add new message
+        Task<ChatRoomMessage> AddMessages(ChatRoomMessage message);                                                                    // Add new message
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int MessageId);                                          // Get the message
         Task<int> EditMessage(EditMessage NewMessage);                                                                      // Edit the message
         Task<int> DeleteMessage(int MessageId, int ChatRoomId);                                                                 // Delete the message 

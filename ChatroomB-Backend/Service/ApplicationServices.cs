@@ -1,5 +1,7 @@
 ﻿using ChatroomB_Backend.DTO;
+using ChatroomB_Backend.Hubs;
 using ChatroomB_Backend.Models;
+using Microsoft.AspNetCore.SignalR;
 using RabbitMQ.Client;
 using System.Configuration;
 using System.Text.Json;
@@ -12,12 +14,14 @@ namespace ChatroomB_Backend.Service
         private readonly RabbitMQServices _rabbitMQService;
         private readonly IMessageService _messageService;
         private readonly IBlobService _blobService;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public ApplicationServices(RabbitMQServices _rabbitMQSer, IMessageService messageService, IBlobService blobService)
+        public ApplicationServices(RabbitMQServices _rabbitMQSer, IMessageService messageService, IBlobService blobService, IHubContext<ChatHub> hubContext)
         {
             _rabbitMQService = _rabbitMQSer;
             _messageService = messageService;
             _blobService = blobService;
+            _hubContext = hubContext;
             ConsumeQueueMessage();
         }
 
@@ -96,23 +100,31 @@ namespace ChatroomB_Backend.Service
                 throw new InvalidOperationException("File message cannot be null.");
             }
 
-            switch(fm.FileType)
+            try
             {
-                case ("image"):
-                    fm.Message.ResourceUrl = await StoreImageBlob(fm.FileByte, fm.FileName);
-                    break;
-                case ("video"):
-                    fm.Message.ResourceUrl = await StoreVideoBlob(fm.FileByte, fm.FileName);
-                    break;
-                case ("audio"):
-                    fm.Message.ResourceUrl = await StoreAudioBlob(fm.FileByte, fm.FileName);
-                    break;
-                default:
-                    fm.Message.ResourceUrl = await StoreDocsBlob(fm.FileByte, fm.FileName);
-                    break;
+                switch (fm.FileType)
+                {
+                    case ("image"):
+                        fm.Message.ResourceUrl = await StoreImageBlob(fm.FileByte, fm.FileName);
+                        break;
+                    case ("video"):
+                        fm.Message.ResourceUrl = await StoreVideoBlob(fm.FileByte, fm.FileName);
+                        break;
+                    case ("audio"):
+                        fm.Message.ResourceUrl = await StoreAudioBlob(fm.FileByte, fm.FileName);
+                        break;
+                    default:
+                        fm.Message.ResourceUrl = await StoreDocsBlob(fm.FileByte, fm.FileName);
+                        break;
+                }
+
+                await StoreDatabase(fm);
+            }
+            catch (Exception)
+            {
+                await _hubContext.Clients.Group(fm.Message.ChatRoomId.ToString()!).SendAsync("InformWrongFormat", fm.Message.UserId);
             }
             
-            await StoreDatabase(fm);
         }
 
         private async Task<string> StoreImageBlob(byte[] FileByte, string filename)

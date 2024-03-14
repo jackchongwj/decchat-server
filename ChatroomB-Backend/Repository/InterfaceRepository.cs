@@ -42,13 +42,13 @@ namespace ChatroomB_Backend.Repository
         Task<int> RemoveUserFromGroup (int chatRoomId, int userId);
         Task<int> QuitGroup(int chatRoomId, int userId);
         Task<IEnumerable<ChatlistVM>> AddMembersToGroup(int chatRoomId, DataTable selectedUsers);
-        Task<IEnumerable<ChatlistVM>> GetGroupInfoByChatroomId(int chatRoomId, int userId);
+        Task<IEnumerable<ChatlistVM>> GetGroupInfoByChatroomId(int chatRoomId, DataTable selectedUsers);
 
     }
 
     public interface IMessageRepo
     {
-        Task<ChatRoomMessage> AddMessages(Messages message);                                                                               
+        Task<ChatRoomMessage> AddMessages(ChatRoomMessage message);                                                                               
         Task<IEnumerable<ChatRoomMessage>> GetMessages(int ChatRoomId, int CurrentPage);
         Task<int> EditMessage(EditMessage NewMessage);
         Task<int> DeleteMessage(int MessageId);
