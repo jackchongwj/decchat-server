@@ -21,7 +21,7 @@ namespace ChatroomB_Backend.Repository
             _logger = logger;
         }
 
-        public async Task <ChatRoomMessage> AddMessages(Messages message)
+        public async Task <ChatRoomMessage> AddMessages(ChatRoomMessage message)
         {
             var param = new
             {
@@ -29,7 +29,7 @@ namespace ChatroomB_Backend.Repository
                 UserChatRoomId = message.UserChatRoomId,
                 TimeStamp = message.TimeStamp,
                 ResourceUrl = message.ResourceUrl,
-                IsDeleted = message.IsDeleted,
+                IsDeleted = message.IsDeleted
             };
 
             try

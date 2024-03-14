@@ -18,7 +18,7 @@ namespace ChatroomB_Backend.Service
             this._hubContext = hubContext;
         }
 
-        public async Task <ChatRoomMessage> AddMessages(Messages message)
+        public async Task <ChatRoomMessage> AddMessages(ChatRoomMessage message)
         {
             TimeZoneInfo singaporeTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
 

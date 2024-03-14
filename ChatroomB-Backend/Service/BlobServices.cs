@@ -24,6 +24,7 @@ namespace ChatroomB_Backend.Service
         public async Task<string> UploadAudios(byte[] audioByte, string audioName)
         {
             string folderpath = "Messages/Audios";
+            audioName = CheckFileNameLength(audioName);
             string newFileName = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, singaporeTimeZone).ToString("dd-MM-yyyy h:mm:ss tt") + "-" + audioName;
             string blobUri = await _blobRepo.UploadAudios(audioByte, newFileName, folderpath);
             return blobUri;
@@ -32,6 +33,7 @@ namespace ChatroomB_Backend.Service
         public async Task<string> UploadDocuments(byte[] docByte, string docName)
         {
             string folderpath = "Messages/Documents";
+            docName = CheckFileNameLength(docName);
             string newFileName = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, singaporeTimeZone).ToString("dd-MM-yyyy h:mm:ss tt") + "-" + docName;
             string blobUri = await _blobRepo.UploadDocuments(docByte, newFileName, folderpath);
             string decodedUrl = WebUtility.UrlDecode(blobUri);
@@ -41,6 +43,7 @@ namespace ChatroomB_Backend.Service
         public async Task<string> UploadImageFiles(byte[] fileByte, string filename, int CaseImageFile)
         {
             string directory = "";
+            filename = CheckFileNameLength(filename);
             string newFileName = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, singaporeTimeZone).ToString("dd-MM-yyyy h:mm:ss tt") + "-" + Path.GetFileNameWithoutExtension(filename) + ".webp";
             switch (CaseImageFile)
             {
@@ -69,10 +72,25 @@ namespace ChatroomB_Backend.Service
         public async Task<string> UploadVideoFiles(byte[] vidByte, string vidName)
         {
             string folderpath = "Messages/Videos";
+            vidName = CheckFileNameLength(vidName);
             string newFileName = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, singaporeTimeZone).ToString("dd-MM-yyyy h:mm:ss tt") + "-" + vidName;
             string blobUri = await _blobRepo.UploadVideoFiles(vidByte, newFileName, folderpath);
             string decodedUrl = WebUtility.UrlDecode(blobUri);
             return decodedUrl;
+        }
+
+        private string CheckFileNameLength(string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+            {
+                return filename; // or throw an exception or return an alternate value based on your requirements
+            }
+
+            string extension = Path.GetExtension(filename);
+            string baseName = Path.GetFileNameWithoutExtension(filename);
+            baseName = baseName.Length > 150 ? baseName.Substring(0, 150) : baseName;
+
+            return baseName + extension;
         }
     }
 }

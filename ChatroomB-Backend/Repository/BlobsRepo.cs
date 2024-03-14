@@ -73,6 +73,7 @@ namespace ChatroomB_Backend.Repository
                 // example folderPath : "images/folder1"
                 string blobName = folderPath.TrimEnd('/') + '/' + filename;
                 BlobClient blobClient = client.GetBlobClient(blobName);
+                string encodedFilename = Uri.EscapeDataString(filename);
 
                 // Upload the video file
                 using (MemoryStream ms = new MemoryStream(vidByte))
@@ -80,7 +81,8 @@ namespace ChatroomB_Backend.Repository
                     await blobClient.UploadAsync(ms, new BlobHttpHeaders
                     {
                         ContentType = "video/mp4",
-                        ContentDisposition = "inline; filename=\"" + blobName + "\""
+                        //ContentDisposition = "inline; filename=\"" + blobName + "\""
+                        ContentDisposition = $"inline; filename*=UTF-8''{encodedFilename}"
                     });
                 }
 
