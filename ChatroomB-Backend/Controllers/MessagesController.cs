@@ -38,7 +38,7 @@ namespace ChatroomB_Backend.Controllers
                 return BadRequest("The message content is missing.");
             }
 
-            Messages? message = JsonConvert.DeserializeObject<Messages>(messageJson);
+            ChatRoomMessage? message = JsonConvert.DeserializeObject<ChatRoomMessage>(messageJson);
 
             if (message == null)
             {
