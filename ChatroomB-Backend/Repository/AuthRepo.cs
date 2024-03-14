@@ -29,9 +29,9 @@ namespace ChatroomB_Backend.Repository
 
                 return user!;
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Failed to execute GetUserCredentials");
+                throw new Exception("Failed to execute GetUserCredentials", ex);
             }
         }
 
@@ -49,9 +49,9 @@ namespace ChatroomB_Backend.Repository
 
                 return parameters.Get<bool>("@Success");
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Failed to execute AddUser");
+                throw new Exception("Failed to execute AddUser", ex);
             }
         }
 
@@ -71,9 +71,9 @@ namespace ChatroomB_Backend.Repository
                 int rowsAffected = parameters.Get<int>("@RowsAffected");
                 return rowsAffected > 0; // Returns true if one or more rows were affected, indicating success.
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Failed to execute ChangePassword");
+                throw new Exception("Failed to execute ChangePassword", ex);
             }
         }
     }

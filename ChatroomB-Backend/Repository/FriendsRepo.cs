@@ -36,7 +36,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to add friends", ex);
+                throw new Exception("Failed to execute AddFriends", ex);
             }
         }
 
@@ -59,7 +59,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to update friend request", ex);
+                throw new Exception("Failed to execute UpdateFriendRequest", ex);
             }
         }
 
@@ -81,7 +81,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to delete friend request", ex);
+                throw new Exception("Failed to execute DeleteFriendRequest", ex);
             }
         }
 
@@ -102,7 +102,7 @@ namespace ChatroomB_Backend.Repository
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Failed to check friend existence", ex);
+                throw new Exception("Failed to execute CheckFriendExist", ex);
             }
         }
 

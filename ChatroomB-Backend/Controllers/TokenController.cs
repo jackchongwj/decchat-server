@@ -26,7 +26,7 @@ namespace ChatroomB_Backend.Controllers
         public async Task<IActionResult> RenewToken()
         {
             // Get Refresh Token from custom header
-            var refreshToken = Request.Headers["X-Refresh-Token"].FirstOrDefault();
+            string refreshToken = Request.Headers["X-Refresh-Token"].FirstOrDefault()!;
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
                 throw new ArgumentException("Refresh token is required");

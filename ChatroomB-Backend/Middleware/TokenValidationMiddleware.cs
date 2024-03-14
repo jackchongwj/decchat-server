@@ -21,7 +21,7 @@ namespace ChatroomB_Backend.Middleware
         public async Task Invoke(HttpContext context)
         {
             // Access scoped services from the request's service provider
-            var tokenService = context.RequestServices.GetService<ITokenService>();
+            ITokenService tokenService = context.RequestServices.GetService<ITokenService>()!;
 
             string accessToken;
             // Skip middleware for auth routes        
@@ -34,7 +34,7 @@ namespace ChatroomB_Backend.Middleware
 
             if (context.Request.Path.StartsWithSegments("/chatHub"))
             {
-                accessToken = context.Request.Query["access_token"];
+                accessToken = context.Request.Query["access_token"]!;
             }
             else
             {
@@ -68,7 +68,7 @@ namespace ChatroomB_Backend.Middleware
             else
             {
                 // Decode Access Token
-                var decodedToken = DecodeAccessToken(accessToken);
+                (int userId, string username)? decodedToken = DecodeAccessToken(accessToken);
                 if (decodedToken == null)
                 {
                     context.Response.StatusCode = 401; // Unauthorized

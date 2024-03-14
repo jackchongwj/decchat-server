@@ -10,7 +10,7 @@ namespace ChatroomB_Backend.Utils
         public string GenerateSalt()
         {
             byte[] saltBytes = new byte[32];
-            using (var rng = RandomNumberGenerator.Create())
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(saltBytes);
             }
@@ -19,7 +19,7 @@ namespace ChatroomB_Backend.Utils
 
         public string HashPassword(string password, string salt)
         {
-            using (var sha256 = SHA256.Create())
+            using (SHA256 sha256 = SHA256.Create())
             {
                 byte[] saltedPasswordBytes = Encoding.UTF8.GetBytes(password + salt);
                 byte[] hashedBytes = sha256.ComputeHash(saltedPasswordBytes);
