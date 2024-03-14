@@ -45,7 +45,7 @@ namespace ChatroomB_Backend.Service
 
             if (isUnique)
             {
-                throw new InvalidOperationException("Duplicate username detected.");
+                throw new InvalidOperationException("This username is unavailable");
             }
 
             string salt = _authUtils.GenerateSalt();
@@ -79,7 +79,7 @@ namespace ChatroomB_Backend.Service
 
             if (currentPasswordHashed != user.HashedPassword)
             {
-                throw new UnauthorizedAccessException("Current password is incorrect");
+                throw new UnauthorizedAccessException("Current password entered is incorrect.");
             }
 
             string newPasswordHashed = _authUtils.HashPassword(newPassword, user.Salt);

@@ -10,22 +10,19 @@ namespace ChatroomB_Backend.Middleware
     public class TokenValidationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IConfiguration _config;
         private readonly IMemoryCache _cache;
-        private readonly ITokenUtils _tokenUtil;
-        private readonly ITokenService _tokenService;
 
-        public TokenValidationMiddleware(RequestDelegate next, IConfiguration config, IMemoryCache cache, ITokenUtils tokenUtil, ITokenService tokenService)
+        public TokenValidationMiddleware(RequestDelegate next, IMemoryCache cache)
         {
             _next = next;
-            _config = config;
             _cache = cache;
-            _tokenUtil = tokenUtil;
-            _tokenService = tokenService;
         }
 
         public async Task Invoke(HttpContext context)
         {
+            // Access scoped services from the request's service provider
+            var tokenService = context.RequestServices.GetService<ITokenService>();
+
             string accessToken;
             // Skip middleware for auth routes        
             if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate"))
@@ -80,7 +77,7 @@ namespace ChatroomB_Backend.Middleware
                 }
 
                 // Validate Access Token (Check if username in JWT == username in DB WHERE userId in DB == userID in JWT)
-                await _tokenService.ValidateAccessToken(decodedToken.Value.userId, decodedToken.Value.username);
+                await tokenService.ValidateAccessToken(decodedToken.Value.userId, decodedToken.Value.username);
 
                 // Attach User to Context
                 context.Items["UserId"] = decodedToken.Value.userId;

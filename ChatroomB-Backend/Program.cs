@@ -112,7 +112,7 @@ builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IUserService, UsersServices>();
 builder.Services.AddScoped<IFriendService, FriendsServices>();
 builder.Services.AddScoped<IAuthService, AuthServices>();
-builder.Services.AddSingleton<ITokenService, TokenServices>();
+builder.Services.AddScoped<ITokenService, TokenServices>();
 builder.Services.AddScoped<IMessageService, MessagesServices>();
 builder.Services.AddScoped<IErrorHandleService, ErrorHandleServices>();
 
@@ -120,13 +120,13 @@ builder.Services.AddScoped<IChatRoomRepo, ChatRoomRepo>();
 builder.Services.AddScoped<IUserRepo, UsersRepo>();
 builder.Services.AddScoped<IFriendRepo, FriendsRepo>();
 builder.Services.AddScoped<IAuthRepo, AuthRepo>();
-builder.Services.AddSingleton<ITokenRepo, TokenRepo>();
+builder.Services.AddScoped<ITokenRepo, TokenRepo>();
 builder.Services.AddScoped<IMessageRepo, MessagesRepo>();
 builder.Services.AddScoped<IErrorHandleRepo, ErrorHandleRepo>();
 
 
 builder.Services.AddScoped<IAuthUtils, AuthUtils>();
-builder.Services.AddSingleton<ITokenUtils, TokenUtils>();
+builder.Services.AddScoped<ITokenUtils, TokenUtils>();
 
 // RabbitMQ-Related Services
 builder.Services.AddSingleton<RabbitMQServices>();
