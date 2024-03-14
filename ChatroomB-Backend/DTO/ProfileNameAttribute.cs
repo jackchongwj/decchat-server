@@ -7,7 +7,7 @@ namespace ChatroomB_Backend.DTO
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            var profileName = value as string ?? "";
+            string profileName = value as string ?? "";
 
             if (profileName.StartsWith(' '))
             {

@@ -27,7 +27,7 @@ namespace ChatroomB_Backend.Utils
             SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             // Create a list of claims with both userId and username
-            var claims = new List<Claim>
+            List<Claim> claims = new List<Claim>
             {
                 new Claim("UserId", userId.ToString()),
                 new Claim("Username", username)
