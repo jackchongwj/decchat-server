@@ -5,6 +5,8 @@ using ChatroomB_Backend.Models;
 using System.IdentityModel.Tokens.Jwt;
 using ChatroomB_Backend.Utils;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
 
 namespace ChatroomB_Backend.Controllers
 {
@@ -14,11 +16,13 @@ namespace ChatroomB_Backend.Controllers
     {
         private readonly ITokenService _tokenService;
         private readonly ITokenUtils _tokenUtil;
+        private readonly IConfiguration _config;
 
-        public TokenController(ITokenService tokenService, ITokenUtils tokenUtil)
+        public TokenController(ITokenService tokenService, ITokenUtils tokenUtil, IConfiguration config)
         {
             _tokenService = tokenService;
             _tokenUtil = tokenUtil;
+            _config = config;
         }
 
         [HttpPost("RenewToken")]
@@ -32,7 +36,7 @@ namespace ChatroomB_Backend.Controllers
                 throw new ArgumentException("Refresh token is required");
             }
 
-            // Retrieve userId and username from HttpContext, attached by the token middleware
+            // Retrieve the userId and username from HttpContext, attached by the token middleware after user validation
             if (!HttpContext.Items.TryGetValue("UserId", out var userIdObj) ||
                 !HttpContext.Items.TryGetValue("Username", out var usernameObj))
             {
