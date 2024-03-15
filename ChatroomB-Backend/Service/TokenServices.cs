@@ -26,9 +26,9 @@ namespace ChatroomB_Backend.Service
 
         public async Task ValidateAccessToken(int userId, string username)
         {
-            bool isValid = await _repo.ValidateAccessToken(userId, username);
+            string usernameInDB = await _repo.ValidateAccessToken(userId);
 
-            if (!isValid)
+            if (username != usernameInDB)
             {
                 throw new InvalidOperationException("Invalid access token");
             }

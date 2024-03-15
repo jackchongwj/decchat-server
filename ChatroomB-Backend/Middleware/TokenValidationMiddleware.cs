@@ -35,21 +35,20 @@ namespace ChatroomB_Backend.Middleware
                 return;
             }
 
+            // For SignalR requests (excluding negotiate), extract the access token from the query string
             if (context.Request.Path.StartsWithSegments("/chatHub"))
             {
-                accessToken = context.Request.Query["access_token"]!;
+                accessToken = context.Request.Query["access_token"];
             }
+            // For other requests, extract the JWT from the Authorization header
             else
             {
-                // Get JWT Access Token
                 accessToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last()!;
             }
-            
+
             if (string.IsNullOrWhiteSpace(accessToken))
             {
-                context.Response.StatusCode = 401; // Unauthorized
-                await context.Response.WriteAsync("Access token is missing");
-                return;
+                throw new UnauthorizedAccessException("Invalid access token");
             }
 
             try
@@ -97,7 +96,7 @@ namespace ChatroomB_Backend.Middleware
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = true,
+                ValidateLifetime = false,
                 ValidateIssuerSigningKey = true,
 
                 ValidIssuer = _config["JwtSettings:Issuer"],
@@ -111,7 +110,7 @@ namespace ChatroomB_Backend.Middleware
 
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
             {
-                throw new SecurityTokenException("Invalid token");
+                throw new UnauthorizedAccessException("Invalid access token");
             }
 
             return principal;

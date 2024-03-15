@@ -74,7 +74,7 @@ namespace ChatroomB_Backend.Repository
     public interface ITokenRepo
     {
         Task<bool> ValidateRefreshToken(string token, int userId);
-        Task<bool> ValidateAccessToken(int userId, string username);
+        Task<string> ValidateAccessToken(int userId);
         Task<bool> StoreRefreshToken(RefreshToken token);
         Task<bool> RemoveRefreshToken(string token);
         Task<bool> UpdateRefreshToken(string token);

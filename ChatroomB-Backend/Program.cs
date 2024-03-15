@@ -165,7 +165,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
             ValidIssuer = builder.Configuration.GetSection("JwtSettings:Issuer").Get<string>(),

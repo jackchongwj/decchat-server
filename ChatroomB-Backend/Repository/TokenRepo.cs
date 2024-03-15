@@ -40,7 +40,7 @@ namespace ChatroomB_Backend.Repository
             }
         }
 
-        public async Task<bool> ValidateAccessToken(int userId, string userName)
+        public async Task<string> ValidateAccessToken(int userId)
         {
             string connectionString = _config.GetConnectionString("ChatroomB_BackendContext")!;
             using (var sqlConnection = new SqlConnection(connectionString))
@@ -48,8 +48,8 @@ namespace ChatroomB_Backend.Repository
                 try
                 {
                     await sqlConnection.OpenAsync();
-                    string sql = "exec ValidateAccessToken @UserId, @UserName";
-                    var result = await sqlConnection.ExecuteScalarAsync<bool>(sql, new { UserId = userId, UserName = userName });
+                    string sql = "exec ValidateAccessToken @UserId";
+                    string result = await sqlConnection.ExecuteScalarAsync<string>(sql, new { UserId = userId });
                     return result;
                 }
                 catch (Exception ex)
