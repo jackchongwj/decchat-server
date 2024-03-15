@@ -98,7 +98,7 @@ namespace ChatroomB_Backend.Middleware
             // Return a Json object as response
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(JsonSerializer.Serialize(message));
+            await context.Response.WriteAsync(message);
         }
     }
 }

@@ -2,8 +2,10 @@
 using ChatroomB_Backend.Service;
 using ChatroomB_Backend.Utils;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace ChatroomB_Backend.Middleware
 {
@@ -11,23 +13,24 @@ namespace ChatroomB_Backend.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IMemoryCache _cache;
+        private readonly IConfiguration _config;
 
-        public TokenValidationMiddleware(RequestDelegate next, IMemoryCache cache)
+        public TokenValidationMiddleware(RequestDelegate next, IMemoryCache cache, IConfiguration config)
         {
             _next = next;
             _cache = cache;
+            _config = config;
         }
 
         public async Task Invoke(HttpContext context)
         {
             // Access scoped services from the request's service provider
             ITokenService tokenService = context.RequestServices.GetService<ITokenService>()!;
-
             string accessToken;
+
             // Skip middleware for auth routes        
             if (context.Request.Path.StartsWithSegments("/api/Auth") || context.Request.Path.StartsWithSegments("/chatHub/negotiate"))
             {
-                //string connectionId = Context.ConnectionId;
                 await _next(context);
                 return;
             }
@@ -49,70 +52,69 @@ namespace ChatroomB_Backend.Middleware
                 return;
             }
 
-            // Attempt to retrieve cached validation results
-            string cacheKey = $"validation-{accessToken}";
-            if (_cache.TryGetValue(cacheKey, out (int userId, string username) cachedResult))
+            try
             {
-                List<Claim> claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.NameIdentifier, cachedResult.userId.ToString()),
-                };
-                ClaimsIdentity identity = new ClaimsIdentity(claims, "Bearer");
-                ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+                // Validate the token and get ClaimsPrincipal
+                ClaimsPrincipal principal = GetPrincipalFromToken(accessToken);
 
-                context.User = principal; // This is the key step
+                // Extract userId and username from ClaimsPrincipal
+                var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                var usernameClaim = principal.Claims.FirstOrDefault(c => c.Type == "Username")?.Value;
 
-                context.Items["UserId"] = cachedResult.userId;
-                context.Items["Username"] = cachedResult.username;
-            }
-            else
-            {
-                // Decode Access Token
-                (int userId, string username)? decodedToken = DecodeAccessToken(accessToken);
-                if (decodedToken == null)
+                if (userIdClaim == null || usernameClaim == null)
                 {
-                    context.Response.StatusCode = 401; // Unauthorized
-                    await context.Response.WriteAsync("Invalid access token");
-                    return;
+                    throw new UnauthorizedAccessException("Invalid access token");
                 }
 
-                // Validate Access Token (Check if username in JWT == username in DB WHERE userId in DB == userID in JWT)
-                await tokenService.ValidateAccessToken(decodedToken.Value.userId, decodedToken.Value.username);
+                int userId = int.Parse(userIdClaim);
 
-                // Attach User to Context
-                context.Items["UserId"] = decodedToken.Value.userId;
-                context.Items["Username"] = decodedToken.Value.username;
+                await tokenService.ValidateAccessToken(userId, usernameClaim);
 
-                // Create and assign a ClaimsPrincipal from the validated token
-                List<Claim> claims = new List<Claim>
-                {
-                    new Claim("UserId", decodedToken.Value.userId.ToString()),
-                };
-                ClaimsIdentity identity = new ClaimsIdentity(claims, "Bearer");
-                ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+                // Cache the ClaimsPrincipal for performance
+                string cacheKey = $"validation-{accessToken}";
+                _cache.Set(cacheKey, principal, TimeSpan.FromMinutes(15));
 
-                context.User = principal; // This is the key step
+                // Attach user information to HttpContext for downstream use
+                context.Items["UserId"] = userId;
+                context.Items["Username"] = usernameClaim;
+                context.User = principal;
+            }
+            catch (SecurityTokenException ex)
+            {
+                throw new UnauthorizedAccessException("Invalid access token");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to execute TokenValidationMiddleware.", ex);
             }
 
             await _next(context);
         }
 
-        private (int userId, string username)? DecodeAccessToken(string accessToken)
+        private ClaimsPrincipal GetPrincipalFromToken(string token)
         {
-            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-            JwtSecurityToken? jwtToken = handler.ReadToken(accessToken) as JwtSecurityToken;
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
 
-            if (jwtToken == null) return null;
+                ValidIssuer = _config["JwtSettings:Issuer"],
+                ValidAudience = _config["JwtSettings:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]!))
+            };
 
-            // Retrieve username and userId
-            string? userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "UserId")?.Value;
-            string? usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "Username")?.Value;
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
 
-            // Check for null or invalid values before returning
-            if (userIdClaim == null || usernameClaim == null) return null;
-            if (!int.TryParse(userIdClaim, out int userId) || userId == 0) return null;
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Invalid token");
+            }
 
-            return (userId, usernameClaim);
+            return principal;
         }
     }
 }
