@@ -20,7 +20,7 @@ namespace ChatroomB_Backend.Service
 
             if (!isValid)
             {
-                throw new InvalidOperationException("Invalid or expired refresh token");
+                throw new UnauthorizedAccessException("Invalid or expired refresh token");
             }
         }
 
@@ -30,7 +30,7 @@ namespace ChatroomB_Backend.Service
 
             if (username != usernameInDB)
             {
-                throw new InvalidOperationException("Invalid access token");
+                throw new UnauthorizedAccessException("Invalid access token");
             }
         }
 
@@ -40,7 +40,7 @@ namespace ChatroomB_Backend.Service
 
             if (!isSuccess)
             {
-                throw new Exception("Failed to store refresh token");
+                throw new InvalidOperationException("Failed to store refresh token");
             }
         }
 
@@ -50,7 +50,7 @@ namespace ChatroomB_Backend.Service
 
             if (!isSuccess)
             {
-                throw new Exception("Refresh token not found");
+                throw new InvalidOperationException("Refresh token not found");
             }
         }
 
@@ -61,7 +61,7 @@ namespace ChatroomB_Backend.Service
 
             if(!isSuccess)
             {
-                throw new Exception("Refresh token not found");
+                throw new InvalidOperationException("Refresh token not found");
             }
         }
     }
