@@ -16,10 +16,10 @@ namespace ChatroomB_Backend.Controllers
     public class MessagesController : ControllerBase
     {
         private readonly IMessageService _MessageService;
-        private readonly RabbitMQServices _RabbitMQService;
-        private readonly ApplicationServices _ApplicationServices;
+        private readonly IRabbitMQServices _RabbitMQService;
+        private readonly IApplicationServices _ApplicationServices;
 
-        public MessagesController(IMessageService messageService, RabbitMQServices rabbitMQService, ApplicationServices applicationServices)
+        public MessagesController(IMessageService messageService, IRabbitMQServices rabbitMQService, IApplicationServices applicationServices)
         {
             _MessageService = messageService;
             _RabbitMQService = rabbitMQService;
@@ -38,35 +38,41 @@ namespace ChatroomB_Backend.Controllers
                 return BadRequest("The message content is missing.");
             }
 
-            ChatRoomMessage? message = JsonConvert.DeserializeObject<ChatRoomMessage>(messageJson);
-
-            if (message == null)
+            try
             {
-                // Handle the scenario where deserialization results in a null object
+                ChatRoomMessage? message = JsonConvert.DeserializeObject<ChatRoomMessage>(messageJson);
+                if (message == null)
+                {
+                    // Handle the scenario where deserialization results in a null object
+                    return BadRequest("The message content could not be parsed.");
+                }
+
+                if (file != null)
+                {
+                    FileMessage fileMessage = new FileMessage
+                    {
+                        Message = message,
+                        FileByte = await ConvertToByteArrayAsync(file),
+                        FileName = file.FileName,
+                        FileType = file.ContentType.Split('/')[0]
+                    };
+
+                    _RabbitMQService.PublishMessage(fileMessage);
+                }
+                else
+                {
+                    _RabbitMQService.PublishMessage(new FileMessage
+                    {
+                        Message = message
+                    });
+                }
+
+                return Ok();
+            }
+            catch (Exception)
+            {
                 return BadRequest("The message content could not be parsed.");
             }
-
-            if (file!=null)
-            {
-                FileMessage fileMessage = new FileMessage
-                {
-                    Message = message,
-                    FileByte = await ConvertToByteArrayAsync(file),
-                    FileName = file.FileName,
-                    FileType = file.ContentType.Split('/')[0]
-                };
-
-                _RabbitMQService.PublishMessage(fileMessage);
-            }
-            else
-            {
-                _RabbitMQService.PublishMessage(new FileMessage
-                {
-                    Message = message
-                });
-            }
-
-            return Ok();
         }
 
         [HttpGet("GetMessage")]
