@@ -38,7 +38,8 @@ namespace ChatroomB_Backend.Middleware
             // For SignalR requests (excluding negotiate), extract the access token from the query string
             if (context.Request.Path.StartsWithSegments("/chatHub"))
             {
-                accessToken = context.Request.Query["access_token"];
+                Console.WriteLine("HTTP Request with /chathub");
+                accessToken = context.Request.Query["access_token"]!;
             }
             // For other requests, extract the JWT from the Authorization header
             else
