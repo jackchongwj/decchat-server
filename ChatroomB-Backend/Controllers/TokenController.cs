@@ -57,5 +57,30 @@ namespace ChatroomB_Backend.Controllers
 
             return Ok(new { AccessToken = newAccessToken });
         }
+
+        [HttpPost("ValidateRefreshToken")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ValidateRefreshToken()
+        {
+            // Get Refresh Token from custom header
+            string refreshToken = Request.Headers["X-Refresh-Token"].FirstOrDefault()!;
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw new ArgumentException("Refresh token is required");
+            }
+
+            // Retrieve the userId and username from HttpContext, attached by the token middleware after user validation
+            if (!HttpContext.Items.TryGetValue("UserId", out var userIdObj))
+            {
+                throw new UnauthorizedAccessException("User information is missing in the request context");
+            }
+
+            int userId = (int)userIdObj!;
+
+            // Validate the refresh token
+            await _tokenService.ValidateRefreshToken(refreshToken, userId);
+
+            return Ok();
+        }
     }
 }
