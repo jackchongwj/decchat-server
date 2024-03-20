@@ -38,7 +38,7 @@ namespace ChatroomB_Backend.Middleware
             // For SignalR requests (excluding negotiate), extract the access token from the query string
             if (context.Request.Path.StartsWithSegments("/chatHub"))
             {
-                accessToken = context.Request.Query["access_token"];
+                accessToken = context.Request.Query["access_token"]!;
             }
             // For other requests, extract the JWT from the Authorization header
             else
@@ -51,40 +51,53 @@ namespace ChatroomB_Backend.Middleware
                 throw new UnauthorizedAccessException("Invalid access token");
             }
 
-            try
+            string cacheKey = $"validation-{accessToken}";
+            if (_cache.TryGetValue(cacheKey, out ClaimsPrincipal? cachedPrincipal))
             {
-                // Validate the token and get ClaimsPrincipal
-                ClaimsPrincipal principal = GetPrincipalFromToken(accessToken);
+                // Use cached ClaimsPrincipal
+                var userIdClaim = cachedPrincipal!.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                var usernameClaim = cachedPrincipal.Claims.FirstOrDefault(c => c.Type == "Username")?.Value;
 
-                // Extract userId and username from ClaimsPrincipal
-                var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-                var usernameClaim = principal.Claims.FirstOrDefault(c => c.Type == "Username")?.Value;
+                context.Items["UserId"] = int.Parse(userIdClaim!);
+                context.Items["Username"] = usernameClaim;
+                context.User = cachedPrincipal;
+            }
+            else
+            {
+                try
+                {
+                    // Validate the token and get ClaimsPrincipal
+                    ClaimsPrincipal principal = GetPrincipalFromToken(accessToken);
 
-                if (userIdClaim == null || usernameClaim == null)
+                    // Extract userId and username from ClaimsPrincipal
+                    var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                    var usernameClaim = principal.Claims.FirstOrDefault(c => c.Type == "Username")?.Value;
+
+                    if (userIdClaim == null || usernameClaim == null)
+                    {
+                        throw new UnauthorizedAccessException("Invalid access token");
+                    }
+
+                    int userId = int.Parse(userIdClaim);
+
+                    await tokenService.ValidateAccessToken(userId, usernameClaim);
+
+                    // Cache the ClaimsPrincipal for performance
+                    _cache.Set(cacheKey, principal, TimeSpan.FromMinutes(15));
+
+                    // Attach user information to HttpContext for downstream use
+                    context.Items["UserId"] = userId;
+                    context.Items["Username"] = usernameClaim;
+                    context.User = principal;
+                }
+                catch (SecurityTokenException)
                 {
                     throw new UnauthorizedAccessException("Invalid access token");
                 }
-
-                int userId = int.Parse(userIdClaim);
-
-                await tokenService.ValidateAccessToken(userId, usernameClaim);
-
-                // Cache the ClaimsPrincipal for performance
-                string cacheKey = $"validation-{accessToken}";
-                _cache.Set(cacheKey, principal, TimeSpan.FromMinutes(15));
-
-                // Attach user information to HttpContext for downstream use
-                context.Items["UserId"] = userId;
-                context.Items["Username"] = usernameClaim;
-                context.User = principal;
-            }
-            catch (SecurityTokenException ex)
-            {
-                throw new UnauthorizedAccessException("Invalid access token");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Failed to execute TokenValidationMiddleware.", ex);
+                catch (Exception ex)
+                {
+                    throw new Exception("Failed to execute TokenValidationMiddleware.", ex);
+                }
             }
 
             await _next(context);
@@ -96,7 +109,7 @@ namespace ChatroomB_Backend.Middleware
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidateLifetime = false,
+                ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
 
                 ValidIssuer = _config["JwtSettings:Issuer"],
