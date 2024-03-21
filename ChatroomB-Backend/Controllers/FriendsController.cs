@@ -74,7 +74,7 @@ namespace ChatroomB_Backend.Controllers
                     return Ok(PrivateChatlist);
                 }
 
-                return Ok(0);
+                return Ok(1);
 
             }
             catch (Exception ex)
