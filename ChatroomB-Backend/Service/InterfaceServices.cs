@@ -92,5 +92,17 @@ namespace ChatroomB_Backend.Service
     {
         Task LogError(string controllerName, int userId, string errorMessage);
     }
-    
+
+    public interface IRabbitMQServices
+    {
+        void PublishMessage(FileMessage fileMessage);
+        void PublishEditMessage(EditMessage editMsg);
+        void ConsumeMessage(Func<string, Task> onMessageReceived);
+    }
+
+    public interface IApplicationServices
+    {
+        void ConsumeQueueMessage();
+    }
+
 }

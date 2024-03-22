@@ -129,8 +129,8 @@ builder.Services.AddScoped<IAuthUtils, AuthUtils>();
 builder.Services.AddScoped<ITokenUtils, TokenUtils>();
 
 // RabbitMQ-Related Services
-builder.Services.AddSingleton<RabbitMQServices>();
-builder.Services.AddScoped<ApplicationServices>();
+builder.Services.AddSingleton<IRabbitMQServices, RabbitMQServices>();
+builder.Services.AddScoped<IApplicationServices, ApplicationServices>();
 builder.Services.AddScoped<IBlobService, BlobServices>();
 builder.Services.AddScoped<IBlobRepo, BlobsRepo>();
 

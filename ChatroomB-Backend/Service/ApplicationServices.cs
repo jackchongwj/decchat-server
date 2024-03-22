@@ -9,14 +9,14 @@ using System.Threading.Channels;
 
 namespace ChatroomB_Backend.Service
 {
-    public class ApplicationServices
+    public class ApplicationServices: IApplicationServices
     {
-        private readonly RabbitMQServices _rabbitMQService;
+        private readonly IRabbitMQServices _rabbitMQService;
         private readonly IMessageService _messageService;
         private readonly IBlobService _blobService;
         private readonly IHubContext<ChatHub> _hubContext;
 
-        public ApplicationServices(RabbitMQServices _rabbitMQSer, IMessageService messageService, IBlobService blobService, IHubContext<ChatHub> hubContext)
+        public ApplicationServices(IRabbitMQServices _rabbitMQSer, IMessageService messageService, IBlobService blobService, IHubContext<ChatHub> hubContext)
         {
             _rabbitMQService = _rabbitMQSer;
             _messageService = messageService;
