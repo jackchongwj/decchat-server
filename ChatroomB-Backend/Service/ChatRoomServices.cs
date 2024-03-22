@@ -23,7 +23,8 @@ namespace ChatroomB_Backend.Service
         private readonly IRedisServcie _RServices;
 
 
-        public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices, IUserService userService)
+
+        public ChatRoomServices(IChatRoomRepo _repository, IHubContext<ChatHub> hubContext, IBlobService blobService, IRedisServcie rServices)
         {
             _repo = _repository;
 
@@ -181,7 +182,7 @@ namespace ChatroomB_Backend.Service
             {
                 string connectionId = await _RServices.SelectUserIdFromRedis(removedUserId);
 
-                if (!connectionId.IsNullOrEmpty())
+                if (connectionId != "Hash entry not found or empty.")
                 {
                     await _hubContext.Groups.RemoveFromGroupAsync(connectionId, chatRoomId.ToString());
                     // return result;
@@ -202,7 +203,7 @@ namespace ChatroomB_Backend.Service
                 int updateResult = await _repo.UpdateGroupName(chatRoomId, newGroupName);
                 if (updateResult > 0)
                 {
-                    await _hubContext.Clients.Groups(chatRoomId.ToString())
+                    await _hubContext.Clients.Group(chatRoomId.ToString())
                         .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupName = newGroupName });
                 }
 
@@ -220,6 +221,7 @@ namespace ChatroomB_Backend.Service
         {
             try
             {
+
                 using (Image image = SixLabors.ImageSharp.Image.Load(fileBytes))
                 {
                     string blobUri = await _blobService.UploadImageFiles(fileBytes, fileName, 2);
@@ -228,7 +230,7 @@ namespace ChatroomB_Backend.Service
 
                     if (updateResult > 0)
                     {
-                        await _hubContext.Clients.Groups(chatRoomId.ToString())
+                        await _hubContext.Clients.Group(chatRoomId.ToString())
                             .SendAsync("ReceiveGroupProfileUpdate", new { ChatRoomId = chatRoomId, GroupPicture = blobUri });
                     }
 
