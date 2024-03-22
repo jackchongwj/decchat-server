@@ -439,8 +439,9 @@ namespace ChatroomB_Backend_Test.ServiceTest
         public async Task UpdateGroupPicture_CallsExpectedMethods()
         {
             int chatRoomId = 1;
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string imagePath = Path.Combine(desktopPath, "testImage.jpg");
+
+            string projectRoot = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
+            string imagePath = Path.Combine(projectRoot, "ServiceTest", "pics", "testImage.jpg");
             byte[] fileBytes = File.ReadAllBytes(imagePath);
             string fileName = "image.jpg";
             string expectedBlobUri = "https://example.com/image.jpg";
