@@ -9,7 +9,7 @@ using ChatroomB_Backend.DTO;
 
 namespace ChatroomB_Backend.Service
 {
-    public class RabbitMQServices
+    public class RabbitMQServices:IRabbitMQServices
     {
         private readonly string RabbitMQConnection;
         private readonly IConnection _connection;
